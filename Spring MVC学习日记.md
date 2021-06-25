@@ -289,7 +289,7 @@ body中的参数一般是post请求的时候才会将参数放入请求body中�
 
 ```java
 public void handle(
-    @RequestBody("body") String body,
+    @RequestBody String body,
     BindingResult result)
 {
 	if (result.hasErrors()) {
@@ -303,7 +303,6 @@ public void handle(
 
 **tips**：
 
-1. value属性可以省略，默认为方法的形参名
 2. BindingResult 参数绑定后的结果，如果绑定失败（如类型不匹配）则hasErrors()为真。
 
 

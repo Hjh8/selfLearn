@@ -1378,7 +1378,7 @@ jdbc.password = 你的密码
 <environment id="development">
     <transactionManager type="JDBC"/>
     <dataSource type="POOLED">
-        <property name="driver" value="${jdbc.driver}"/>
+        <property name="driverClassName" value="${jdbc.driver}"/>
         <!--  连接数据库的url字符串,如果需要用到& 则需要用 &amp;代替  -->
         <property name="url" value="${jdbc.url}"/>
         <property name="username" value="${jdbc.user}"/>
