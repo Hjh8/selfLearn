@@ -33,8 +33,8 @@ String
 - 比较大小：compareTo(str)
 - 获取：charAt(int index)
 - 根据**字符**获取该字符在字符串中位置
-  - indexOf(char ch)：返回的是ch在字符串中**第**一次出现的位置。不存在返回 -1
-  - lastIndexOf(char ch)：返回的是ch在字符串中**最后**一次出现的位置
+  - indexOf(char ch)：返回的是ch在字符串中第一次出现的位置。不存在返回 -1
+  - lastIndexOf(char ch)：返回的是ch在字符串中最后一次出现的位置
   - indexOf(char ch, int fromIndex)：从fromIndex指定位置开始，获取ch在字符串中出现的位置。
   - indexOf(String str)：返回的是str在字符串中第一次出现的位置。
   - indexOf(String str, int fromIndex)：从fromIndex指定位置开始，获取str在字符串中出现的位置。
