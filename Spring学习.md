@@ -774,7 +774,7 @@ public class Student {
 但他们有以下区别：
 
 1. 作用对象不同: @Component 注解作用于**类**，而@Bean注解作用于**方法**。
-2. @Component通常是通过类路径扫描自动注册到Spring容器中。@Bean 注解通常是我们在标有该注解的方法中定义产生这个 bean，@Bean告诉Spring这个方法将会返回一个对象，这个对象要注册为Spring应用上下文中的bean。
+2. `@Component`通常是通过**类路径扫描**自动注册到Spring容器中。`@Bean` 注解通常是在**方法中定义**产生这个 bean，@Bean告诉Spring这个方法将会返回一个对象，这个对象要注册为Spring应用上下文中的bean。
 3. @Bean 注解比 @Component 注解的自定义性更强，而且很多地方我们只能通过 @Bean 注解来注册bean。比如当我们引用第三方库中的类需要装配到 Spring容器时，则只能通过 @Bean来实现
 
 ```java
@@ -2368,7 +2368,7 @@ System.out.println("容器对象信息是========="+ac);
 
 
 
-7.深入Spring
+7.Spring面试
 ===
 
 什么是Spring？
@@ -2378,22 +2378,51 @@ spring本身是一个框架，也提供了对其他框架的整合方案。有�
 
 
 
+IOC的加载过程
+---
+
+IOC（Inversion of Control）：控制反转，是一个思想，将对象的创建、初始化和销毁等操作都交给代码外的容器实现，让容器帮我们管理bean对象整个生命周期，而不需要程序员自己手动实现。DI依赖注入就是IOC的具体实现。
+
+![img](Spring学习.assets/20547106-f2930c91e4c04a7d.webp)
+
+1. 首先，通过**BeanDefinitionReader** 读取指定的配置文件生成bean的定义信息（BeanDefinition），当所有的bean定义信息都生成之后完成BeanFactory的组建
+2. 通过**BeanFactoryPostProcessor**接口 可以动态的修改BeanDefinition的内容，比如数据库配置文件的占位符`${jdbc.url}` 、注解的使用。经过这一步骤之后才形成了完整的BeanDefinition。
+3. 创建bean对象，初始化等操作
+
+
+
+对AOP的理解
+---
+
+aop称为面向切面编程，可以将交叉业务代码跟主业务代码分离开，降低代码耦合，其底层的实现是动态代理：JDK或cjlib方式，如果代理的对象实现了某个接口则一般使用jdk自带的proxy创建对象，否则使用cjlib生成一个子类作为代理。
+
+面向切面编程：
+
+1. 要以**切面**为核心，分析项目中哪些功能可以用切面的形式去实现它
+2. 要合理的安排切面执行的**时间Advice**（在目标方法的前还是后）以及切面执行的**位置Pointcut**（在哪个类哪个方法中）
+
+spring会将一个方法中给的所有的通知经过拓扑排序后加入到chain对象中，chain对象是一个List，第一个元素固定是**ExposeInvocationInterceptor**，第二个元素开始才是通知对象。只有递归完所有的通知才会执行实际方法。
+
+![image-20210613175255505](Spring学习.assets/image-20210613175255505.png)
+
+
+
 Spring bean的生命周期
 ---
 
 1. 确定构造器，利用反射实例化对象
 
 2. 调用populateBean方法，根据xml文件或注解（@Autowired）对属性进行赋值
-   
-   - 此时除了容器对象属性都赋了值（bean中可能包含容器对象属性）
-   
+
+   - 此时除了容器对象属性，其他属性都赋了值（bean中可能包含容器对象属性）
+
 3. 根据实现的aware接口调用相关的aware方法，**对应的容器对象属性完成赋值** 
-   
+
    - aware接口是为了使某些自定义对象可以方便的获取到容器对象。
-   
+
    - 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口
    - 可以根据这些接口进行扩展
-   
+
 4. 可以调用BeanPostProcessor的Before方法
 
 5. 调用初始化方法
@@ -2429,7 +2458,7 @@ ApplicationContext是BeanFactory的子接口，对其进行了许多扩展。
 区别：
 
 1. BeanFactory通过懒加载的方式注入bean，ApplicationContext是在容器启动时就加载了全部的bean，所以可以在容器启动时就发现存在的配置问题
-2. BeanFactory和 ApplicationContext都支持 BeanPostProcessor.、 BeanFactoryPostProcessor的使用，但两者之间的区别是：BeanFactory需要手动注册，而Applicationcontext则是自动注册。
+2. BeanFactory 和 ApplicationContext都支持 BeanPostProcessor、BeanFactoryPostProcessor的使用，但两者之间的区别是：BeanFactory需要手动注册，而Applicationcontext则是自动注册。
 
 ApplicationContext扩展的功能：
 
@@ -2437,35 +2466,3 @@ ApplicationContext扩展的功能：
 2. 统一的资源文件访问方式
 3. 同时加载多个配置文件
 4. 载入多个（有继承关系）上下文，使得每一个上下文都专注于一个特定的层次，比如应用的Web层。
-
-
-
-
-
-IOC的加载过程
----
-
-IOC（Inversion of Control）：控制反转，是一个思想，将对象的创建、初始化和销毁等都交给代码外的容器实现，让容器帮我们管理bean对象整个生命周期，而不需要程序员自己手动实现。DI依赖注入就是IOC的具体实现。
-
-![img](Spring学习.assets/20547106-f2930c91e4c04a7d.webp)
-
-1. 首先，通过**BeanDefinitionReader** 读取指定的配置文件生成bean的定义信息（BeanDefinition），当所有的bean定义信息都生成之后完成BeanFactory的组建
-2. 通过**BeanFactoryPostProcessor**接口 可以动态的修改BeanDefinition的内容，比如数据库配置文件的占位符`${jdbc.url}` 、注解的使用。经过这一步骤之后才形成了完整的BeanDefinition。
-3. 创建bean对象，初始化等操作
-
-
-
-对AOP的理解
----
-
-aop称为面向切面编程，可以将交叉业务代码跟主业务代码分离开，降低代码耦合，其底层的实现是动态代理：JDK或cjlib方式，如果代理的对象实现了某个接口则一般使用jdk自带的proxy创建对象，否则使用cjlib生成一个子类作为代理。
-
-面向切面编程：
-
-1. 要以**切面**为核心，分析项目中哪些功能可以用切面的形式去实现它
-2. 要合理的安排切面执行的**时间Advice**（在目标方法的前还是后）以及切面执行的**位置Pointcut**（在哪个类哪个方法中）
-
-spring会将一个方法中给的所有的通知经过拓扑排序后加入到chain对象中，chain对象是一个List，第一个元素固定是**ExposeInvocationInterceptor**，第二个元素开始才是通知对象。只有递归完所有的通知才会执行实际方法。
-
-![image-20210613175255505](Spring学习.assets/image-20210613175255505.png)
-
