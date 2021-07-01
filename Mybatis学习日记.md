@@ -24,7 +24,7 @@
 
 ## 2.1 mybatis简介
 
-`mybatis`是一个`java`的**sql映射框架**。提供了数据库的操作能力，相当于一个增强的JDBC。使用`mybatis`时，我们只需要编写**sql语句**，其他操作（如创建销毁Connection、Statement、sql的执行）`mybatis`都自动帮我们完成。
+`mybatis`是一个半自动ORM（对象关系映射）框架，内部封装了JDBC。使用`mybatis`时，我们只需要关注**sql语句**，而无需关注其他操作（如创建销毁Connection、Statement、sql的执行）。
 
 `mybatis`的两个主要使命：
 
@@ -1324,7 +1324,7 @@ Mybatis系统中默认使用了两级缓存：`一级缓存`跟`二级缓存`。
 5. `sqlSession.clearCache()`只是**清除**当前sqlSession的**一级缓存** 。
 6. `<setting name="localCacheScope" value="SESSION"/>` 本地缓存作用域
 
-
+***
 
 小结：
 
@@ -1333,16 +1333,6 @@ Mybatis系统中默认使用了两级缓存：`一级缓存`跟`二级缓存`。
 只影响一级缓存：`sqlSession.clearCache()`、`<setting name="localCacheScope" value="SESSION"/>` 
 
 同时影响一二级缓存：所有标签的`flushCache="true"` 【掌握】
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1449,4 +1439,120 @@ jdbc.password = 你的密码
 - `typeAliases`：设置类型别名。
 - `enviroments`：设置环境信息，比如数据库。
 - `<mappers>`：指定映射文件的位置（有两种方式`<mapper>`跟`<package>`）。
+
+
+
+Mybatis面试
+===
+
+说一下mybatis
+---
+
+`mybatis`是一个半自动ORM（对象关系映射）框架，内部封装了JDBC。使用`mybatis`时，我们只需要关注**sql语句**，而无需关注其他操作（如创建销毁Connection、Statement、sql的执行）。
+
+
+
+什么是半自动ORM？
+---
+
+全自动就是连sql语句都被封装好了，我们只需要用，但是我们就不能对sql语句进行优化了。
+
+半自动就是自己写sql语句，其他连接数据库等操作交给框架。
+
+
+
+Mybatis的工作原理
+---
+
+1. 读取mybatis配置文件生成Configuration。
+2. 构造sqlSessionFactory，调用openSession()创建sqlSession对象，使用此对象来执行mapper中的方法，将要映射的信息（数据源、参数、标签参数等）封装成MappedStatement对象
+   - **mappedStatement**最后以id为键保存在了**Configuration**中的一个map变量**mappedStatements**中
+3. Executor执行器，将MappedStatement对象进行解析，生成需要执行的sql语句，同时负责缓存的维护。
+4. 使用StatementHandler执行sql语句，以及将结果集封装成实体类
+
+
+
+指定mapper映射文件的地址方式有四种：resource、url、class和包。
+
+
+
+mybatis有哪些执行器，他们之间的区别
+---
+
+执行器有三种：simple（默认）、reuse、batch
+
+- simpleExecutor：每执行一次update或select就开启一个statement对象，用完立刻关闭。
+- reuseExecutor：执行update或select，以sql作为key查找statement对象，存在就使用，不存在就创建。用完后不关闭，而是放入map中。
+- batchExecutor：执行update时，将所有的sql添加到批处理中，统一执行。
+
+如何指定执行器？settings标签中指定ExecutorType的方式或者openSession(ExecutorType et) 的方式。
+
+
+
+mybatis是否支持延迟加载？
+---
+
+什么是延迟加载？多表联查的时候先查出一个表的数据，然后在根据具体的条件去另一个表中查。
+
+例如：查询订单信息，有时候需要关联查出用户信息。如果每次
+
+`select * from orders o ,user u where o.user_id = u.id;` 会比较耗时，因为有时候不需要用户信息。
+
+所以我们，可以先查询出所有的订单信息，然后如果需要用户的信息，我们在根据查询的订单信息去关联用户信息。
+
+1. `select * from orders;` 
+2. `select * from user where id=user_id;`  
+
+因为两步但是单表查询，执行效率要高很多。并且如果我们不需要关联用户信息，那么我们就不必执行第二步，程序没有进行多余的操作。
+
+***
+
+Mybatis仅支持association关联对象和collection关联集合对象的延迟加载，association指的就是一对一，collection指的就是一对多查询。在Mybatis配置文件中，可用setting启用延迟加载`lazyLoadingEnabled`。
+
+例：
+
+```xml
+<mapper namespace="com.ys.lazyload.OrdersMapper">
+    <!--
+         延迟加载：
+         select user_id from order WHERE id=1;
+         select * from user WHERE id=user_id
+    -->
+    <select id="getOrderByOrderId" resultMap="getOrderMap">
+        select * from orders
+    </select>
+    <resultMap type="com.ys.lazyload.Orders" id="getOrderMap">
+        <id column="id" property="id"/>
+        <result column="number" property="number"/>
+        <!-- select:指定延迟加载需要执行的statement的id
+             property:resultMap中type指定类中的属性名
+             column:和select查询关联的字段user_id
+         -->
+        <association column="user_id" select="getUserByUserId"
+                     property="user" javaType="com.ys.lazyload.User">
+        </association>
+    </resultMap>
+    <select id="getUserByUserId" resultType="com.ys.lazyload.User">
+        select * from user where id=#{id}
+    </select>
+</mapper>
+```
+
+
+
+延迟加载的原理
+---
+
+使用CGLIB创建目标对象的代理对象，当调用目标方法时，进入拦截器方法，比如调用a.getB().getName()，拦截器invoke()方法发现a.getB()是null值，那么就会单独执行事先保存好的查询关联B对象的sql，把B查询上来，然后调用a.setB(b)，于是a的对象b属性就有值了，接着完成a.getB().getName()方法的调用。
+
+
+
+什么是MyBatis的接口绑定,有什么好处
+---
+
+接口映射就是在IBatis中任意定义接口,然后把接口里面的方法和SQL语句绑定，我们直接调用接口方法就可以,这样比起原来了SqlSession提供的方法我们可以有更加灵活的选择和设置。
+
+
+
+
 
