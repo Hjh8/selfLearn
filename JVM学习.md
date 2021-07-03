@@ -409,6 +409,8 @@ str = null;              // 取消强引用
 
 一个对象仅仅被软引用时，如果内存的空间足够则该对象不会被回收。若内存空间不足时，软引用引用的对象才会被垃圾回收器回收。
 
+> 软引用很适合做缓存。1
+
 ```java
 SoftReference<String> softName = new  SoftReference<>("codekiang");
 System.out.println(softName.get()); // codekiang
