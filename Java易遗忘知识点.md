@@ -1475,12 +1475,12 @@ public class StaticProxy implements Player {
 
 
 
-**main函数**
+**测试类**
 
 ```java
 package 静态代理;
 
-public class Main {
+public class Test {
     public static void main(String[] args){
         // 创建玩家对象
         Player codekiang = new PlayerImpl();
