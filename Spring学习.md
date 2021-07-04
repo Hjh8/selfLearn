@@ -314,7 +314,7 @@ public class School {
 
 当一个类中有很多的引用类型时，你不需要写很多的`<property>`标签，spring会根据某些规则自动给引用类型赋值。
 
-autowire有四个自动注入方式：byName、byType、constructor、autodetect（先使用构造器注入，不行的话是要byType方式）
+> autowire有四个自动注入方式：byName、byType、constructor、autodetect（先使用构造器注入，不行的话是要byType方式）
 
 ***
 
@@ -767,7 +767,7 @@ public class Student {
 
 
 
-### 2.3.4 @bean跟@component的区别
+### 2.3.5 @bean跟@component的区别
 
 @bean跟@component一样都可以注册bean到Spring容器中。
 
@@ -794,11 +794,11 @@ public class WebSocketConfig {
 
 
 
-### 2.3.5 小结
+### 2.3.6 小结
 
 IoC的解耦合是实现业务对象之间的解耦合，例如Service跟dao之间的解耦合。
 
-
+***
 
 xml配置文件和注解的对比
 
