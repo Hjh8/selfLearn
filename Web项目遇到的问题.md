@@ -44,10 +44,6 @@ window.open(href, '_blank')
 
 
 
-# 注意事项
-
-
-
 
 
 
