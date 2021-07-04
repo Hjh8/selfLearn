@@ -2391,22 +2391,6 @@ IOC（Inversion of Control）：控制反转，是一个思想，将对象的创
 
 
 
-对AOP的理解
----
-
-aop称为面向切面编程，可以将交叉业务代码跟主业务代码分离开，降低代码耦合，其底层的实现是动态代理：JDK或cjlib方式，如果代理的对象实现了某个接口则一般使用jdk自带的proxy创建对象，否则使用cjlib生成一个子类作为代理。
-
-面向切面编程：
-
-1. 要以**切面**为核心，分析项目中哪些功能可以用切面的形式去实现它
-2. 要合理的安排切面执行的**时间Advice**（在目标方法的前还是后）以及切面执行的**位置Pointcut**（在哪个类哪个方法中）
-
-spring会将一个方法中给的所有的通知经过拓扑排序后加入到chain对象中，chain对象是一个List，第一个元素固定是**ExposeInvocationInterceptor**，第二个元素开始才是通知对象。只有递归完所有的通知才会执行实际方法。
-
-![image-20210613175255505](Spring学习.assets/image-20210613175255505.png)
-
-
-
 Spring bean的生命周期
 ---
 
@@ -2418,10 +2402,7 @@ Spring bean的生命周期
 
 3. 根据实现的aware接口调用相关的aware方法，**对应的容器对象属性完成赋值** 
 
-   - aware接口是为了使某些自定义对象可以方便的获取到容器对象。
-
-   - 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口
-   - 可以根据这些接口进行扩展
+   - ==aware接口是为了使某些自定义对象可以方便的获取到容器对象。== 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口，可以根据这些接口进行扩展
 
 4. 可以调用BeanPostProcessor的Before方法
 
@@ -2436,6 +2417,24 @@ Spring bean的生命周期
 > BeanFactoryPostProcessor：是一个接口，针对整个工厂生产出来的BeanDefinition作出修改或者注册。比如ConfigurationClassPostProcessor处理注解，PropertyPlaceholderConfigurer处理配置文件的占位符。
 >
 > BeanPostProcessor：是一个接口，可用于bean对象初始化前后进行逻辑增强。
+
+
+
+
+
+对AOP的理解
+---
+
+aop称为面向切面编程，可以将交叉业务代码跟主业务代码分离开，降低代码耦合，其底层的实现是动态代理：JDK或cjlib方式，如果代理的对象实现了某个接口则一般使用jdk自带的proxy创建对象，否则使用cjlib生成一个子类作为代理。
+
+面向切面编程：
+
+1. 要以**切面**为核心，分析项目中哪些功能可以用切面的形式去实现它
+2. 要合理的安排切面执行的**时间Advice**（在目标方法的前还是后）以及切面执行的**位置Pointcut**（在哪个类哪个方法中）
+
+spring会将一个方法中给的所有的通知经过拓扑排序后加入到chain对象中，chain对象是一个List，第一个元素固定是**ExposeInvocationInterceptor**，第二个元素开始才是通知对象。只有递归完所有的通知才会执行实际方法。
+
+![image-20210613175255505](Spring学习.assets/image-20210613175255505.png)
 
 
 
