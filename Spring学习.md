@@ -2374,7 +2374,7 @@ System.out.println("容器对象信息是========="+ac);
 什么是Spring？
 ---
 
-spring本身是一个框架，也提供了对其他框架的整合方案。有着ioc容器的作用，用来装载整体的bean对象，它帮我们管理着bean对象从创建、初始化到销毁的整个生命周期。另外spring也提供了AOP的支持，分离了主业务代码跟交叉业务代码，很大程度上的降低了代码耦合度。
+spring本身是一个框架，同时也提供了对其他框架的整合方案。有着ioc容器的作用，用来装载整体的bean对象，它帮我们管理着bean对象从创建、初始化到销毁的整个生命周期。另外spring也提供了AOP的支持，分离了主业务代码跟交叉业务代码，很大程度上的降低了代码耦合度。
 
 
 
@@ -2458,7 +2458,7 @@ ApplicationContext是BeanFactory的子接口，对其进行了许多扩展。
 
 区别：
 
-1. BeanFactory通过懒加载的方式注入bean，ApplicationContext是在容器启动时就加载了全部的bean，所以可以在容器启动时就发现存在的配置问题
+1. BeanFactory通过懒加载的方式注入bean，ApplicationContext是在容器启动时就加载了全部的bean，所以可以在容器启动时就发现存在的配置问题。
 2. BeanFactory 和 ApplicationContext都支持 BeanPostProcessor、BeanFactoryPostProcessor的使用，但两者之间的区别是：BeanFactory需要手动注册，而Applicationcontext则是自动注册。
 
 ApplicationContext扩展的功能：
