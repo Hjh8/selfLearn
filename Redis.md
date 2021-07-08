@@ -70,6 +70,34 @@ Redis会**周期性**的把更新的数据写入磁盘或者把修改操作写�
 
 
 
+基本操作
+---
+
+关于数据库的一些操作：
+
+- select dbid：命令切换数据库。redis默认有16个数据库，类似数组下标从0开始，初始默认使用0号库
+  - `select 8` 使用8号数据库
+- dbsize：查看当前数据库的key的数量
+- flushdb：清空当前库
+- flushall：清空全部库
+
+***
+
+关于key的一些操作：
+
+- keys pattern：查找所有符合给定模式 pattern，相当于正则
+  - `keys *` 匹配数据库中所有 key。
+  - `keys h[ae]llo` 匹配hallo或hello的key
+- exists key：判断某个key是否存在。存在返回1，否则返回0
+- type key：查看key是什么类型
+- del key：删除指定的key的数据
+- unlink key：非阻塞删除指定的key的数据
+  - 先将keys从keyspace元数据中删除，真正的删除在后续的异步操作。
+- expire key t：为给定的key设置过期时间，单位为秒
+- ttl key：查看还有多少秒过期。-1表示永不过期，-2表示已过期
+
+
+
 常用五大数据类型
 ---
 
