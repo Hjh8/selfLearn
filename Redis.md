@@ -367,7 +367,57 @@ loglevel notice # 日志级别
 databases 16 # 数据库的数量 
 ```
 
+<p style="text-align:center;">### SNAPSHOTTING ###</p>
 
+快照相关设置：通常进行持久化设置
+
+```cmd
+save 900 1 # 900s内，如果至少一个key进行了修改，则进行持久化操作
+save 300 10 # 300s内，如果至少十个key进行了修改，则进行持久化操作
+save 60 10000 # 60s内，如果至少10000个key进行了修改，则进行持久化操作
+stop-write-no-bgsave-error yes # 持久化操作失败，是否继续工作
+rdbcompression yes # 是否压缩rdb文件
+dir ./ # rdb文件保存的目录
+```
+
+
+
+<p style="text-align:center;">### SECURITY ###</p>
+
+安全设置
+
+设置密码
+
+1. 手动修改配置文件：添加`requirepass 密码`
+
+   ![image-20210709225421211](Redis.assets/image-20210709225421211.png)
+
+2. 命令的方式
+
+   ```cmd
+   config set requirepass 123456
+   config rewrite # 写入配置文件中，不然重启就没了
+   ```
+
+当需要输入密码的时候：`auth 密码` 
+
+![image-20210709225710831](Redis.assets/image-20210709225710831.png)
+
+<p style="text-align:center;">### LIMIT ###</p>
+
+限制设置
+
+```cmd
+maxclients 10000 # 设置redis同时可以与多少个客户端进行连接
+maxmemory <bytes> # 设置redis可以使用的最大内存量
+maxmemory-policy noeviction # 内存满了之后的执行策略
+    # volatile-lru：使用LRU算法移除key，只对设置了过期时间的键；（最近最少使用）
+    # allkeys-lru：在所有集合key中，使用LRU算法移除key
+    # volatile-random：在过期集合中移除随机的key，只对设置了过期时间的键
+    # allkeys-random：在所有集合key中，移除随机的key
+    # volatile-ttl：移除那些TTL值最小的key，即那些最近要过期的key
+    # noeviction：不进行移除。针对写操作，只是返回错误信息
+```
 
 
 
