@@ -182,6 +182,7 @@ hash是一个string类型的field和value的映射表，hash特别适合用于**
 hash类型对应的数据结构是两种：ziplist，hashtable。当field-value长度较短且个数较少时，使用ziplist，否则使用hashtable。
 
 - `hset k field1 value1 field2 value2 ... `：批量设置field-value
+  - k通常表示一个对象，可以结合id使用，如`hset user:12 name hjh age 10` 
 - `hget k field`：从哈希表k的field取出value 
 - `hexists k field`：查看哈希表 k 中，给定域 field 是否存在。 
 - `hkeys k`：列出该哈希表的所有field
@@ -229,6 +230,73 @@ zset底层使用了两个数据结构
 ---
 
 ### Bitmaps
+
+Bitmaps这个“数据类型”可以实现对于 **位** 的操作：
+
+Bitmaps本身不是一种数据类型， 实际上它就是字符串，它可以对字符串的位进行操作。
+
+可以把Bitmaps想象成一个以位为单位的数组， 数组的每个单元只能存储0和1， 数组的下标在Bitmaps中叫做**偏移量**。
+
+![image-20210709165605401](Redis.assets/image-20210709165605401.png)
+
+Bitmaps常用于**信息状态的统计**，比如用户每天签到的记录，用户访问量等。
+
+- `setbit key offset value`：将offset的位置设为value
+
+  - `setbit users 9 1` 
+  - 在第一次初始化Bitmaps时，如果偏移量非常大，那么整个初始化过程执行会比较慢，可能会造成Redis阻塞。默认值为0
+
+- `getbit key offset`：获取offset位置的值
+
+  - `getbit user 9`
+
+- `bitcount key [start] [end]`：计算指定范围内的offset位置值的和。
+
+  【注意】start跟end表示的是下标，并不是位。
+
+  offset【01000001 01000000  00000000 00100001】对应下标【0，1，2，3】
+
+  `bitcount k 0 1`：计算的是 01000001 01000000，返回3
+
+- `bitop and(or/not/xor) destKey key1 [key2...]`：对指定key按位进行交、并、非、异或操作并将结果保存在destkey中。
+
+  - 比如2020-11-03 日访问网站的userid=0,1,4,9。
+
+    ```cmd
+    setbit users:20201103 0 1
+    setbit users:20201103 1 1
+    setbit users:20201103 4 1
+    setbit users:20201103 9 1
+    ```
+
+    2020-11-04 日访问网站的userid=1,2,5,9。
+
+    ```cmd
+    setbit users:20201104 1 1
+    setbit users:20201104 2 1
+    setbit users:20201104 5 1
+    setbit users:20201104 9 1
+    ```
+
+    然后计算出两天都访问过网站的用户数量
+
+    ```cmd
+    bitop and users:0403 users:20201103 users:20201104
+    ```
+
+***
+
+Bitmaps与set对比
+
+假设网站有1亿用户， 每天独立访问的用户有5千万， 如果每天用集合类型和Bitmaps分别存储活跃用户可以得到表：
+
+![image-20210709172052851](Redis.assets/image-20210709172052851.png)
+
+可以看出bitmaps所占用的内存小很多。但bitmaps需要把每个用户都存储下来。所以当该网站每天访问的用户很少时，Bitmaps就有点不合时宜了
+
+
+
+### HyperLogLog
 
 
 
