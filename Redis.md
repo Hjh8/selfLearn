@@ -343,11 +343,49 @@ Redis 3.2 中增加了对GEO类型的支持。GEO，Geographic，地理信息的
 
 
 
- 
 
 
 
 
+ Jedis
+---
+
+jedis就是集成了redis的一些命令操作，封装了redis的java客户端，提供了连接池管理。
+
+java可以利用jedis连接redis，但 **前提** 要在配置文件中注释掉`bind 127.0.0.1`这行，然后 `protected-mode yes` 改成 `protected-mode no` 
+
+第一步：添加maven依赖
+
+```xml
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>3.2.0</version>
+</dependency>
+```
+
+第二步：创建Jedis对象并使用
+
+```java
+package jedis;
+
+import redis.clients.jedis.Jedis;
+
+public class demo {
+    public static void main(String[] args) {
+        Jedis jedis = new Jedis("192.168.2.102", 6379);
+        // 如果你有密码则需要加上下面这行代码，不然会报 NOAUTH Authentication required.
+        // jedis.auth("5642818");
+        String pong = jedis.ping();
+        System.out.println("连接成功："+pong);
+        jedis.close();
+    }
+}
+```
+
+之前的命令在这里都进行了封装。
+
+![image-20210709205916154](Redis.assets/image-20210709205916154.png)
 
 
 
