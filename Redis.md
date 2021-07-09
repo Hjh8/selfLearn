@@ -55,18 +55,14 @@ Redis会**周期性**的把更新的数据写入磁盘或者把修改操作写�
 
 多路复用的优势并不是对于单个连接能处理的更快，而是在于可以在单个线程/进程中处理更多的连接。系统不必创建多个进程/线程，从而大大减小了系统的开销。
 
+***
 
+应用场景
 
-### 应用场景
-
-#### 配合关系型数据库做高速缓存
-
-1. 高频次，热门访问的数据的情况下，降低数据库IO
-2. 分布式架构中，做session共享
-
-
-
-#### 多样的数据结构存储持久化数据
+1. 配合关系型数据库做高速缓存
+   - 高频次，热门访问的数据的情况下，降低数据库IO
+   - 分布式架构中，做session共享
+2. 使用结构存储持久化数据
 
 
 
@@ -333,6 +329,45 @@ Redis 3.2 中增加了对GEO类型的支持。GEO，Geographic，地理信息的
 
 配置文件
 ---
+
+<p style="text-align:center;">### Units ###</p>
+
+1. 配置大小单位，开头定义了一些基本的度量单位，只支持bytes，不支持bit
+2. 大小写不敏感
+
+![image-20210709221458712](Redis.assets/image-20210709221458712.png)
+
+<p style="text-align:center;">### INCLUDE ###</p>
+
+导入配置文件，类似于spring的import、jsp中的include。
+
+![image-20210709221823280](Redis.assets/image-20210709221823280.png)
+
+<p style="text-align:center;">### NETWORK ###</p>
+
+网络相关配置
+
+```cmd
+bind = 127.0.0.1 # 默认只接收本机的访问请求
+protected-mode yes # 保护模式，默认开启
+port 6379 # 端口号
+timeout 0 # 一个空闲的客户端维持多少秒会关闭，0表示关闭该功能，即不关闭客户端
+tcp-keepalive 300 # 每隔n秒检测一次客户端是否还活跃
+```
+
+<p style="text-align:center;">### GENERAL ###</p>
+
+通用设置
+
+```cmd
+daemonize yes # 是否是守护线程，即后台启动。默认为no
+pidfile /var/run/redis_6379.pid # 若以后台运行则需要指定一个pid文件
+loglevel notice # 日志级别
+# 指定日志记录级别，Redis总共支持四个级别：debug、verbose、notice、warning，默认为notice
+databases 16 # 数据库的数量 
+```
+
+
 
 
 
