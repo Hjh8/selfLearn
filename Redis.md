@@ -43,7 +43,7 @@ Redis介绍
 
 Redis是一个开源的key-value存储系统。它支持存储的value类型相对更多，包括string(字符串)、list(链表)、set(集合)、zset(有序集合) 和 hash(哈希类型)。
 
-这些数据类型都支持push/pop、add/remove及取交集、并集和差集等操作，而且这些操作都是**原子性**的。在此基础上，Redis支持各种不同方式的排序。为了保证效率，数据都是缓存在内存中。
+这些数据类型支持push/pop、add/remove及取交集、并集和差集等操作，而且这些操作都是**原子性**的。在此基础上，Redis支持各种不同方式的排序。为了保证效率，数据都是缓存在内存中。
 
 Redis会**周期性**的把更新的数据写入磁盘或者把修改操作写入追加的记录文件。并且在此基础上实现了master-slave**(主从)同步**
 
@@ -101,17 +101,13 @@ Redis会**周期性**的把更新的数据写入磁盘或者把修改操作写�
 五大数据类型
 ---
 
-### 字符串 String
+### 字符串 string
 
-String类型是以二进制存储的。意味着Redis的string可以包含任何数据，比如jpg图片或者序列化的对象。
+string类型是以二进制存储的。意味着Redis的string可以包含任何数据，比如jpg图片或者序列化的对象。
 
-String的数据结构为简单动态字符串，内部结构实现上类似于Java的ArrayList，采用预分配冗余空间的方式来减少内存的频繁分配。
+string的数据结构为简单动态字符串，内部结构的实现类似于Java的ArrayList，采用预分配冗余空间的方式来减少内存的频繁分配。
 
 当字符串长度小于1M时，扩容的大小是原来的一倍；如果超过1M，每次扩容只会多扩大1M的空间。==需要注意的是字符串最大长度为512M==。
-
-***
-
-常用命令：
 
 - `set k v [ex]`：添加键值对，会替换之前的值。ex表示过期时间
 - `mset k1 v1 k2 v2 k3 v3 .....`：同时设置一个或多个 key-value对
@@ -138,7 +134,7 @@ Redis 列表是简单的**字符串列表**。你可以在列表的头部（左�
 
 它的底层类似于双向链表，对两端的操作性能很高，通过索引下标的操作中间的节点性能会较差。
 
-首先在列表元素较少的情况下它会将所有的元素紧挨着一起存储，使用一块连续的内存存储，这个结构是ziplist，即是压缩列表。
+首先在列表元素较少的情况下它会将所有的元素紧挨着一起存储，使用一块连续的内存空间，这个结构是ziplist，即是压缩列表。
 
 当数据量比较多的时候会改成quicklist，如下图所示：
 
@@ -146,15 +142,13 @@ Redis 列表是简单的**字符串列表**。你可以在列表的头部（左�
 
 因为普通的链表需要的附加指针空间太大，会比较浪费空间。比如这个列表里存的只是int类型的数据，结构上还需要两个额外的指针prev和next。
 
-***
-
 - `lpush/rpush k v1 v2 v3 …`：从左边/右边插入一个或多个值。
 - `lpop/rpop k`：从左边/右边吐出一个值。如果所有的值都被pop掉，则k也会消失。
 - `rpoplpush k1 k2`：从 k1 列表右边吐出一个值，插到 k2 列表左边。
-- `lrange k s e`：按照索引下标获得元素（左闭右闭）
+- `lrange k s e`：获得下标为**[s, e]**元素（左闭右闭）
   - 若e为负数，表示从右边开始取，此时下标从1开始。
   - `lrange k1 0 -1` 取出左边第一个到右边第一个的元素
-- `lindex k index`：按照索引下标获得元素(从左到右)
+- `lindex k index`：获取下标为index的元素(从左到右)
 - `llen k`：获得列表长度 
 - `linsert k before/after v1 v2`：在 v1 的前面/后面插入 v2
 - `lrem k n v`：从左边开始删除 n 个 v
@@ -163,6 +157,81 @@ Redis 列表是简单的**字符串列表**。你可以在列表的头部（左�
 
 
 ### 集合 set
+
+set是string类型的集合，具有自动排序去重功能，当你需要存储一个列表数据，又不希望出现重复数据时，set是一个很好的选择，并且set可以判断某个成员是否在该set里，这个是list所不能提供的。
+
+它底层其实是一个value为null的hash表，所以添加，删除，查找的复杂度都是O(1)。
+
+- `sadd k v1 v2 .....`：将一个或多个元素加入到集合 key 中，已经存在的元素将被忽略
+- `smembers k`：取出该集合的所有值。
+- `sismember k v`：判断 k 集合中是否含有 v 值；有则返回1，没有则返回0。
+- `scard k`：返回该集合的元素个数。
+- `srem k v1 v2 ....`：删除 k 集合中的元素。
+- `spop k`：**随机**从该集合中吐出一个值。
+- `smove src dst value`：把集合src中一个值移动到集合dst中
+- `sinter k1 k2`：返回两个集合的**交集**元素。
+- `sunion k1 k2`：返回两个集合的**并集**元素。
+- `sdiff k1 k2`：返回两个集合的**差集**元素。(k1中存在的，不包含k2的)
+
+
+
+### 哈希 hash
+
+hash是一个string类型的field和value的映射表，hash特别适合用于**存储对象**，类似Java里面的Map<String,Object>。
+
+hash类型对应的数据结构是两种：ziplist，hashtable。当field-value长度较短且个数较少时，使用ziplist，否则使用hashtable。
+
+- `hset k field1 value1 field2 value2 ... `：批量设置field-value
+- `hget k field`：从哈希表k的field取出value 
+- `hexists k field`：查看哈希表 k 中，给定域 field 是否存在。 
+- `hkeys k`：列出该哈希表的所有field
+- `hvals k`：列出该哈希表的所有value
+- `hincrby k field increment`：为哈希表 k 中的 field 的 value 加上increment
+- `hsetnx k field value`：当field不存在时，设置哈希表 k 中的 field-value
+
+
+
+### 有序集合 zset
+
+有序集合zset与普通集合set非常相似，是一个没有重复元素的字符串集合。
+
+不同之处是有序集合的每个成员member都关联了一个评分score, zset按照score进行排序（score可以重复） 。因为元素是有序的, 所以你也可以很快的根据评分score或者次序position来获取一个范围的元素。
+
+zset类似于TreeMap，内部成员member会按照评分score进行排序，可以得到每个member的名次，还可以通过score的范围来获取member。
+
+- `zadd k score1 mem1 score2 mem2 …`：将一个或多个 member 元素及其 score 值加入到有序集 k 当中。
+- `zrange k s e [WITHSCORES]`：返回有序集 k 中，**下标**在[s, e]之间的member。带WITHSCORES，则分数一起返回。
+- `zrangebyscore k min max [withscores] [limit offset count]`：返回有序集 k 中，所有 score 值介于 [min, max] 的成员。有序集成员按 score 值**从小到大**递增。 
+  - 可通过`(`指定开区间：`ZRANGEBYSCORE zset (1 5` 返回1 < score <= 5 的成员
+- `zrevrangebyscore key maxmin [withscores] [limit offset count]`：同上，改为从大到小排列。 
+- `zincrby k increment member`：为member的score加上increment
+- `zrem k member`：删除该集合的member 
+- `zcount k min max`：统计该集合，[min, max]区间内的元素个数 
+- `zrank k member`：返回member在集合中的排名，从0开始
+
+***
+
+zset底层使用了两个数据结构
+
+1. ziplist：第一个节点保存 member，第二个节点保存 score。ziplist 内的集合元素按 score 从小到大排序，其实质是一个双向链表。
+
+   ![image-20210709093008848](Redis.assets/image-20210709093008848.png)
+
+2. skiplist：在member个数大于等于128时，使用skiplist存储数据。由hashmap跟跳跃表实现。hashmap保存着从 member 到 score 的映射，跳跃表按 score 从小到大保存所有集合元素。这两种数据结构会**通过指针来共享相同元素的成员和分值**，所以不会产生重复成员和分值，造成内存的浪费
+
+跳跃表结构：
+
+![image-20210709093803448](Redis.assets/image-20210709093803448.png)
+
+
+
+
+
+
+
+
+
+
 
 
 
