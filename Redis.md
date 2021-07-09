@@ -373,9 +373,10 @@ import redis.clients.jedis.Jedis;
 
 public class demo {
     public static void main(String[] args) {
+        // new Jedis(IP地址, 端口号);
         Jedis jedis = new Jedis("192.168.2.102", 6379);
         // 如果你有密码则需要加上下面这行代码，不然会报 NOAUTH Authentication required.
-        // jedis.auth("5642818");
+        // jedis.auth("密码");
         String pong = jedis.ping();
         System.out.println("连接成功："+pong);
         jedis.close();
