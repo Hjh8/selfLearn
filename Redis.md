@@ -298,7 +298,34 @@ Bitmaps与set对比
 
 ### HyperLogLog
 
+HyperLogLog 是用来做基数统计的算法，其优点是：在输入元素的数量或者体积非常非常大时，计算基数所需的空间总是固定的、并且是很小的。
 
+每个 HyperLogLog 键只需要花费 12 KB 内存，就可以计算接近 2^64 个不同元素的基数。这和计算基数时，元素越多耗费内存就越多的集合形成鲜明对比。需要注意的是，这里计算的基数是有误差的，不过误差在可以接受的范围内。
+
+> 何为基数？
+>
+> 比如数据集 {1, 3, 5, 7, 5, 7, 8}， 那么这个数据集的基数集为 {1, 3, 5 ,7, 8}, 基数(不重复元素)为5。
+
+但是，因为 HyperLogLog 只会根据输入元素来计算基数，而**不会储存输入元素本身**，所以 HyperLogLog 不能像集合那样返回输入的各个元素。
+
+- `pfadd key element1 [element2 ...]`：添加数据
+- `pfcount key1 [key2 ...]`：统计基数
+- `pfmerge destkey key1 [key2 ...]`：将多个HyperLogLog的基数合并到destkey中
+
+![image-20210709174405306](Redis.assets/image-20210709174405306.png)
+
+![image-20210709174411766](Redis.assets/image-20210709174411766.png)
+
+
+
+### Geospatial
+
+Redis 3.2 中增加了对GEO类型的支持。GEO，Geographic，地理信息的缩写。该类型，就是元素的2维坐标，在地图上就是经纬度。redis基于该类型，提供了经纬度设置，查询，范围查询，距离查询，经纬度Hash等常见操作。
+
+- `geoadd key 经度1 纬度1 member1 [经度2 纬度2 member2 ...]`：设置元素的坐标点
+- `geopos key member1 [member2 ...]`：获取元素的坐标点
+- `geodist key member1 member2 [m|km|ft|mi]`：计算坐标点的直线距离。可指定单位：m米（默认值）、km千米 、mi英里 、ft英尺。
+- `georadius key 经度 纬度 r m|km|ft|mi [withcoord] [withdist] [count count]`：以给定的经纬度为中心，找出 半径r 内的元素。
 
 
 
