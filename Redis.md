@@ -867,7 +867,9 @@ AOF持久化策略（同步机制）需要在配置文件中进行设置：`appe
 
 主机数据更新后根据配置和策略自动同步到从机的 master/slaver机制，**Master**以**写**为主，**Slave**以**读**为主。
 
-主从刚刚连接的时候，进行全量同步；全量同步结束后，进行增量同步。当然，如果有需要，slave 在任何时候都可以发起全量同步。redis 策略是，无论如何，首先会尝试进行增量同步，如不成功，要求从机进行全量同步。
+主从刚刚连接的时候，进行全量同步；全量同步结束后，进行增量同步。当然，如果有需要，slave 在任何时候都可以发起全量同步。redis 策略是首先会尝试进行增量同步，如不成功，要求从机进行全量同步。
+
+
 
 好处：
 
@@ -883,13 +885,79 @@ AOF持久化策略（同步机制）需要在配置文件中进行设置：`appe
 1. Slave启动成功连接到master后会发送一个sync命令
 2. Master接到命令开始执行BGSAVE命令生成RDB文件并使用缓冲区记录此后执行的所有写命令，BGSAVE命令执行完之后，master将快照文件传送到slave。slave服务在接收到数据库文件后，将其存盘并加载到内存中。==此过程称为全量同步==。
 3. **增量同步**：全量同步之后，Master将新的所有收集到的修改命令依次传给slave，完成增量同步。
-4. 如果有slave断线，只要其重启完成之后，就会发送sync请求和主机全量同步。
+4. 如果有slave断线，重启之后不会自动连上matser，此时自己为master。手动变成从机之后，会发送sync请求和主机全量同步。
 
 
 
+从机也可以有自己的从机，但自己断线之后，自己的从机们都无法接收到主机的数据。假设从机2归属于从机1，此时如果从机1断线了，那么从机2将无法获取到主机的数据。
+
+![preview](Redis.assets/v2-4ee05a9055425a213ac4c93d37057e80_r.jpg)
 
 
 
+### QA
+
+```
+Q：从机可以进行写操作？
+A：一般不可以。但可以通过配置文件让从服务器支持写操作。
+```
+
+```
+Q：主机shutdown后情况如何？从机是上位还是原地待命？
+A：主机shutdown后，从机不会做任何事情，当主机重新连接之后一切照常。在主机断线的时候，从机可以使用slaveof no one命令成为主机。
+```
+
+```
+Q：主机会将数据保存在rdb文件中然后发送给slave服务器，但是如果主机上的磁盘空间有限怎么办呢？
+A：master直接开启一个socket将rdb文件发送给slave服务器。
+```
+
+
+
+### 搭建主从复制
+
+1. Appendonly 关掉或者在每个配置文件中修改 appendfilename 
+
+2. 新建多个配置文件（每个配置文件相当于一台机器），每次文件编写以下配置。
+
+   如redis6379.conf
+
+   ```cmd
+   include /myredis/redis.conf # 固定
+   pidfile /var/run/redis_6379.pid # redis_XXX修改成跟配置文件名一样
+   port 6379 # 每个配置文件的端口号
+   dbfilename dump6379.rdb  # dumpXXX.rdb修改成跟配置文件名一样
+   ```
+
+   redis6380.conf
+
+   ```cmd
+   include /myredis/redis.conf # 固定
+   pidfile /var/run/redis_6380.pid # redis_XXX修改成跟配置文件名一样
+   port 6380 # 每个配置文件的端口号
+   dbfilename dump6380.rdb  # dumpXXX.rdb修改成跟配置文件名一样
+   ```
+
+   redis6381.conf
+
+   ```cmd
+   include /myredis/redis.conf # 固定
+   pidfile /var/run/redis_6381.pid # redis_XXX修改成跟配置文件名一样
+   port 6381 # 每个配置文件的端口号
+   dbfilename dump6381.rdb  # dumpXXX.rdb修改成跟配置文件名一样
+   ```
+
+3. 启动三台redis服务器
+
+   ![image-20210710203241308](Redis.assets/image-20210710203241308.png)
+
+   可以使用`info replication`命令打印主从复制的相关信息
+
+4. 配置从机：`slaveof ip port` 
+
+   在6380 和 6381上执行: `slaveof 127.0.0.1 6379` 此时这两台主机变成6379的从机
+
+5. 搭建完成。
 
 
 
