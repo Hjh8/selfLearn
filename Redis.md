@@ -331,20 +331,17 @@ Redis 3.2 中增加了对GEO类型的支持。GEO，Geographic，地理信息的
 ---
 
 <p style="text-align:center;">### Units ###</p>
-
 1. 配置大小单位，开头定义了一些基本的度量单位，只支持bytes，不支持bit
 2. 大小写不敏感
 
 ![image-20210709221458712](Redis.assets/image-20210709221458712.png)
 
 <p style="text-align:center;">### INCLUDE ###</p>
-
 导入配置文件，类似于spring的import、jsp中的include。
 
 ![image-20210709221823280](Redis.assets/image-20210709221823280.png)
 
 <p style="text-align:center;">### NETWORK ###</p>
-
 网络相关配置
 
 ```cmd
@@ -356,7 +353,6 @@ tcp-keepalive 300 # 每隔n秒检测一次客户端是否还活跃
 ```
 
 <p style="text-align:center;">### GENERAL ###</p>
-
 通用设置
 
 ```cmd
@@ -368,7 +364,6 @@ databases 16 # 数据库的数量
 ```
 
 <p style="text-align:center;">### SNAPSHOTTING ###</p>
-
 快照相关设置：通常进行持久化设置
 
 ```cmd
@@ -383,7 +378,6 @@ dir ./ # rdb文件保存的目录
 
 
 <p style="text-align:center;">### SECURITY ###</p>
-
 安全设置
 
 设置密码
@@ -404,7 +398,6 @@ dir ./ # rdb文件保存的目录
 ![image-20210709225710831](Redis.assets/image-20210709225710831.png)
 
 <p style="text-align:center;">### LIMIT ###</p>
-
 限制设置
 
 ```cmd
@@ -590,11 +583,157 @@ public class demo {
 
 
 
+事务和锁机制
+---
+
+Redis事务是一个单独的隔离操作：事务中的所有命令都会按顺序地执行。事务在执行的过程中，不会被其他命令请求所打断。需要注意的是，redis的事务不保证原子性，事务中如果有一条命令执行失败，其后的命令仍然会被执行，不会回滚。
+
+**Redis事务相关命令**：
+
+- **MULTI **：开启事务，redis会将后续的命令逐个放入队列中，然后使用EXEC命令来原子化的执行这些命令。
+- **EXEC**：执行事务中的所有操作命令。
+- **DISCARD**：取消事务，放弃执行事务块中的所有命令。
+- **WATCH**：监视一个或多个key，如果事务在执行前，这个key(或多个key)被其他命令修改，则事务被中断，**不会执行事务中的任何命令**。是一个乐观锁。
+- **UNWATCH**：取消WATCH对所有key的监视。
+
+![image-20210710095935422](Redis.assets/image-20210710095935422.png)
+
+MULTI 和 EXEC 的使用：
+
+```cmd
+127.0.0.1:6379> MULTI
+OK
+127.0.0.1:6379> set k1 11
+QUEUED
+127.0.0.1:6379> set k2 22
+QUEUED
+127.0.0.1:6379> EXEC
+1) OK
+2) OK
+127.0.0.1:6379> get k1
+"11"
+127.0.0.1:6379> get k2
+"22"
+127.0.0.1:6379>
+```
+
+WATCH的使用：
+
+```cmd
+127.0.0.1:6379> set k1 v1
+OK
+127.0.0.1:6379> set k2 v2
+OK
+127.0.0.1:6379> WATCH k1
+OK
+127.0.0.1:6379> set k1 11
+OK
+127.0.0.1:6379> MULTI
+OK
+127.0.0.1:6379> set k1 12
+QUEUED
+127.0.0.1:6379> set k2 22
+QUEUED
+127.0.0.1:6379> EXEC
+(nil)
+127.0.0.1:6379> get k1
+"11"
+127.0.0.1:6379> get k2
+"v2"
+127.0.0.1:6379>
+```
+
+UNWATCH的使用：
+
+```cmd
+127.0.0.1:6379> set k1 v1
+OK
+127.0.0.1:6379> set k2 v2
+OK
+127.0.0.1:6379> WATCH k1
+OK
+127.0.0.1:6379> set k1 11
+OK
+127.0.0.1:6379> UNWATCH
+OK
+127.0.0.1:6379> MULTI
+OK
+127.0.0.1:6379> set k1 12
+QUEUED
+127.0.0.1:6379> set k2 22
+QUEUED
+127.0.0.1:6379> exec
+1) OK
+2) OK
+127.0.0.1:6379> get k1
+"12"
+127.0.0.1:6379> get k2
+"22"
+127.0.0.1:6379>
+```
 
 
 
+### 事务失败处理
+
+事务失败分两种情况：
+
+1. 语法错误（编译器错误），在开启事务后，某个命令出现了语法错误，最终导致事务提交失败，此时队列中的所有命令都会被取消。
+
+   ![image-20210710100431961](Redis.assets/image-20210710100431961.png)
+
+   ```cmd
+   127.0.0.1:6379> set k1 v1
+   OK
+   127.0.0.1:6379> set k2 v2
+   OK
+   127.0.0.1:6379> MULTI
+   OK
+   127.0.0.1:6379> set k1 11
+   QUEUED
+   127.0.0.1:6379> sets k2 22
+   (error) ERR unknown command `sets`, with args beginning with: `k2`, `22`, 
+   127.0.0.1:6379> exec
+   (error) EXECABORT Transaction discarded because of previous errors.
+   127.0.0.1:6379> get k1
+   "v1"
+   127.0.0.1:6379> get k2
+   "v2"
+   127.0.0.1:6379>
+   ```
+
+2. 类型错误（运行时错误），如果执行阶段某个命令报出了错误，则只有报错的命令不会被执行，而其他的命令都会正常执行，不会回滚。
+
+   ![image-20210710100703833](image-20210710100703833.png)
+
+   ```cmd
+   127.0.0.1:6379> set k1 v1
+   OK
+   127.0.0.1:6379> set k2 v2
+   OK
+   127.0.0.1:6379> MULTI
+   OK
+   127.0.0.1:6379> set k1 v11
+   QUEUED
+   127.0.0.1:6379> incr k1
+   QUEUED
+   127.0.0.1:6379> set k2 v22
+   QUEUED
+   127.0.0.1:6379> exec
+   1) OK
+   2) (error) ERR value is not a integer or out of range
+   3) OK
+   127.0.0.1:6379> get k1
+   "v11"
+   127.0.0.1:6379> get k2
+   "v22"
+   127.0.0.1:6379>
+   ```
 
 
+
+持久化
+---
 
 
 
