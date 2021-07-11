@@ -1065,7 +1065,8 @@ Redis 集群实现了对Redis的水平扩容，即启动N个redis节点，将整
 解决方案：
 
 1. **预先设置热门数据**：在redis高峰访问之前，把一些热门数据提前存入到redis里面，加大这些热门数据key的时长。
-2. **使用锁**：缓存失效后重新获取缓存时进行上锁。
+2. **过期前先去获取数据**：在热门数据过期前，先去数据库中获取数据放入缓存中。
+3. **使用锁**：缓存失效后重新获取缓存时进行上锁。
 
 
 
@@ -1106,12 +1107,9 @@ Java中的锁，只能保证在同一个JVM进程内中执行。如果在分布�
 使用：
 
 ```java
-public void testLock(){
+public void testLock() {
     String uuid = UUID.randomUUID().toString();
-    // SET命令的参数 
-    SetParams params = SetParams.setParams().nx().px(3000);
-    String lock = jedis.set("lock_key", uuid, params);
-    String uuid = UUID.randomUUID().toString();
+    // set命令的参数 
     SetParams params = SetParams.setParams().nx().px(3000);
     String lock = jedis.set("lock_key", uuid, params);
     if("OK".equals(lock)){
