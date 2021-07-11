@@ -210,7 +210,7 @@ zset底层使用了两个数据结构
 
    ![image-20210709093008848](Redis.assets/image-20210709093008848.png)
 
-2. skiplist：在member个数大于等于128时，使用skiplist存储数据。由hashmap跟跳跃表实现。hashmap保存着从 member 到 score 的映射，跳跃表按 score 从小到大保存所有集合元素。这两种数据结构会**通过指针来共享相同元素的成员和分值**，所以不会产生重复成员和分值，造成内存的浪费
+2. skiplist：在member个数大于等于128时，使用skiplist存储数据。由hashmap跟跳跃表实现。hashmap保存着从 member 到 score 的映射，跳跃表按 score 从小到大保存所有集合元素。这两种数据结构会**通过指针来共享相同元素的成员和分值**，所以不会产生重复成员，造成内存的浪费
 
 跳跃表结构：
 
