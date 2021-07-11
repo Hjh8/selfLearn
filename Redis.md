@@ -712,7 +712,7 @@ QUEUED
 
 2. 类型错误（运行时错误），如果执行阶段某个命令报出了错误，则只有报错的命令不会被执行，而其他的命令都会正常执行，不会回滚。
 
-   ![image-20210710100703833](image-20210710100703833.png)
+   ![image-20210710100703833](Redis.assets/image-20210710100703833.png)
 
    ```cmd
    127.0.0.1:6379> set k1 v1
@@ -1084,6 +1084,48 @@ Redis 集群实现了对Redis的水平扩容，即启动N个redis节点，将整
 2. **将缓存失效时间分散开**：在原有的失效时间基础上增加一个随机失效时间，比如1-5分钟随机，这样每一个缓存的过期时间的重复率就会降低，就很难引发集体失效的事件。
 
 
+
+分布式锁
+---
+
+Java中的锁，只能保证在同一个JVM进程内中执行。如果在分布式集群环境下呢，不同的主机要怎么知道这把锁？
+
+实现分布式锁的方式有很多，这里介绍redis的方式实现分布式锁。
+
+***
+
+其实redis实现分布式锁很简单，就是采用`set` 命令生成一把锁，然后我们利用这把锁进行操作而已。
+
+生成锁：`SET lock_key random_value nx px t` 
+
+- lock_key：锁的名字
+- random_value：锁的值。最好弄成随机的，例如uuid，不然会造成锁的误删。
+- nx：相当于setnx。只在键不存在时，才对键进行设置操作。
+- px t：设置过期时间，t的单位是**毫秒**。
+
+为什么要设置过期时间？防止锁一直不释放。
+
+问题来了，为什么不直接使用setnx的方式？因为setnx跟expire t是两个操作，并不是一个原子操作，多线程下会出错。
+
+使用：
+
+```java
+public void testLock(){
+    String uuid = UUID.randomUUID().toString();
+    // SET命令的参数 
+    SetParams params = SetParams.setParams().nx().px(3000);
+    String lock = jedis.set("lock_key", uuid, params);
+    String uuid = UUID.randomUUID().toString();
+    SetParams params = SetParams.setParams().nx().px(3000);
+    String lock = jedis.set("lock_key", uuid, params);
+    if("OK".equals(lock)){
+        System.out.println("获取到了锁，可以进行操作");
+    }
+    else{
+        System.out.println("目前有锁，请等待");
+    }
+}
+```
 
 
 
