@@ -188,16 +188,16 @@ hash类型对应的数据结构是两种：ziplist，hashtable。当field-value�
 
 有序集合zset与普通集合set非常相似，是一个没有重复元素的字符串集合。
 
-不同之处是有序集合的每个成员member都关联了一个评分score, zset按照score进行排序（score可以重复） 。因为元素是有序的, 所以你也可以很快的根据评分score或者次序position来获取一个范围的元素。
+不同之处是有序集合的每个成员member都关联了一个评分score, zset按照score进行排序（score可以重复） 。因为元素是有序的，所以你也可以很快的根据评分score或者排名range来获取一个范围的元素。
 
 zset类似于TreeMap，内部成员member会按照评分score进行排序，可以得到每个member的名次，还可以通过score的范围来获取member。
 
 - `zadd k score1 mem1 score2 mem2 …`：将一个或多个 member 元素及其 score 值加入到有序集 k 当中。
-- `zrange k s e [WITHSCORES]`：返回有序集 k 中，**下标**在[s, e]之间的member。带WITHSCORES，则分数一起返回。
-- `zrangebyscore k min max [withscores] [limit offset count]`：返回有序集 k 中，所有 score 值介于 [min, max] 的成员。有序集成员按 score 值**从小到大**递增。 
-  - 可通过`(`指定开区间：`ZRANGEBYSCORE zset (1 5` 返回1 < score <= 5 的成员
+- `zrange k s e [WITHSCORES]`：返回有序集 k 中，**排名**在[s, e]之间的member。带WITHSCORES，则分数一起返回。
+- `zrangebyscore k min max [withscores] [limit offset count]`：返回有序集 k 中，所有 score 值介于 [min, max] 的成员。有序集成员按 **score** 值递增。 
+  - 可通过`(`指定开区间：`zrangebyscore k (1 5` 返回k中的1 < score <= 5 的成员
 - `zrevrangebyscore key maxmin [withscores] [limit offset count]`：同上，改为从大到小排列。 
-- `zincrby k increment member`：为member的score加上increment
+- `zincrby k n member`：为member的score加上n
 - `zrem k member`：删除该集合的member 
 - `zcount k min max`：统计该集合，[min, max]区间内的元素个数 
 - `zrank k member`：返回member在集合中的排名，从0开始
