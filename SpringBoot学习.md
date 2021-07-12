@@ -1143,34 +1143,33 @@ spring:
 
 ## 6. 自定义配置类
 
-#### 配置Servlet ServletRegistrationBean
+如果我们要修改自动配置类的功能的时候可以创建自定义配置类，然后把它放到bean容器中，步骤如下：
 
-1. 创建servlet
+1. 在主启动类的相同目录下创建`config` 目录
+2. 创建自定义配置类，重写要修改配置类的关键方法
+3. 在该方法上加`@bean` 注解
 
-2. 在自定义类中实现如下代码
-
-   ```java
-   @Bean
-   public ServletRegistrationBean servletRegistrationBean(){
-       ServletRegistrationBean registration = new ServletRegistrationBean(new MyServlet(), "/访问路径");
-       return registration;
-   }
-   ```
-
-
+***
 
 #### 配置过滤器 FilterRegistrationBean
 
 1. 创建Filter
 
-2. 在自定义了中实现如下代码
+2. 在自定义类中实现如下代码
 
    ```java
-   @Bean
-   public FilterRegistrationBean filterRegistrationBeanster(){
-       FilterRegistrationBean registration = FilterRegistrationBean(new MyFilter());
-       registration.addUrlPatterns("/*");
-       return registration;
+   import org.springframework.boot.web.servlet.FilterRegistrationBean;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   
+   @Configuration
+   public class MyConfig {
+       @Bean
+       public FilterRegistrationBean filterRegistrationBeanster(){
+           FilterRegistrationBean registration = FilterRegistrationBean(new MyFilter());
+           registration.addUrlPatterns("/*");
+           return registration;
+       }
    }
    ```
 
