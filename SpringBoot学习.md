@@ -168,11 +168,15 @@ com
 
 
 
-#### 自动配置 autoconfiguration
+#### 自动配置
 
-springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。但需要我们将`@EnableAutoConfiguration`或`@SpringBootApplication`注释添加到一个`@Configuration`类中来选择自动配置。（在案例中我们是使用后者注解）
+springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。
 
-springboot会将用到的所有autoconfiguration输出到一个总的配置文件中。
+springboot会加载`@EnableAutoConfiguration` 下的配置，而`@SpringBootApplication` 继承了此注解，所以 启动的时候会扫描启动类下的配置。
+
+springboot所有自动配置类都是在启动的时候扫描并加载，扫描路径是 `WEB-INF/spring.factorites`，所有的自动配置类都在这里。只有符合`@ConditionalOnXxx` 条件的才会被加载。然后springboot会将加载的类放入到IOC容器中，形成一个个的bean对象。
+
+springboot会将所有用到的自动配置类输出到一个总的配置文件中。
 
 
 
@@ -2102,12 +2106,12 @@ AutoGenerator 是 MyBatis-Plus 的代码生成器，通过 AutoGenerator 可以�
   
   }
   ```
-  
+
   结果如下：
-  
+
   ![image-20210108095501593](SpringBoot学习.assets/image-20210108095501593.png)
-  
+
   ![image-20210108095535416](SpringBoot学习.assets/image-20210108095535416.png)
-  
+
   
 
