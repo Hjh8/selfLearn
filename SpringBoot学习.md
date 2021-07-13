@@ -1888,11 +1888,10 @@ MP实现逻辑删除步骤：
       return userMapperPlus.deleteById(1L);
    }
    ```
-```
-   
+
 ![image-20210107205031217](SpringBoot学习.assets/image-20210107205031217.png)
-   
-   看执行的sql，**它并不是直接的执行delete语句，而是执行update将deleted字段设置为1** 
+
+看执行的sql，**它并不是直接的执行delete语句，而是执行update将deleted字段设置为1**。
 
 
 
@@ -1906,7 +1905,7 @@ MP只是帮我们封装了一些简单的CRUD，而对于复杂一点的我们�
 
 **简单使用** 
 
-​```java
+```java
 @RequestMapping("/wrapper")
 public Person wrapper(){
     QueryWrapper<Person> wrapper = new QueryWrapper<>();
@@ -1916,6 +1915,8 @@ public Person wrapper(){
     return userMapperPlus.selectOne(wrapper);
 }
 ```
+
+
 
 ![image-20210107205725636](SpringBoot学习.assets/image-20210107205725636.png)
 
@@ -1949,11 +1950,9 @@ public Person wrapper(){
 
 ![image-20210107210245748](SpringBoot学习.assets/image-20210107210245748.png)
 
-
+***
 
 wrapper包括了QueryWrapper跟UpdateWrapper。执行**查询**操作就用QueryWrapper、执行**更新**就用**UpdateWrapper**。
-
-***
 
 条件构造器各API详解：
 
