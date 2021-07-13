@@ -707,6 +707,8 @@ public String doStringData(){
 
    当你发起`/user/some.do`请求，访问地址变为：`https://localhost:8080/user/some.do` ，此时的参考路径是`https://localhost:8080` 。
 
+> 加了斜杠，代表web服务器的根路径。不加斜杠，表示项目的根路径
+
 为了防止地址错误，我们可以使用**el表达式**`${pageContent.request.contextPath}`来固定项目路径，即`${pageContent.request.contextPath}/user/some.do` 。此时路径恒为`https://localhost:8080/user/some.do`。
 
 el表达式好是好，可是需要给每个路径前都加上就很麻烦，有没有一个更便捷的方式呢？使用**`base`标签**，指定参考地址，此时该html文件中的所有相对路径都以此为参考路径。
@@ -734,18 +736,6 @@ el表达式好是好，可是需要给每个路径前都加上就很麻烦，有
 
 
 
-## 2.6 \<mvc:annotation-driven>和\<context:component-scan/>的区别
-
-其实`<context:component-scan/>`标签是告诉Spring 来扫描指定包下的类，并注册被@Component，@Controller，@Service，@Repository等注解标记的组件（即，项目启动完成前这些被注解的组件就会被实例化bean放入容器上下文中）和注册`AutowiredAnnotationBeanPostProcessor`、` RequiredAnnotationBeanPostProcessor`、 `CommonAnnotationBeanPostProcessor`以及` PersistenceAnnotationBeanPostProcessor`。
-
-而`<mvc:annotation-driven/>` 是告知Spring，我们启用注解驱动，为WEB 应用服务(我们就可以使用该标签注册的几个bean的功能)。然后Spring会自动为我们注册上面说到的几个Bean到工厂中，来处理我们的请求。
-
-换句话说，`<context:component-scan/>`向容器中显式或隐式注册了一系列单个组件，但是项目要想将组件关联起来正常运转，则需要`<mvc:annotation-driven/>`注册的组件完成。
-
-比如请求一个URL，我要知道这个URL匹配哪个controller中的哪个方法。哪个Controller就需要`<context:component-scan/>`注解；如何匹配，匹配哪个方法就需要`<mvc:annotation-driven/>`注解。
-
-
-
 # 3. SSM整合开发
 
 springMVC容器是管理controller控制器对象的，Spring容器是管理service、dao、工具类对象的。我们要做的是将合适的对象交给合适的容器创建和管理。
@@ -759,11 +749,7 @@ springMVC容器是管理controller控制器对象的，Spring容器是管理serv
 3.1 Spring容器 和 SpringMVC容器
 ---
 
-斜杠
 
-注解的区别
-
-容器 
 
 
 
