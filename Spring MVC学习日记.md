@@ -193,21 +193,15 @@ springMVC请求的处理流程：
 
 2. 发起some.do请求
 
-3. `web.xml` → `<url-pattern>` → 转发给`DispatcherServlet` 
+3. `web.xml` → `<url-pattern>` → 都会转发给`DispatcherServlet` 
 
 4. `DispatcherServlet`在**doDispatch**方法中根据配置文件将请求分配给对应的`Controller` ，**Controller**再根据`@RequestMapping`找到对应方法
-
-   ```java
-   this.doDispatch(request, response){
-       调用Controller的对应方法
-   }
-   ```
 
 5. 对应的方法将ModelAndView转发到显示页面
 
 ![image-20201007202530230](Spring MVC学习日记.assets/image-20201007202530230.png)
 
-**tips：** Dispatcher也叫作前端控制器（Front controller），Controller对象叫作后端控制器（back controller）
+**tips：** Dispatcher也叫作前端控制器（Front controller），Controller对象叫作后端控制器（Back controller）
 
 
 
@@ -260,7 +254,7 @@ public class MyController {
 
 ### 获取url路径参数
 
-`@RequestParam`和`@PathVariable` 都可以获取路径参数，前者是**获取问号？后面的参数**，后者是**获取？前面的组成路径的参数**。
+`@RequestParam`和`@PathVariable` 都可以获取路径参数，前者是**获取问号？后面的参数**，后者是**获取问号？前面的组成路径的参数**。
 
 例如：`localhost:8080/springmvc/111?param1=10&param2=20` 
 
@@ -301,11 +295,7 @@ public void handle(
 }
 ```
 
-**tips**：
-
-2. BindingResult 参数绑定后的结果，如果绑定失败（如类型不匹配）则hasErrors()为真。
-
-
+**tips**：BindingResult：参数绑定后的结果，如果绑定失败（如类型不匹配）则hasErrors()为真。
 
 
 
@@ -348,7 +338,6 @@ public class MyController {
         ModelAndView mav = new ModelAndView();
         mav.addObject("name", name);
         mav.addObject("age",age);
-
         mav.setViewName("show");
         return mav;
     }
@@ -361,7 +350,9 @@ public class MyController {
 
 ![image-20201006220451756](Spring MVC学习日记.assets/image-20201006220451756.png)
 
-可以看到参数是成功接收了，只不过出现了乱码。原因是我们使用post请求，框架不会自动帮我们匹配编码，如果我们**使用get请求就不会出现乱码问题**。那如何解决这乱码问题呢？试想一下我们自己写servlet的时候如何解决乱码问题，是不是在代码的最上面加上`request.setCharacterEncoding("utf-8");` 等代码。那现在我们是用框架，没办法在接收参数前进行设置编码，所以我们应该使用**过滤器**来进行设置编码，而SpringMVC框架为我们提供了一个可以设置编码的过滤器`CharacterEncodingFilter` 
+可以看到参数是成功接收了，只不过出现了乱码。原因是我们使用post请求，框架不会自动帮我们匹配编码，如果我们**使用get请求就不会出现乱码问题**。
+
+那如何解决这乱码问题呢？试想一下我们自己写servlet的时候如何解决乱码问题，是不是在代码的最上面加上`request.setCharacterEncoding("utf-8");` 等代码。那现在我们是用框架，没办法在接收参数前进行设置编码，所以我们应该使用**过滤器**来进行设置编码，而SpringMVC框架为我们提供了一个可以设置编码的过滤器`CharacterEncodingFilter` 
 
 下面看看它的源码：
 
@@ -453,17 +444,16 @@ public class ParamObj {
 ```java
 @RequestMapping(value = "/requestParamObj.do")
 public ModelAndView doObj(ParamObj obj){
-    //创建返回值对象
+    // 创建返回值对象
     ModelAndView mav = new ModelAndView();
     mav.addObject("name", obj.getName());
     mav.addObject("age",obj.getAge());
     mav.setViewName("show");
-
     return mav;
 }
 ```
 
-当你提交之后可以看到控制台输出了这三句话，实际框架内部就是调用set方法来给属性赋值的。
+访问项目后可以看到控制台输出了这三句话，实际框架内部就是调用set方法来给属性赋值的。
 
 ![](Spring MVC学习日记.assets/image-20201007210208033.png)
 
@@ -576,6 +566,7 @@ public ModelAndView doObj(ParamObj obj){
 
 
 `<mvc:annotation-driven>` 的原理：
+---
 
 注解驱动实际是一个消息转换器接口`HttpMessageConverter`，接口里定义了java对象转为json、xml等数据格式的方法，此接口有很多的实现类，这些实现类完成了格式转换的具体操作。
 
@@ -596,7 +587,7 @@ public ModelAndView doObj(ParamObj obj){
 
 ## 2.3 produces属性解决String乱码
 
-前面说到String作为返回值时可以代表视图，也可以代表对象。那要如何区别这两者呢？、
+前面说到String作为返回值时可以代表视图，也可以代表对象。那要如何区别这两者呢？
 
 使用**@ResponseBody**注解。有@ResponseBody注解修饰的String是作为对象响应ajax请求的数据。
 
@@ -652,7 +643,7 @@ public String doStringData(){
 ```
 根据前面的知识可以知道，这个servlet的名字为default，匹配的路径是`/`，表示这个default会匹配所有的路径。
 
-再看看default上面的注解：这个默认的servlet是所有web应用程序的默认servlet，用于静态资源。它处理所有未映射到其他带有servlet映射的servlet（在这里或您自己的web.xml文件文件）。
+再看看default上面的注解：这个默认的servlet是所有web应用程序的默认servlet，用于静态资源。它处理所有未映射到其他带有servlet映射的servlet。
 
 ![image-20201010111534559](Spring MVC学习日记.assets/image-20201010111534559.png)
 
@@ -694,7 +685,7 @@ public String doStringData(){
 
 相对地址：不带协议名称的是相对地址，例如`user/some.do`、`/user/some.do` 。相对地址不能独立使用，必须有个参考地址，通过参考地址+相对地址拼接成一个绝对地址。
 
-参考地址
+参考地址：
 
 1. 访问地址不加`/` 
 
@@ -747,7 +738,9 @@ el表达式好是好，可是需要给每个路径前都加上就很麻烦，有
 
 其实`<context:component-scan/>`标签是告诉Spring 来扫描指定包下的类，并注册被@Component，@Controller，@Service，@Repository等注解标记的组件（即，项目启动完成前这些被注解的组件就会被实例化bean放入容器上下文中）和注册`AutowiredAnnotationBeanPostProcessor`、` RequiredAnnotationBeanPostProcessor`、 `CommonAnnotationBeanPostProcessor`以及` PersistenceAnnotationBeanPostProcessor`。
 
-而`<mvc:annotation-driven/>` 是告知Spring，我们启用注解驱动，为WEB 应用服务(我们就可以使用该标签注册的几个bean的功能)。然后Spring会自动为我们注册上面说到的几个Bean到工厂中，来处理我们的请求。换句话说，`<context:component-scan/>`向容器中显式或隐式注册了一系列单个组件，但是项目要想将组件关联起来正常运转，则需要`<mvc:annotation-driven/>`注册的组件完成。
+而`<mvc:annotation-driven/>` 是告知Spring，我们启用注解驱动，为WEB 应用服务(我们就可以使用该标签注册的几个bean的功能)。然后Spring会自动为我们注册上面说到的几个Bean到工厂中，来处理我们的请求。
+
+换句话说，`<context:component-scan/>`向容器中显式或隐式注册了一系列单个组件，但是项目要想将组件关联起来正常运转，则需要`<mvc:annotation-driven/>`注册的组件完成。
 
 比如请求一个URL，我要知道这个URL匹配哪个controller中的哪个方法。哪个Controller就需要`<context:component-scan/>`注解；如何匹配，匹配哪个方法就需要`<mvc:annotation-driven/>`注解。
 
@@ -760,6 +753,19 @@ springMVC容器是管理controller控制器对象的，Spring容器是管理serv
 容器内的对象可以直接互相调用，但是controller要如何调用service。因为springMVC容器是Spring容器的子容器，类似继承关系，所以在controller中可以直接调用service。
 
 总结起来就是：**在service中使用dao对象进行数据库操作，在controller中使用service对象执行业务逻辑。**
+
+
+
+3.1 Spring容器 和 SpringMVC容器
+---
+
+斜杠
+
+注解的区别
+
+容器
+
+
 
 
 
