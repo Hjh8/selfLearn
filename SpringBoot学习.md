@@ -1,4 +1,5 @@
 SpringBoot学习
+===
 
 
 
@@ -58,7 +59,7 @@ jdk1.8+ 、 maven3.x
    import org.springframework.web.bind.annotation.RestController;
    
    @SpringBootApplication
-   @RestController  // 跟@Controller一样
+   @RestController  // @Controller跟@ResponseBody的结合
    public class test {
    
        @RequestMapping("/")
@@ -172,9 +173,7 @@ com
 
 springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。
 
-springboot会加载`@EnableAutoConfiguration` 下的配置，而`@SpringBootApplication` 继承了此注解，所以 启动的时候会扫描启动类下的配置。
-
-springboot所有自动配置类都是在启动的时候扫描并加载，扫描路径是 `WEB-INF/spring.factorites`，所有的自动配置类都在这里。只有符合`@ConditionalOnXxx` 条件的才会被加载。然后springboot会将加载的类放入到IOC容器中，形成一个个的bean对象。
+springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器Selector，这个选择器会扫描 `WEB-INF/spring.factorites`，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，放入到IOC容器中，形成一个个的bean对象。
 
 springboot会将所有用到的自动配置类输出到一个总的配置文件中。
 
@@ -233,11 +232,11 @@ springboot启动时会扫描以下位置（**优先级由高到低**）的`appli
 3. **resources目录**下的**config目录** 
 4. **resources目录** 
 
-springboot会从这四个位置全部加载配置文件。这四个位置的配置文件会进行互补配置，相同的配置高优先级会覆盖低优先级。
+springboot会从这四个位置加载配置文件。这四个位置的配置文件会进行互补配置，若出现相同的配置 高优先级 会覆盖 低优先级。
 
 
 
-如果想自定义配置文件名或配置文件的路径，可以这样做：（假设我的配置文件名为cf.properties）
+如果想 自定义配置文件名 或 配置文件 的路径，可以这样做：（假设我的配置文件名为cf.properties）
 
 第一步：打开项目运行配置
 
@@ -262,7 +261,7 @@ yml是YAML语言的文件，以数据为中心。相比于xml少了一些结构�
 
 
 
-案例：
+**案例**：
 
 proterties文件
 
@@ -285,9 +284,9 @@ env:
     age: 22
 ```
 
-***
 
-**小补充1：yml也支持spEL表达式。**
+
+**小补充：yml也支持spEL表达式**。
 
 ```yml
 acme:
@@ -330,14 +329,14 @@ acme:
    
    @Data // 自动生成getter、setter
    @Component // 创建对象后将对象加到IOC容器中
-   // 自动绑定属性，prefix表示层级，可省略
+   // 自动绑定属性，参数prefix表示层级，可省略
    @ConfigurationProperties(prefix = "yml.t1")
    public class YmlModel {
        private String name;
        private int age;
        private School school = new School();
        
-       // 如果有引用类，则引用类也要有@Data注解
+       // 如果有内部类，则内部类也要有@Data注解
    	@Data
        class school{
            private String addr;
@@ -412,9 +411,9 @@ acme:
 
 语法：`@EnableConfigurationProperties(类名.class)` 
 
-案例1：**注解方式** 
-
 bean类中取消Component注释，在controller中添加**EnableConfigurationProperties**注释
+
+案例1：**自动注入方式** 
 
 ```java
 package com.controller;
@@ -475,7 +474,7 @@ public class MyController {
 
 #### @Bean
 
-Spring的`@Bean`注解用于告诉**方法**产生一个对象，然后把该对象放入IOC容器中。产生这个对象的方法只会被spring调用一次。`@Bean`需要在配置类下使用（即有`@Configuration`注释的类），但是在springboot2.2.1版本以后可以不用手动加上`@Configuration`注释，**前提是`@Bean`所在的类会被springboot扫描到**。
+Spring的`@Bean`注解用于告诉**方法**产生一个对象，然后把该对象放入IOC容器中。产生这个对象的方法只会被spring调用一次。`@Bean `需要在配置类下使用（即有`@Configuration`注释的类），但是在springboot2.2.1版本以后可以不用手动加上`@Configuration`注释，**前提是`@Bean`所在的类会被springboot扫描到**。
 
 ```java
 package com.model;
@@ -501,7 +500,7 @@ package com.model;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-// 因为springboot不会扫描此类，所以需要加上@Configuration注解
+// 因为springboot不会扫描到这个类，所以需要加上@Configuration注解
 @Configuration
 public class YmlModelBean {
 
@@ -554,35 +553,37 @@ public class MyController {
 2. 在类上加`@Validated`注解告诉springboot这个类为校验类。在需要校验的属性上加具体校验注解
 
   ```java
-  package com.model;
-  
-  import lombok.Data;
-  import org.springframework.boot.context.properties.ConfigurationProperties;
-  import org.springframework.stereotype.Component;
-  import org.springframework.validation.annotation.Validated;
-  import javax.validation.Valid;
-  import javax.validation.constraints.Max;
-  import javax.validation.constraints.NotNull;
-  
-  @Data
-  @Component
-  @ConfigurationProperties("yml.t1")
-  @Validated
-  public class YmlModel {
-      @NotNull
-      private String name;
-      @Max(value = 32, message = "年龄太大了")
-      private int age;
-      // 【注意】引用类型需要使用Valid注解来声明
-      @Valid
-      private School school = new School();
-  
-      @Data
-      class School {
-          @NotNull
-          private String addr;
-      }
-  }
+package com.model;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotNull;
+
+@Data
+@Component
+@ConfigurationProperties("yml.t1")
+@Validated
+public class YmlModel {
+    @NotNull
+    private String name;
+    
+    @Max(value = 32, message = "年龄太大了")
+    private int age;
+    
+    // 【注意】引用类型需要使用Valid注解来声明
+    @Valid
+    private School school = new School();
+
+    @Data
+    class School {
+        @NotNull
+        private String addr;
+    }
+}
   ```
 
 其实`@Valid` 和 `@Validated` 的作用差不多，只不过`@Validated`不能够作用在属性上。
@@ -594,11 +595,11 @@ public class MyController {
 ```
 @AssertFalse 校验false
 @AssertTrue 校验true
-@DecimalMax(value=,inclusive=) 最大值为value，inclusive=true表示可以等于
-@DecimalMin(value=,inclusive=) 与上类似
+@DecimalMax(value=, inclusive=) 最大值为value，inclusive=true表示可以等于
+@DecimalMin(value=, inclusive=) 与上类似
 @Max(value=) 最大值value
 @Min(value=) 最小值value
-@NotNull  检查Null
+@NotNull  不允许为Null
 @Past  检查日期
 @Email 检查邮箱地址
 @Pattern(regex=,flag=)  正则
@@ -608,7 +609,7 @@ public class MyController {
 
 #### @Value作用于数据绑定
 
-之前使用的`@ConfigurationProperties`注释是一次性对全部属性进行绑定。而`@Value`注解则是作用于单个属性。**该属性的类型不能是复杂类型**，比如List、引用类型。另外，**`@Value`注解绑定的属性无法进行校验**。
+之前使用的`@ConfigurationProperties`注释是一次性对全部属性进行绑定。而`@Value`注解则是作用于单个属性。**该属性的类型不能是复杂类型**，比如List、引用类型。另外，**`@Value`注解绑定的属性无法进行校验**。但其支持 使用SpEL表达式赋值。
 
 语法：`@Value(value = "${}")` 
 
@@ -731,7 +732,7 @@ yml:
 
 #### @Conditional 的派生注解
 
-**@Conditional** 注解的作用：必须满足其指定的条件，才会给容器中添加其对应的组件，配置里面的内容才会生效。
+**@Conditional** 注解的作用：必须满足其指定的条件，才会在容器中添加其对应的组件，配置里面的内容才会生效。
 
 | @Conditional 的派生注解       | 作用                                           |
 | ----------------------------- | ---------------------------------------------- |
@@ -752,7 +753,9 @@ yml:
 
 #### 数据源自动配置
 
-下面进行数据库方面的学习。首先思考一下，我们前面写的配置文件都是自己定义的，而springBoot自己帮我们写好了配置文件的配置信息，我们只需要在配置文件中填写好需要的配置信息即可。连接数据库也是如此。
+下面进行数据库方面的学习。
+
+首先思考一下，我们前面写的配置文件都是自己定义的，而springBoot自己帮我们写好了配置文件的配置信息，我们只需要在配置文件中填写好需要的配置信息即可。连接数据库也是如此。
 
 首先看一下springboot中数据库连接的源码：
 
@@ -1054,7 +1057,9 @@ class test {
 
 接着在配置文件中配置mybatis的一些相关配置。在springboot项目中不需要自己另外定义一个mybatis的配置文件，直接在application中写就行了。
 
-那么问题来了？配置mybatis时需要之前它的前缀，那它的前缀是什么呢？按下`ctrl+N` 进入搜索界面，输入**mybatisAutoConfiguration**， 然后找到属性绑定注解里面的配置类，然后可以发现，它的前缀为`mybatis` 
+那么问题来了？配置mybatis时需要知道它的前缀，那它的前缀是什么呢？
+
+按下`ctrl+N` 进入搜索界面，输入**mybatisAutoConfiguration**， 然后找到 属性绑定注解 里面的配置类，然后可以发现，它的前缀为`mybatis` 
 
 ![image-20201214170207566](SpringBoot学习.assets/image-20201214170207566.png)
 
