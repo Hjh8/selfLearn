@@ -740,16 +740,9 @@ el表达式好是好，可是需要给每个路径前都加上就很麻烦，有
 
 springMVC容器是管理controller控制器对象的，Spring容器是管理service、dao、工具类对象的。我们要做的是将合适的对象交给合适的容器创建和管理。
 
-容器内的对象可以直接互相调用，但是controller要如何调用service。因为springMVC容器是Spring容器的子容器，类似继承关系，所以在controller中可以直接调用service。
+容器内的对象可以直接互相调用，但是controller要如何调用service。因为springMVC容器是Spring容器的子容器，类似继承关系，所以在controller中可以直接调用service，但不能在service中调用controller。
 
-总结起来就是：**在service中使用dao对象进行数据库操作，在controller中使用service对象执行业务逻辑。**
-
-
-
-3.1 Spring容器 和 SpringMVC容器
----
-
-
+总结起来就是：**在service中使用dao对象进行数据库操作，在controller中使用service对象执行业务逻辑**。 
 
 
 
