@@ -1,3 +1,5 @@
+
+
 SpringBoot学习
 ===
 
@@ -134,7 +136,7 @@ idea有一种方式可以快速的创建spring项目，自动添加依赖，一�
 
 #### starter
 
-使用`ctrl+左键` 点击依赖中的starter，可以看到他的**底层聚集了很多的相关依赖**，这些依赖都自动指定了版本，如果我们要使用别的版本可以在`pom.xml`中直接使用就可以了。
+starter是一个jar包，**里面聚集了很多的相关依赖**，这些依赖都自动指定了版本，如果我们要使用别的版本可以在`pom.xml`中直接使用就可以了。
 
 官方所有的starter的命名都遵从`spring-boot-starter-*`，如果自定义starter建议使用`自定义名称-spring-boot-starter` 。
 
@@ -173,7 +175,7 @@ com
 
 springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。
 
-springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器Selector，这个选择器会扫描 `WEB-INF/spring.factorites`，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，放入到IOC容器中，形成一个个的bean对象。
+springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器Selector，这个选择器会扫描 `WEB-INF/spring.factorites`，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
 
 springboot会将所有用到的自动配置类输出到一个总的配置文件中。
 
@@ -1127,12 +1129,11 @@ public class MyConfig {
 
 #### 访问静态资源
 
-SpringBoot默认静态资源目录位置位于classpath下且目录名符合如下规则：
+SpringBoot默认静态资源目录位于classpath下且目录名符合如下规则：
 
-- /static
-- /public
 - /resoures
-- /META-INF/resources
+- /static（默认）
+- /public
 
 或者可以在配置文件中自定义位置：
 
@@ -1141,7 +1142,7 @@ spring:
   web:
     resources:
       static-locations:
-        classpath:/mybatis
+        classpath:/staticXXX
 ```
 
 

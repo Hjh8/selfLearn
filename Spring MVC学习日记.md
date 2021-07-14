@@ -707,7 +707,7 @@ public String doStringData(){
 
    当你发起`/user/some.do`请求，访问地址变为：`https://localhost:8080/user/some.do` ，此时的参考路径是`https://localhost:8080` 。
 
-> 加了斜杠，代表web服务器的根路径。不加斜杠，表示项目的根路径
+> 不加斜杠，表示项目的根路径。加了斜杠，代表web服务器的根路径。
 
 为了防止地址错误，我们可以使用**el表达式**`${pageContent.request.contextPath}`来固定项目路径，即`${pageContent.request.contextPath}/user/some.do` 。此时路径恒为`https://localhost:8080/user/some.do`。
 
