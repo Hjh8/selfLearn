@@ -46,13 +46,246 @@ Java NIO（New IO）也有人称之为non-blocking IO，从Java 1.4版本开始�
 
 ### NIO与BIO的区别
 
-| NIO                       | BIO                 |
-| ------------------------- | ------------------- |
-| 面向缓冲区（Buffer）      | 面向流（Stream）    |
-| 非阻塞（Non Blocking IO） | 阻塞IO(Blocking IO) |
-| 选择器（Selectors）       |                     |
+| NIO                        | BIO                    |
+| -------------------------- | ---------------------- |
+| 面向缓冲区（Buffer），双向 | 面向流（Stream），单向 |
+| 非阻塞（Non Blocking IO）  | 阻塞IO(Blocking IO)    |
+| 选择器（Selectors）        |                        |
 
 
+
+
+
+NIO 三大核心
+---
+
+NIO 有三大核心部分：**Channel( 通道) ，Buffer( 缓冲区), Selector( 选择器)**
+
+### Buffer 缓冲区
+
+缓冲区本质上是一块可以写入/读取数据的内存。这块内存被包装成NIO Buffer对象，并提供了一组方法，用来方便的访问这块内存。
+
+Buffer 中的重要概念： 
+
+* **容量 (capacity)** ：作为一个内存块，Buffer具有一定的固定大小，也称为"容量"，缓冲区容量不能为负，并且创建后不能更改。 
+* **限制 (limit)**：表示缓冲区中可以操作数据的大小（limit 后数据不能进行读写）。缓冲区的限制不能为负，并且不能大于其容量。 **写入模式下，限制等于buffer的容量。读取模式下，limit等于写入的数据量**。
+* **位置 (position)**：下一个要读取或写入的数据的索引。缓冲区的位置不能为负，并且不能大于其限制 
+* **标记 (mark)与重置 (reset)**：标记是一个索引，通过 Buffer 中的 mark() 方法 指定 Buffer 中一个特定的 position，之后可以通过调用 reset() 方法恢复到这 个position.
+
+> 标记、位置、限制、容量遵守以下不变式：
+>
+>  0 ≤ mark ≤ position ≤ limit ≤ capacity
+
+![image-20200619171301760](NIO 学习.assets/image-20200619171301760.png)
+
+常用方法：
+
+- 获取缓冲区：ByteBuffer.allocate(1024);
+- 存入数据到缓冲区：put(byte[] b)
+- 获取缓冲区的数据：get(byte[] b)
+- 切换到读取模式（默认是写入）：flip()
+- 转成字符数组：array()
+- 设置标记：mark()
+- 恢复到标记位置：reset()
+- 取消mark，位置设为0：rewind()
+- 清空缓冲区：clear()
+
+
+
+#### 直接缓冲区和非直接缓冲区
+
+非直接缓冲区：通过allocate()方法分配的缓冲区，建立在JVM内存中。
+
+直接缓冲区：也叫直接内存，通过allocateDirect()方法分配的缓冲区，建立在系统内存中。
+
+![微信图片_20210531212738](NIO 学习.assets/微信图片_20210531212738.jpg)
+
+
+
+### Channel 通道
+
+通道表示打开到 IO 设备(例如：文件、 套接字)的连接，数据从通道读入到缓冲区，再从缓冲区写回通道。
+
+常用的Channel实现类：
+
+* FileChannel：用于读取、写入、映射和操作文件的通道。
+* DatagramChannel：通过 UDP 读写网络中的数据通道。
+* SocketChannel：通过 TCP 读写网络中的数据。
+* ServerSocketChannel：可以监听新进来的 TCP 连接，对每一个新进来的连接都会创建一个 SocketChannel。
+
+
+
+**获取通道的方法**，支持通道的类调用getChannel() ：
+
+- FileInputStream
+- FileOutputStream
+- RandomAccessFile
+- DatagramSocket
+- Socket
+- ServerSocket
+
+> 在JDK 1.7 中的NIO.2 针对各个通道类提供了静态方法 open()
+
+
+
+常用方法：
+
+- read(ByteBuffer[] dsts)：将通道中的数据存入缓冲区中
+- write(ByteBuffer[] srcs)：将缓冲区中的数据写回通道中
+- position()：通道内数据的当前位置
+- size()：通道内数据的大小
+- close()：关闭管道
+- transferFrom(原通道, 原通道的位置, 原通道的大小)：从目标通道中去复制原通道数据
+- transferTo(原通道的位置, 原通道的大小, 目标通道)：把原通道数据复制到目标通道
+
+```java
+@Test
+public void test() throws Exception {
+    /*
+    	把data01的内容复制到data03中
+    */
+    FileInputStream is = new FileInputStream("data01.txt");
+    // 获取输入管道
+    FileChannel isChannel = is.getChannel();
+    FileOutputStream fos = new FileOutputStream("data03.txt");
+    // 获取输出管道
+    FileChannel osChannel = fos.getChannel();
+    // 复制
+	osChannel.transferFrom(isChannel, isChannel.position(), isChannel.size());
+    // 等价于
+    // isChannel.transferTo(isChannel.position() , isChannel.size() , osChannel);
+    
+    isChannel.close();
+    osChannel.close();
+}
+```
+
+
+
+### Selector 选择器
+
+Selector是 一个Java NIO组件，可以能够检查一个或多个 NIO 通道（管理多个网络连接），并确定哪些通道已经准备好进行读取或写入，并对准备就绪的通道进行处理。Selector 是非阻塞 IO 的核心
+
+在NIO模型中，多个channel会被注册到同一个Selector中，Selector会检测这些通道是否请求，如果有请求就针对此channel进行处理。
+
+将通道注册到Selector时，需要 **指定监听的事件** 类型：
+
+* 读 : SelectionKey.OP_READ
+* 写 : SelectionKey.OP_WRITE
+* 连接 : SelectionKey.OP_CONNECT
+* 接收 : SelectionKey.OP_ACCEPT
+
+> 若注册时不止监听一个事件，则可以使用“位或”操作符连接。
+>
+> int interestSet = SelectionKey.OP_READ | SelectionKey.OP_WRITE 
+
+
+
+服务端流程：
+
+1. 获取通道
+
+```java
+ServerSocketChannel ssChannel = ServerSocketChannel.open();
+```
+
+2. 切换非阻塞模式
+
+```java
+ ssChannel.configureBlocking(false);
+```
+
+3. 绑定连接
+
+```java
+ ssChannel.bind(new InetSocketAddress(9999));
+```
+
+4. 获取选择器
+
+```
+Selector selector = Selector.open();
+```
+
+5. 将通道注册到选择器上, 并且指定 “监听接收事件”
+
+```
+ssChannel.register(selector, SelectionKey.OP_ACCEPT);
+```
+
+6. 轮询式的获取选择器上已经“准备就绪”的事件
+
+```java
+// 轮询式的获取选择器上已经“准备就绪”的事件
+while (selector.select() > 0) {
+    // 获取当前选择器中所有注册的 “选择键(已就绪的监听事件)”
+    Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+    // 有请求事件
+    while (it.hasNext()) {
+        // 获取准备“就绪”的 事件
+        SelectionKey sk = it.next();
+        // 判断具体是什么事件
+        if (sk.isAcceptable()) {
+            // 若“接收就绪”，获取客户端连接
+            SocketChannel sChannel = ssChannel.accept();
+            // 切换非阻塞模式
+            sChannel.configureBlocking(false);
+            // 将该通道注册到选择器上
+            sChannel.register(selector, SelectionKey.OP_READ);
+        } else if (sk.isReadable()) {
+            // 获取当前选择器上“读就绪”状态的通道
+            SocketChannel sChannel = (SocketChannel) sk.channel();
+            // 读取数据
+            ByteBuffer buf = ByteBuffer.allocate(1024);
+            int len = 0;
+            while ((len = sChannel.read(buf)) > 0) {
+                buf.flip();
+                System.out.println(new String(buf.array(), 0, len));
+                buf.clear();
+            }
+        }
+        // 取消选择键
+        it.remove();
+    }
+}
+```
+
+
+
+客户端流程：
+
+1. 获取通道
+
+```java
+SocketChannel sChannel = SocketChannel.open(new InetSocketAddress("127.0.0.1", 9999));
+```
+
+2. 切换非阻塞模式
+
+```java
+sChannel.configureBlocking(false);
+```
+
+3. 分配指定大小的缓冲区
+
+```java
+ByteBuffer buf = ByteBuffer.allocate(1024);
+```
+
+4. 发送数据给服务端
+
+```java
+Scanner scan = new Scanner(System.in);
+while(scan.hasNext()){
+	String str = scan.nextLine();
+	buf.put(str.getBytes());
+	buf.flip();
+	sChannel.write(buf);
+	buf.clear();
+}
+//关闭通道
+sChannel.close();
+```
 
 
 
