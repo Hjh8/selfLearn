@@ -397,5 +397,62 @@ Locate 指令无需遍历整个文件系统，查询速度较快。为了保证�
 
 ### grep
 
-grep 有个过滤作用。
+grep 有着过滤作用，只显示需要显示的内容，通常跟管道配合使用。
+
+命令：`grep [选项] 查找内容 源文件`
+
+常用选项：
+
+- -n：输出匹配内容的同时输出其所在行号
+- -i：忽略大小写
+- -c：统计个数
+
+例子：
+
+在 hello.txt 文件中，查找 yes 所在行，并且显示行号：
+
+`cat /home/hello.txt | grep -n yes`  或者 `grep -n yes /home/hello.txt` 
+
+
+
+压缩和解压命令
+---
+
+### gzip
+
+gzip 命令只能用来压缩文件，不能压缩目录。压缩后文件的后缀为 *.gz 
+
+压缩：`gzip filename` 
+
+解压：`gzip -d filename.gz` 
+
+
+
+### zip
+
+zip 命令既可以压缩文件，也可以压缩目录。压缩后文件的后缀为 *.zip 
+
+压缩：`zip [-r] 压缩后的名字.zip 要压缩的文件`，压缩文件夹时需要加上 **-r** 选项
+
+解压：`unzip [-d dest] xxx.zip`，若指定-d sest，则表示将xxx.zip解压到dest目录下
+
+
+
+### tar
+
+ tar 压缩后文件的后缀为 .tar.gz 或 .tgz。
+
+压缩：`tar -zcvf filename.tar.gz dirname` 
+
+压缩多个文件：`tar cvf filename.tar.gz dirname1 dirname2 dirname3.....` 
+
+解压：`tar -zxvf filename.tar.gz` 
+
+- -z：打包的时候同时压缩
+- -c：打包
+- -x：解压
+- -v：显示过程
+- -f：指定打包后的文件名
+
+
 
