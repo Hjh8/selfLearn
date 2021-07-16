@@ -40,7 +40,7 @@ JUC就是 java.util.concurrent 工具包的简称。这是从JDK 1.5 开始出�
 
 需要注意的是，**可运行态中包含了 就绪、运行阻塞和运行态**。
 
-
+![image-20210716115528905](JUC学习.assets/image-20210716115528905.png)
 
 
 
@@ -250,14 +250,129 @@ CopyOnWriteArraySet是通过CopyOnWriteArrayList实现的，即去重的时候�
 
 多线程锁
 
-Callable 接口
+Callable&FutureTask
 ---
 
+实现Callable接口是创建线程的第三种方式，只不过不能像Runanble接口的实现类一样直接new然后放到Thread中。只要借助**FutureTask** 类来进行适配。
+
+Callable 接口的特点如下：
+
+- 实现 Callable 而必须重写 call 方法。call()相当于run()。
+- call()有返回值，且可以引发异常
+
+```java
+//新类 MyThread 实现 callable 接口
+class MyThread implements Callable<Integer>{
+    @Override
+    public Integer call() throws Exception {
+        return 200; 
+    }
+}
+```
+
+```java
+class MyThread2 implements Callable<Integer>{
+    @Override
+    public Integer call() throws Exception {
+        return 200; 
+    }
+}
+```
+
+
+
+***
+
+FutureTask：常用于后台完成任务。
+
+- 在主线程中需要执行比较耗时的操作时，但又不想阻塞主线程时，可以把这些作业交给 Future 对象在后台完成
+- 一般 FutureTask 多用于耗时的计算，主线程可以在完成自己的任务后，再去获取结果 `get()` 。如果结果尚未完成，则阻塞 get 方法。
+
+```java
+// future-callable
+FutureTask<Integer> ft = new FutureTask(new MyThread());
+// 启动线程
+new Thread(ft, "线程ft").start();
+for (int i = 0; i < 10; i++) {
+    System.out.println(ft.get());
+}
+```
+
+
+
+JUC 三大辅助类
+---
+
+JUC 中提供了三种常用的辅助类，通过这些辅助类可以很好的解决线程数量过多时 Lock 锁的频繁操作。
+
+
+
+### CountDownLatch
+
+它是一个同步工具类，通过设置一个计数器，然后通过 countDown方法 来进行 减1 的操作，然后使用 await方法 让线程处于等待状态，当计数器为0时自动唤醒等待线程。
+
+***
+
+场景1：让多个线程等待，一个线程任务完成后，多个线程一起执行。
+
+模拟并发，让并发线程一起执行。
+
+```java
+CountDownLatch countDownLatch = new CountDownLatch(1);
+for (int i = 0; i < 5; i++) {
+    new Thread(() -> {
+        try {
+            // 线程等待计数器为0
+            countDownLatch.await();
+            String parter = "【" + Thread.currentThread().getName() + "】";
+            System.out.println(parter + "开始冲刺……");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }).start();
+}
+Thread.sleep(2000);
+countDownLatch.countDown();  // 计数器减一
+```
+
+可以把 所有的线程 比作 跑步运动员 ，线程阻塞比作 运动员到达起跑线后等待裁判鸣枪，当计数器为0时（裁判响哨），所有运动员冲刺。
+
+***
+
+场景2：让单个线程等待，多个线程(任务)完成后，进行汇总合并。
+
+当并发任务存在前后依赖关系时；比如数据详情页需要同时调用多个接口获取数据，并发请求获取到数据后、需要进行结果合并；或者多个数据操作完成后，需要数据check；
+
+这其实都是：在多个线程(任务)完成后，进行汇总合并的场景。
+
+```java
+CountDownLatch countDownLatch = new CountDownLatch(5);
+for (int i = 0; i < 5; i++) {
+    new Thread(() -> {
+        try {
+            System.out.println("处理完毕");
+            countDownLatch.countDown();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }).start();
+}
+
+countDownLatch.await();// 主线程在阻塞，当计数器==0，就唤醒主线程往下执行。
+System.out.println("主线程:在所有任务运行完成后，进行结果汇总");
+```
 
 
 
 
-JUC 三大辅助类: CountDownLatch CyclicBarrier Semaphore
+
+### CyclicBarrier
+
+
+
+Semaphore
+
+
 
 读写锁: ReentrantReadWriteLock
 
