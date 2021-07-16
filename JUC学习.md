@@ -311,6 +311,10 @@ JUC 中提供了三种常用的辅助类，通过这些辅助类可以很好的�
 
 它是一个同步工具类，通过设置一个计数器，然后通过 countDown方法 来进行 减1 的操作，然后使用 await方法 让线程处于等待状态，当计数器为0时自动唤醒等待线程。
 
+- CountDownLatch(int count)：构造函数中的count为计数器。**这个值只能被设置一次，而且不能重新设置**；
+- await()：调用该方法的线程会被阻塞，直到 count 减到 0 ；
+- countDown()：使 count 值 减 1；
+
 ***
 
 场景1：让多个线程等待，一个线程任务完成后，多个线程一起执行。
@@ -335,7 +339,7 @@ Thread.sleep(2000);
 countDownLatch.countDown();  // 计数器减一
 ```
 
-可以把 所有的线程 比作 跑步运动员 ，线程阻塞比作 运动员到达起跑线后等待裁判鸣枪，当计数器为0时（裁判响哨），所有运动员冲刺。
+可以把 所有的线程 比作 跑步运动员 ，线程阻塞比作 运动员在跑线等待裁判鸣枪，当计数器为0时（裁判响哨），所有运动员冲刺。
 
 ***
 
@@ -368,17 +372,98 @@ System.out.println("主线程:在所有任务运行完成后，进行结果汇�
 
 ### CyclicBarrier
 
+CyclicBarrier 的构造方法第一个参数是目标障碍数，每次执行 await方法 障碍数会加一，如果达到了目标障碍数，才会执行 cyclicBarrier.await()之后的语句。
+
+CyclicBarrier 跟CountdownLatch不一样的是，**CountdownLatch是一次性的，而CycliBarrier是可以重复使用的**，只需调用一下reset方法。
+
+- ` CyclicBarrier(int parties, Runnable barrierAction)`：指定目标障碍数和到达目标障碍数时要做的事情
+-  `await()`：parties加一，线程等待。
+- `reset()`：重置
+
+```java
+// 会议需要三个人
+CyclicBarrier cyclicBarrier = new CyclicBarrier(3, new Runnable() {
+    @Override
+    public void run(){
+        // 三个人都到齐之后 开会
+        System.out.println("三个人都已到达会议室，开会！")
+    }
+});
+
+for (int i = 0; i < 3; i++) {
+    new Thread(new Runnable() {
+        @Override
+        public void run() {
+            // 线程i到达
+            cyclicBarrier.await();
+        }
+    }, String.valueOf(i)).start();
+}
+```
 
 
-Semaphore
+
+### Semaphore
+
+可以理解为线程池分配线程，而Semaphore相当于锁池分配锁，可以使线程达到同步的效果。Semaphore 信号量通常用于那些资源有明确访问数量限制的场景，常用于限流 。
+
+- Semaphore(int n)：构造方法，指定令牌数
+- acquire()：获取一个令牌，运行执行。在获取到令牌之前线程一直处于阻塞状态。
+- release()：释放一个令牌，唤醒一个需要获取令牌的线程。
+- availablePermits()：返回可用的令牌数量
+
+***
+
+案例1：用semaphore 实现停车场停车
+
+```java
+public class TestCar {
+    public static void main(String[] args) {
+        // 停车场有10个停车位
+		Semaphore semaphore = new Semaphore(10);
+        
+        // 模拟100辆车进入停车场
+        for(int i=0; i<100; i++){
+            new Thread(new Runnable() {
+                public void run() {
+                    try { 
+                        if(semaphore.availablePermits() == 0){
+                            System.out.println("车位不足，请耐心等待");
+                        }
+                        semaphore.acquire(); // 获取令牌尝试进入停车场
+                        System.out.println(Thread.currentThread().getName() + "成功进入停车场");
+                        Thread.sleep(new Random().nextInt(5000)); // 模拟车辆在停车场停留的时间
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally{
+                        System.out.println(Thread.currentThread().getName() + "驶出停车场");
+                        semaphore.release(); // 释放令牌，腾出停车场车位
+                    }
+                }
+            }, i+"号车").start();
+        }
+    }
+}
+```
 
 
 
-读写锁: ReentrantReadWriteLock
+读写锁 ReentrantReadWriteLock
+---
+
+
+
+
 
 阻塞队列
+---
+
+
+
+
 
 ThreadPool 线程池
+---
 
 
 
@@ -403,9 +488,13 @@ Synchronized和Lock区别
 
 
 
-aqs
+AQS
+---
+
+
 
 公平和非公平
+---
 
 
 
