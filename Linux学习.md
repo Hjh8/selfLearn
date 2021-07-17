@@ -379,11 +379,9 @@ cat: h2: No such file or directory
 
 locate 指令可以快速定位文件路径。locate 指令利用事先建立的系统中所有文件名称及路径的 locate 数据库实现快速定位给定的文件。
 
-Locate 指令无需遍历整个文件系统，查询速度较快。为了保证查询结果的准确度，管理员必须定期更新 locate 时刻
+locate 指令无需遍历整个文件系统，而是搜索一个数据库 /var/lib/mlocate/mlocate.db ，查询速度较快。Linux系统自动创建这个数据库，并且每天自动更新一次。所以为了保证查询结果的准确度，**最好在每次使用locate命令前，使用 `updatedb` 指令更新 locate 数据库**。
 
 命令：`locate 文件` 
-
-> 最好在每次使用locate命令前，使用 `updatedb` 指令更新 locate 数据库。
 
 ```bach
 [root@ubuntu ~]# touch new.txt
@@ -399,7 +397,7 @@ Locate 指令无需遍历整个文件系统，查询速度较快。为了保证�
 
 grep 有着过滤作用，只显示需要显示的内容，通常跟管道配合使用。
 
-命令：`grep [选项] 查找内容 源文件`
+命令：`grep [选项] 查找内容 源文件` 
 
 常用选项：
 
@@ -456,6 +454,13 @@ zip 命令既可以压缩文件，也可以压缩目录。压缩后文件的后�
 
 
 
+网络配置
+---
+
+
+
+
+
 进程管理
 ---
 
@@ -476,7 +481,7 @@ ps -ef 是用标准的格式显示进程的，其格式如下：
 - C：进程占用CPU的百分比 
 - STIME：进程启动的时间
 - TTY：该进程在哪个终端上运行
-  - `?` 表示与终端无
+  - `?` 表示与终端无关
   - `pts/0` 表示由网络连接主机进程。 
 - TIME：该进程实际使用CPU运行的时间
 - CMD：由哪个命令启动的进程
@@ -513,7 +518,7 @@ l     多进程的
 
 ### top
 
-top可以**实时的**监控系统状态信息和进程所使用的资源。显示进程的数据包括 PID、优先级PR、%cpu、%memory等。可以使用这些显示指示出资源使用量。
+top可以**实时的**监控系统状态信息和进程所使用的资源。显示进程的数据包括 PID、优先级PR、%cpu、%memory等。
 
 ![image-20210716190847846](Linux学习.assets/image-20210716190847846.png)
 
@@ -542,22 +547,22 @@ top可以**实时的**监控系统状态信息和进程所使用的资源。显�
 服务管理
 ---
 
-服务(service) 是个守护进程，但是是运行在后台的，**通常都会监听某个端口**，等待其它程序的请求，比如mysqld , sshd 防火墙等。
+服务(service) 是个守护进程，运行在后台，**通常都会监听某个端口**，等待其它程序的请求，比如mysqld、sshd、防火墙等。
 
 
 
 ### 相关指令
 
-| 指令                      | 作用                             |
-| ------------------------- | -------------------------------- |
-| systemctl start 服务名    | 开启服务                         |
-| systemctl stop 服务名     | 关闭服务                         |
-| systemctl status 服务名   | 显示服务的状态                   |
-| systemctl restart 服务名  | 重启服务                         |
-| systemctl enable 服务名   | 开机启动服务                     |
-| systemctl disable 服务名  | 禁止开机启动                     |
-| systemctl list-units      | 查看系统中所有正在运行的服务     |
-| systemctl list-unit-files | 查看系统中所有服务的开机启动状态 |
+| 指令                       | 作用                             |
+| -------------------------- | -------------------------------- |
+| systemctl start 服务名     | 开启服务                         |
+| systemctl stop 服务名      | 关闭服务                         |
+| systemctl status 服务名    | 显示服务的状态                   |
+| systemctl restart 服务名   | 重启服务                         |
+| systemctl enable 服务名    | 开机启动服务                     |
+| systemctl disable 服务名   | 禁止开机启动                     |
+| systemctl is-enable 服务名 | 查看服务是否自启动               |
+| systemctl list-unit-files  | 查看系统中所有服务的开机启动状态 |
 
 
 
@@ -607,11 +612,62 @@ netstat可以查看系统网络情况
 包管理
 ---
 
+### rpm
+
+rpm（RedHat Package Manager）用于本地安装包的 打包及安装，打包生成的是 .RPM 扩展名的文件。其安装类似 windows 的 setup.exe。
+
+`rpm -qa| grep X `：查看X的所有软件包信息
+
+`rpm -ql 软件包名`：查询软件包中的文件
+
+`rpm -e 软件包名`：卸载软件
+
+`rpm -e --nodeps foo 软件包名`：强制卸载
+
+`rpm -ivh 软件包名`：安装包
+
+- i=install 安装 
+
+- v=verbose 提示 
+
+- h=hash 进度条
+
+
+
+### yum
+
+Yum 是一个 Shell 前端软件包管理器。基于 RPM 包管理，能够从指定的服务器自动下载 RPM 包并且安装，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。
+
+`yum list | grep xx`：查询 yum 服务器是否有 xx软件
+
+`yum install xxx`：下载安装
+
+
+
+### apt
+
+apt 是 Advanced Packaging Tool 的简称，是一款安装包管理工具。**在 Ubuntu 下**，我们可以使用 apt 命令进行软件包的安装、删除、清理等，类似于 Windows 中的软件管理工具。
+
+> 大多数 apt 命令必须以具有 **sudo** 权限的用户身份运行。
+
+`sudo apt update`：更新软件包索引
+
+`sudo apt install package_name`：安装包
+
+`sudo apt remove package_name`：卸载包
+
+`sudo apt show package_name`：显示包信息
+
+> 因为apt的服务器是在美国，有时候安装速度会很慢，所以可以去[国内镜像源](https://mirrors.tuna.tsinghua.edu.cn/) 下载
 
 
 
 
 
+
+
+shell
+---
 
 
 
