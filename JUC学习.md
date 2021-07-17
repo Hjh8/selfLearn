@@ -94,6 +94,8 @@ lock是一个接口，需要手动的加锁和释放锁，并且在发生异常�
 
 ReentrantLock是lock实现类，它是可重入锁，其可以通过 `lock()` 加锁，`unlock()` 解锁。
 
+> 可重入锁是指一个线程获得锁之后，该线程可以再次获取该锁而无需等待。
+
 ```java
 public void insert(Thread thread) {
     Lock lock = new ReentrantLock();
@@ -686,6 +688,16 @@ ExecutorService threadPool = new ThreadPoolExecutor(
 多线程面试
 ===
 
+sleep跟wait区别
+---
+
+1. sleep是Thread的本地静态方法，wait是Object的静态方法
+2. sleep不会释放锁，但wait会
+3. sleep不依赖于synchronized，但wait依赖
+4. sleep不需要被唤醒，wait需要
+
+
+
 什么是线程上下文切换
 ---
 
@@ -707,12 +719,43 @@ Synchronized和Lock区别
 AQS
 ---
 
+AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是java并发包的基础类，很多API都是基于AQS来实现加锁和释放锁等功能的。
+
+其内部维护了state跟node节点等变量来实现锁的功能。
+
+比如ReentrantLock的属性中就包括了AQS：
+
+![image-20210717191817092](JUC学习.assets/image-20210717191817092.png)
+
+
+
+### 加锁原理
+
+AQS是如何实现加锁解锁的呢？其内部维护了两个属性：state跟Node。
+
+- state表示是否有线程加锁，0表示没有，1表示有线程正在使用锁。
+
+- Node其实是双向链表的节点（即有前后指针）、Thread（使用锁的线程）跟 nextWaiter（下一个等待的线程）。多个Node节点形成的双向链表，我们称之为等待队列（用于区分公平锁和非公平锁）
+
+加锁的实现步骤：
+
+1. 当一个线程使用lock()方法加锁的时候，会使用CAS操作将state值从0变为1。如果修改成功则将Thread设置为自己。
+2. 如果修改失败说明当前有线程使用该锁，此时这个线程会判断这个锁是不是属于自己，是的话允许加锁，state++；**这也是可重入锁的实现。** 
+3. 若不是属于自己，则该线程会进入到等待队列中。
+
+解锁的实现步骤：
+
+1. 
 
 
 
 
-公平和非公平
----
+
+
+
+### 公平和非公平锁
+
+
 
 
 
