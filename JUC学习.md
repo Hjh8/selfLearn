@@ -225,6 +225,10 @@ CopyOnWriteArraySet是通过CopyOnWriteArrayList实现的，即去重的时候�
 
 > 通俗来讲就是公平锁要排队，非公平锁是抢。
 
+在ReentrantLock的构造方法中可以指定公平锁和非公平锁。
+
+`new ReentrantLock(true)`：设置为公平锁。默认是非公平锁。
+
 
 
 死锁
@@ -719,9 +723,7 @@ Synchronized和Lock区别
 AQS
 ---
 
-AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是java并发包的基础类，很多API都是基于AQS来实现加锁和释放锁等功能的。
-
-其内部维护了state跟node节点等变量来实现锁的功能。
+AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是java并发包的基础类，很多API都是基于AQS来实现加锁和释放锁等功能的。其内部维护了state跟node节点等变量来实现锁的功能。
 
 比如ReentrantLock的属性中就包括了AQS：
 
@@ -729,7 +731,7 @@ AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是j
 
 
 
-### 加锁原理
+### 加/解锁原理
 
 AQS是如何实现加锁解锁的呢？其内部维护了两个属性：state跟Node。
 
@@ -737,27 +739,34 @@ AQS是如何实现加锁解锁的呢？其内部维护了两个属性：state跟
 
 - Node其实是双向链表的节点（即有前后指针）、Thread（使用锁的线程）跟 nextWaiter（下一个等待的线程）。多个Node节点形成的双向链表，我们称之为等待队列（用于区分公平锁和非公平锁）
 
-加锁的实现步骤：
+![image-20210717215345180](JUC学习.assets/image-20210717215345180.png)
+
+
+
+**加锁**的实现步骤：
 
 1. 当一个线程使用lock()方法加锁的时候，会使用CAS操作将state值从0变为1。如果修改成功则将Thread设置为自己。
 2. 如果修改失败说明当前有线程使用该锁，此时这个线程会判断这个锁是不是属于自己，是的话允许加锁，state++；**这也是可重入锁的实现。** 
-3. 若不是属于自己，则该线程会进入到等待队列中。
+3. 若不是属于自己，则该线程使用CAS操作进入到等待队列中，然后调用 LockSupport.park(this) 进入阻塞
+4. 当锁对象释放之后，会重新尝试去获取。
 
-解锁的实现步骤：
+![image-20210717215730782](JUC学习.assets/image-20210717215730782.png)
 
-1. 
+![image-20210717220324099](JUC学习.assets/image-20210717220324099.png)
 
+**解锁**的实现步骤：
 
+1. state减一。如果state值为0，会将Thread变量也设置为null，如果当前线程不是最后一个节点的话，则调用 LockSupport.unpark(s.thread); 完成锁的释放
 
-
-
-
-
-### 公平和非公平锁
-
+> LockSupport提供的是一个许可，如果存在许可，线程在调用`park`的时候，会立马返回，此时 许可 会被消费掉变成不可用。如果没有许可，则会阻塞。调用unpark的时候，许可变成可用。注意，许可只有一个，不可累加。
 
 
 
 
-Lock的底层实现
----
+
+### 公平和非公平锁的原理
+
+这两者的实现是靠AQS的nextWaiter跟阻塞队列。使用公平锁时，会先判断nextWaiter是不是自己，是的话才尝试加锁，不是的话就继续阻塞。另外使用公平锁的情况下 如果线程没有进入阻塞队列，那么该线程会将前一个节点的waitStatus设为-1，目的是告诉前一个节点
+
+而使用非公平锁时，直接就尝试加锁。
+
