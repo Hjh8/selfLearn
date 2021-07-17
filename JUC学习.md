@@ -620,13 +620,13 @@ Java中的线程池是通过Executor框架实现的。
 
 ### 参数
 
-**CORE_POOL_SIZE**：核心线程数，正常情况下创建的线程数，只有线程池关闭的时候才会销毁。
+**core_pool_size**：核心线程数，正常情况下创建的线程数，只有线程池关闭的时候才会销毁。
 
-**MAX_POOL_SIZE**：线程池中允许的最大线程数，核心线程数+临时线程数=最大线程数。
+**max_pool_size**：线程池中允许的最大线程数，核心线程数+临时线程数=最大线程数。
 
-**KEEP_ALIVE_TIME**：临时线程的最大存活时间。
+**keep_alive_time**：临时线程的最大存活时间。
 
-**WORK_QUEUE**：存放待执行的任务，是一个阻塞队列。
+**work_quue**：存放待执行的任务，是一个阻塞队列。
 
 **ThreadFactory**：线程工厂，生产执行任务的线程。
 
@@ -639,7 +639,7 @@ Java中的线程池是通过Executor框架实现的。
 
 > newFixedThreadPool 和 newSingleThreadExecutor 底层使用的阻塞队列为：LinkedBlockingQueue。
 >
-> newCachedThreadPool底层使用的阻塞队列为：
+> newCachedThreadPool底层使用的阻塞队列为：SynchronousQueue
 
 
 
@@ -661,7 +661,23 @@ handler的拒绝策略：
 
 ### 自定义线程池
 
+线程池的底层都是使用ThreadPoolExecutor这个对象来实现的。当框架提供的线程池无法解决我们的需求时，我们可以自定义线程池。
 
+![image-20210717175203420](JUC学习.assets/image-20210717175203420.png)
+
+
+
+```java
+ExecutorService threadPool = new ThreadPoolExecutor(
+    2,
+    9,
+    2L,
+    TimeUnit.SECONDS,
+    new LinkedBlockingQueue<Runnable>(),
+    Executors.defaultThreadFactory(),
+    new ThreadPoolExecutor.CallerRunsPolicy()
+);
+```
 
 
 
@@ -690,6 +706,8 @@ Synchronized和Lock区别
 
 AQS
 ---
+
+
 
 
 
