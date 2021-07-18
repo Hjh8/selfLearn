@@ -254,8 +254,6 @@ CopyOnWriteArraySet是通过CopyOnWriteArrayList实现的，即去重的时候�
 
 
 
-多线程锁
-
 Callable&FutureTask
 ---
 
@@ -269,15 +267,6 @@ Callable 接口的特点如下：
 ```java
 //新类 MyThread 实现 callable 接口
 class MyThread implements Callable<Integer>{
-    @Override
-    public Integer call() throws Exception {
-        return 200; 
-    }
-}
-```
-
-```java
-class MyThread2 implements Callable<Integer>{
     @Override
     public Integer call() throws Exception {
         return 200; 
