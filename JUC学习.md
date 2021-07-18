@@ -464,7 +464,7 @@ ReentrantReadWriteLock表示它表示两个锁，一个是读操作相关的锁�
 ```java
 class MyData{
     private volatile Map<String ,String> map = new HashMap<>();
-    // 可重入的读写锁
+    // 读写锁
     ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
     public void put(String key,String value) {
@@ -637,14 +637,6 @@ Java中的线程池是通过Executor框架实现的。
 > newCachedThreadPool底层使用的阻塞队列为：SynchronousQueue
 
 
-
-**ThreadPoolExecutor.CallerRunsPolicy()：**调用执行自己的线程运行任务，也就是直接在调用execute方法的线程运行（run）被拒绝的任务，如果执行程序已关闭，则会丢弃任务。因此这种策略会降低新任务的提交速度，影响程序的整体性能。另外，这个策略喜欢增加队列容量。如果应用程序可以承受此延迟并且不能任务丢弃一个任务请求的话，可以选择这个策略。
-
-handler的拒绝策略：
-
-有四种：第一种AbortPolicy:不执行新任务，直接抛出异常，提示线程池已满
-
-第二种DisCardPolicy:不执行新任务，也不抛出异常
 
 ### 执行流程
 
