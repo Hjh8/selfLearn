@@ -96,7 +96,7 @@ public interface StudentDao {
 
 pom.xml
 
-```java
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -159,7 +159,7 @@ pom.xml
 
 sql映射文件：写sql语句，mybatis会来这里执行sql语句
 
-```java
+```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
     指定约束文件，mybatis-3-mapper.dtd是约束文件名
@@ -195,7 +195,7 @@ sql映射文件：写sql语句，mybatis会来这里执行sql语句
 
 `mybatis_conf.xml` （名称自定义，自己能记住就行）
 
-```java
+```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE configuration
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
@@ -384,7 +384,7 @@ List<Student> selectStudentsLikeName(String name);
 
 映射文件主要代码：
 
-```java
+```xml
 //【注意】%跟参数前后要有空格
 <select id="selectStudentsLikeName" resultType="entity.Student">
      select * from student where name like "%" #{name} "%"
@@ -415,7 +415,6 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -447,7 +446,7 @@ public class HelloMybatis {
 }
 ```
 
-**tips**：在执行DML语句（增删改）时，默认需要**手动提交**。后面会介绍自动提交的方式，一般不建议自己提交。
+**tips**：在执行DML语句（增删改）时，默认需要**手动提交**。后面会介绍自动提交的方式，一般不建议自动提交。
 
 ***
 
@@ -455,12 +454,12 @@ public class HelloMybatis {
 
 首先，在主配置文件的根标签内添加：
 
-```java
-    <!-- settings：控制mybatis全局行为 -->
-    <settings>
-        <!-- 设置mybatis输出日志 -->
-        <setting name="logImpl" value="STDOUT_LOGGING"/>
-    </settings>
+```xml
+<!-- settings：控制mybatis全局行为 -->
+<settings>
+    <!-- 设置mybatis输出日志 -->
+    <setting name="logImpl" value="STDOUT_LOGGING"/>
+</settings>
 ```
 
 然后重新运行项目，你会发现控制台输出了mybatis的执行操作。
@@ -473,7 +472,7 @@ public class HelloMybatis {
 
 `SqlSessionFactoryBuilder`：负责创建`SqlSessionFactory`对象
 
-`SqlSessionFactory`：是一个**接口**，创建其对象时比较耗时耗资源，一个项目有一个就够了。
+`SqlSessionFactory`：是一个**接口**，创建其对象时比较耗时耗资源，一个项目有一个就够了（单例模式）。
 
 作用：获取`SqlSession`对象。
 
@@ -604,7 +603,7 @@ mapper的CRUD对应的标签都有一个`parameterType`，它在标签中是可�
 
 比如，下面的通过id来查找学生信息，id为整形。
 
-```java
+```xml
 <select id="selectStudents" parameterType="int" resultType="entity.Student">
     select * from student where id=#{id}
 </select>
@@ -635,7 +634,7 @@ Student selectByID(int id);
 
 映射文件主要代码如下：
 
-```java
+```xml
 <select id="selectByID" resultType="entity.Student">
     select * from student where id=#{aaa}
 </select>
@@ -686,7 +685,7 @@ List<Student> selectMultiByParam(@Param("myname") String name,
 
 映射文件主要代码：
 
-```java
+```xml
 <select id="selectMultiByParam" resultType="entity.Student">
     select * from student where name=#{myname} or age=#{myage}
 </select>
@@ -718,7 +717,7 @@ List<Student> selectMultiByObj(Student student);
 
 映射文件主要代码：
 
-```java
+```xml
 <!--  对象传参，使用#{属性名}方式接收
     	完整用法 #{属性名, javaType=参数类型, jdbcType=表中该字段的类型}
 		由于mybatis的反射可以获取到 javaType、jdbcType，所以我们只用简约写法
@@ -758,7 +757,7 @@ List<Student> selectMultiByPosition(String name, int id);
 
 映射文件主要代码：
 
-```java
+```xml
 <select id="selectMultiByPosition" resultType="entity.Student">
     select * from student where name=#{arg0} or age=#{arg1}
     <!--select * from student where name=#{param1} or age=#{param2}-->
@@ -791,7 +790,7 @@ List<Student> selectMultiByMap(Map<String, Object> map);
 
 映射文件主要代码：
 
-```java
+```xml
 <select id="selectMultiByMap" resultType="entity.Student">
     select * from student where name=#{myname} or age=#{myage}
 </select>
@@ -801,15 +800,15 @@ List<Student> selectMultiByMap(Map<String, Object> map);
 
 ## 4.8 #{}和${}的区别
 
-那么`${}`的作用跟`#{}`一样，都是可以获取参数。但两者实现的原理不同。
+`${}`的作用跟`#{}`一样，都是可以获取参数。但两者实现的原理不同。
 
-在第三节知道了`#{}`的底层是使用`Preparestatement`来进行操作的，在执行sql语句时会把它替换成`?`。
+在第三节知道了`#{}`的底层是使用`Preparestatement`来进行操作的，在执行sql语句时会把它**替换成`?`**。
 
-而`${}` 的底层是使用`Statement`来进行操作的，在执行sql语句时会获取参数，然后在将参数使用字符串拼接的方式拼接起来。
+而`${}` 的底层是使用`Statement`来进行操作的，在执行sql语句时会获取参数，然后在将参数使用 **字符串拼接的方式** 拼接起来。
 
-比如：`"select * from student where name=${name}"`,mybatis执行时会先把它变成`"select * from student where name="+"'name'"` ，然后再执行。
+比如：`"select * from student where name=${name}"`，mybatis执行时会先把它变成`"select * from student where name="+"'name'"` ，然后再执行。
 
-学过数据库的人都知道这种方式会发送**sql注入**，在实际开发中是很危险的。
+学过数据库的人都知道这种方式会发生**sql注入**，在实际开发中是很危险的。
 
 什么是sql注入？
 
@@ -818,8 +817,6 @@ List<Student> selectMultiByMap(Map<String, Object> map);
 使用`${}`方式的话就会变成`select * from student where name= ‘codekiang’;drop table student;` ，执行之后，哦吼，你的表就没有了。
 
 从性能的角度来讲，也是`#{}`更加的高效。
-
-所以在开发中多用`#{}`的方式。
 
 那`${}`这么危险，为什么还会存在。它之所以存在是因为它还留有一手`#{}`不能实现的功能，不然早给淘汰了。
 
@@ -873,7 +870,7 @@ Student selectStudentName(int id);
 
 映射文件主要代码：
 
-```java
+```xml
 <select id="selectStudentName" resultType="entity.Student">
     select name from student where id=#{id}
 </select>
@@ -881,11 +878,7 @@ Student selectStudentName(int id);
 
 运行之后，你可以查看控制台的输出日志，mybatis成功查出了数据，但是你输出的`stu`却是`null`。这样就验证了`resultType`只会把**同名列值**赋值给**同名属性**，不同名的就跳过。
 
-
-
-***
-
-**疑惑** 
+- [ ] **疑惑** 
 
 问：如果可以把`resultType`看成方法的返回值，那如果返回值是`List<Student>`时，为什么它的值填的是`Student`？
 
@@ -903,7 +896,7 @@ Student selectStudentName(int id);
 
 主配置文件主要代码：
 
-```java
+```xml
 <typeAliases>
         <!-- 给一个类型指定一个别名
                 type：要自定义类型的限定名
@@ -917,7 +910,7 @@ Student selectStudentName(int id);
 
 dao层主要代码：
 
-```java
+```xml
 <select id="selectStudentAlias" resultType="stu">
     select * from student where id=#{id}
 </select>
@@ -929,7 +922,7 @@ dao层主要代码：
 
 主配置文件主要代码：
 
-```java
+```xml
 <typeAliases>
     <!-- name：包名，此时你的别名为类名（类名不区分大小写） -->
     <package name="entity"/>
@@ -938,13 +931,11 @@ dao层主要代码：
 
 dao层主要代码：
 
-```java
+```xml
 <select id="selectStudentPackage" resultType="student">
     select * from student where id=#{id}
 </select>
 ```
-
-***
 
 **小结：**`typeAlias`跟`package`都是在主配置文件中的`<typeAliases>`中进行设置。一般不建议使用别名，如果要用，推荐第二种方式。
 
@@ -974,7 +965,7 @@ Map<Object,Object> selectStudentToMap(int id);
 
 映射文件主要代码：
 
-```java
+```xml
 <select id="selectStudentToMap" resultType="map">
     select * from student where id=#{id}
 </select>
@@ -986,7 +977,10 @@ Map<Object,Object> selectStudentToMap(int id);
 
 在第一节提到了resultType只能是列名跟属性名相同时才会赋值，那不同的时候咋办捏？
 
-方法有两种：1. 使用resultMap 2. 使用列的别名(查询字段后使用as)
+方法有两种：
+
+1. 使用resultMap 
+2. 使用列的别名(查询字段后使用as)
 
 ***
 
@@ -997,11 +991,9 @@ Map<Object,Object> selectStudentToMap(int id);
 1. 在映射文件中先定义`resultMap`
 2. 在`select`标签中，使用`resultMap`代替`resultType`
 
-***
-
 只需要在映射文件改动一些，其他文件用法跟之前一样。
 
-```JAVA
+```xml
 <!--id：resultMap的唯一标识    type：java类型的全限定名称或别名-->
 <resultMap id="studentMap" type="entity.Student">
     <!-- 主键列使用<id>标签 其他列使用<result>标签
@@ -1018,11 +1010,11 @@ Map<Object,Object> selectStudentToMap(int id);
 </select>
 ```
 
-
+***
 
 使用**列别名**解决列名属性名不一致问题（了解）
 
-```java
+```xml
 <select id="selectStudentResultMap" resultType="entity.Student">
     select id as myid, name as myname, email as myemail, age as myage  from student where id=#{id}
 </select>
@@ -1049,7 +1041,7 @@ Map<Object,Object> selectStudentToMap(int id);
 
 比如：（**【注意】test里面的name为属性名**）
 
-```java
+```xml
 <select id="selectStudentIf" resultType="entity.Student">
     select * from student where
     <if test="name!=null and name!='' ">
@@ -1079,7 +1071,7 @@ Map<Object,Object> selectStudentToMap(int id);
 
 语法：
 
-```java
+```xml
 <select id="selectStudentWhere" resultType="entity.Student">
     select * from student
     <where>
@@ -1101,7 +1093,7 @@ Map<Object,Object> selectStudentToMap(int id);
 
 比如我把上面的写法改成下面的形式（or跑到了第一个if里面）
 
-```java
+```xml
 <select id="selectStudentWhere" resultType="entity.Student">
     select * from student
     <where>
@@ -1121,11 +1113,11 @@ Map<Object,Object> selectStudentToMap(int id);
 
 ## 6.3 foreach
 
-> 循环java的数组或集合，主要用于sql的`in`语句。比如，查找年龄为18 20 22三者之一的学生信息。
+> 循环java的数组或集合，主要用于sql的 **in** 语句以及**批量查询**。比如，查找年龄为18 20 22三者之一的学生信息。
 
 语法：
 
-```java
+```xml
 <foreach collection="" item="" open="" close="" separator="">
     #{变量}
 </foreach>
@@ -1147,7 +1139,7 @@ Map<Object,Object> selectStudentToMap(int id);
 
 使用：
 
-```java
+```xml
 <select id="selectStudentForeach" resultType="entity.Student">
     select * from student where age in
     <foreach collection="array" item="stu" open="(" close=")" separator=",">
@@ -1157,6 +1149,20 @@ Map<Object,Object> selectStudentToMap(int id);
 ```
 
 因为我传的是`Student数组`，所以collection填`array`，因为stu是对象，需要取出它的属性。
+
+***
+
+批量查询：
+
+```xml
+<insert id="insertBatch" >
+    insert into person 
+    values
+    <foreach collection="list" item="item" index="index" separator=",">
+        (null, #{item.name}, #{item.sex}, #{item.address})
+    </foreach>
+</insert>
+```
 
 
 
@@ -1169,7 +1175,7 @@ Map<Object,Object> selectStudentToMap(int id);
 1. 在`<sql>`标签内创建sql片段  
 2.  使用`<include>`来引用sql片段
 
-```java
+```xml
 <sql id="SelectStuSql">
     select * from student
 </sql>
@@ -1186,15 +1192,13 @@ Map<Object,Object> selectStudentToMap(int id);
 
 如果if条件满足，会形成`select * from student where id=? ` 
 
-**【注意】**dao层代码：`Student selectStudentSQL(@Param("id") int id);` 因为命名了才可以在`test`中使用`id`，不然会出现下一节的错误。
+**【注意】**dao层代码：`Student selectStudentSQL(@Param("id") int id);` 因为命名了才可以在`test`中使用`id`，不然会出现像下一小节的错误。
 
 
 
 ## 6.5 常见错误
 
-我们在使用动态sql使用`#{xxx}`引入参数.会抛异常`There is no getter for property named 'XXX' in 'class java.lang.String'` 
-
-此时可能因为你没有使用命名参数，或者对象传参。
+我们在使用动态sql使用`#{xxx}`引入参数.会抛异常`There is no getter for property named 'XXX' in 'class java.lang.String'` ，此时可能因为你没有使用命名参数。
 
 
 
