@@ -581,6 +581,58 @@ Linux 硬盘分 IDE 硬盘和 SCSI 硬盘，目前基本上是 SCSI 硬盘。
 网络配置
 ---
 
+查看linux 的网络配置（如查看IP地址）：`ifconfig`。注意是 ifconfig 不是ipconfig。
+
+测试主机之间网络连通性：`ping 主机IP/域名` 
+
+***
+
+查看/设置主机名：
+
+1. hostname命令可以查看主机名
+2. 修改`/etc/hostname` 的内容可以修改主机名
+3. 重启生效
+
+设置 hosts 映射：
+
+1. 在`/etc/hosts` 指定。如`196.168.2.131 hahaha` 
+2. 重启生效
+
+![image-20210719111701322](Linux学习.assets/image-20210719111701322.png)
+
+***
+
+手动修改配置文件来指定 IP：
+
+1. 修改 `/etc/sysconfig/network-scripts/ifcfg-ens33` 文件
+
+2. 将`BOOTPROTO=dhcp` 这行修改为 `BOOTPROTO=static`
+
+   ifcfg-ens33 文件说明
+
+   ```bach
+   # 接口名（设备,网卡）
+   DEVICE=eth0
+   # MAC地址
+   HWADDR=00:0C:2x:6x:0x:xx
+   # 网络类型（通常是 Ethemet）
+   TYPE=Ethernet
+   # 随机id 
+   UUID=926a57ba-92c6-4231-bacb-f27e5e6a9f44
+   # 系统启动的时候网络接口是否有效（yes/no） 
+   ONBOOT=yes 
+   # IP的配置方法[none|static|bootp|dhcp] 
+   BOOTPROTO=static # 修改为static 
+   # IP地址（需要手动新增）
+   IPADDR=指定的IP地址
+   # 网关（需要手动新增）
+   GATEWAY=192.168.200.2
+   # 域名解析器（需要手动新增）
+   DNS1=192.168.200.2
+   ```
+
+3. 重启生效
+
 
 
 
