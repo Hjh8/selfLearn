@@ -1206,9 +1206,9 @@ Map<Object,Object> selectStudentToMap(int id);
 
 缓存可以使我们避免频繁的与数据库进行交互，比如在需要频繁查询同一个人信息的情况下，没有必要每次都去访问数据库，我们可以把这个人的信息放在内存中，需要时拿出来就可以了（数据在内存中的访问速度更快哦）。
 
-Mybatis系统中默认使用了两级缓存：`一级缓存`跟`二级缓存`。
+Mybatis系统中有两级缓存：`一级缓存`跟`二级缓存`。
 
-默认情况下只开启一级缓存。二级缓存需要手动开启和配置。为了提高扩展性我们可以实现Mybatis提高的`Cache`接口来自定义二级缓存。
+默认情况下只开启一级缓存，二级缓存需要手动开启和配置。为了提高扩展性我们可以实现Mybatis提高的`Cache`接口来自定义二级缓存。
 
 **tips**：Mybatis缓存使用的是`map`来保存数据的。
 
@@ -1218,9 +1218,7 @@ Mybatis系统中默认使用了两级缓存：`一级缓存`跟`二级缓存`。
 
 一级缓存又叫做本地缓存，是`SqlSession`级别的，即每个SqlSession各自拥有一个一级缓存。一级缓存是一直开启的，在主配置文件中默认设置了`<setting name="localCacheScope" value="SESSION"/>`。
 
-只有一种方法可以**禁用**一级缓存，就是将前面代码的value变成`STSTEMENT`，每次查询完之后都会清除掉一级缓存的内容，从而达到禁用一级缓存的效果。其他我感觉都不算禁用，只是清空了缓存而已。实际上这种方法我也觉得不是真正意义上的禁用，只是个人看法，若要深入探讨可以自行查阅资料。
-
-
+只有一种方法可以**禁用**一级缓存，就是将前面代码的value变成`STSTEMENT`，每次查询完之后都会清除掉一级缓存的内容，从而达到禁用一级缓存的效果。
 
 <u>其实，Mybatis的缓存有一些坑，这些先不用了解。以后变强大时再去了解，填平会更好。</u>
 
@@ -1242,16 +1240,14 @@ Mybatis系统中默认使用了两级缓存：`一级缓存`跟`二级缓存`。
 
 - 不同`SqlSession`执行操作时（一级缓存是SqlSession级别的）
 - 同个`SqlSession`执行不同查询语句时（因为缓存中还没有此数据）
-- 同个`SqlSession`，但两次查询之间执行了DML语句（这次的增删改可能会影响当前数据）
+- 同个`SqlSession`执行读操作，但两次查询之间执行了DML语句（这次的增删改可能会影响当前数据）
 - 同个`SqlSession`，手动清除一级缓存`SqlSession.clearCache()` 
 
 
 
-一级缓存的不足：**多个会话之间不能共享数据**。
-
-
-
 ## 7.2 二级缓存
+
+一级缓存的不足：**多个会话之间不能共享数据**。
 
 为了可以让多个会话之间能够共享数据，Mybatis使用了**二级缓存**。
 
@@ -1265,18 +1261,16 @@ Mybatis系统中默认使用了两级缓存：`一级缓存`跟`二级缓存`。
 
 2. 在映射文件中使用`<cache>` 
 
-   ```java
+   ```xml
    <mapper namespace="dao.StudentDao">
-       
        <cache/>
        
        <select id="selectStudentByID" resultType="entity.Student">
            select * from student where id=#{id}
        </select>
-           
    </mapper>
    ```
-
+   
 3. `javabean`要实现序列化接口。（因为保证缓存的安全，mybatis使用了序列化跟反序列化的技术）
 
    `public class Student implements Serializable` 
@@ -1557,6 +1551,8 @@ Mybatis仅支持association关联对象和collection关联集合对象的延迟�
 接口映射就是在IBatis中任意定义接口,然后把接口里面的方法和SQL语句绑定，我们直接调用接口方法就可以,这样比起原来了SqlSession提供的方法我们可以有更加灵活的选择和设置。
 
 
+
+3 2.30
 
 
 
