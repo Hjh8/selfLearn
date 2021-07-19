@@ -203,7 +203,7 @@ Lnux中有的文件及文件夹都有至少权限三种权限：
 
 > 第一列表示 文件的类型，所有者、所在组和其他组对该文件的权限。
 >
-> 第二列表示 文件硬链接数或目录的子文件数
+> 第二列表示 文件硬链接数 或 目录的子文件数
 >
 > 第三列表示 文件所有者
 >
@@ -233,6 +233,10 @@ Lnux中有的文件及文件夹都有至少权限三种权限：
 
 通过 chmod 指令，可以修改**文件或者目录**的权限。
 
+`chmod 权限 文件/目录名` 
+
+
+
 <u>第一种方式</u>：+ 、-、= 变更权限，u:所有者 g:所有组 o:其他组 a:所有人(u、g、o 的总和)
 
 `chmod u=rwx,g=rx,o=x 文件/目录名`：给该文件赋予权限
@@ -241,7 +245,7 @@ Lnux中有的文件及文件夹都有至少权限三种权限：
 
 
 
-<u>第二种方式</u>：通过数字变更权限。4表示r，2表示w，1表示x，两列可以任意相加表示组合，例如3表示wx。
+<u>第二种方式</u>：通过数字变更权限。4表示r，2表示w，1表示x，三者可以任意相加表示组合，例如3表示wx。
 
 `chmod 751 abc.txt`：等价于 `chmod u=rwx,g=rx,o=x abc.txt` 
 
@@ -326,7 +330,7 @@ Lnux中有的文件及文件夹都有至少权限三种权限：
 
   `-f` ： 强制删除不提示
 
-`mv oldName newName`：移动文件或重命名
+`mv oldName newName`：移动文件/目录 或 重命名
 
 - 移动文件：`mv /home/pig.txt /home/hjh/pig.txt` (不同目录下)
 - 重命名：`mv /home/cat.txt /home/pig.txt` （同个目录下）
@@ -473,13 +477,13 @@ locate 指令可以快速定位文件路径。locate 指令利用事先建立的
 
 locate 指令无需遍历整个文件系统，而是搜索一个数据库 /var/lib/mlocate/mlocate.db ，查询速度较快。Linux系统自动创建这个数据库，并且每天自动更新一次。所以为了保证查询结果的准确度，**最好在每次使用locate命令前，使用 `updatedb` 指令更新 locate 数据库**。
 
-命令：`locate 文件` 
+命令：`locate filename` (支持正则)
 
-```bach
-[root@ubuntu ~]# touch new.txt
-[root@ubuntu ~]# locate new.txt
-[root@ubuntu ~]# updatedb
-[root@ubuntu ~]# locate new.txt
+```cmd
+[root@ubuntu ~]$ touch new.txt
+[root@ubuntu ~]$ locate new.txt
+[root@ubuntu ~]$ updatedb
+[root@ubuntu ~]$ locate new.txt
 /root/new.txt
 ```
 
@@ -534,7 +538,7 @@ zip 命令既可以压缩文件，也可以压缩目录。压缩后文件的后�
 
 压缩：`tar -zcvf filename.tar.gz dirname` 
 
-压缩多个文件：`tar cvf filename.tar.gz dirname1 dirname2 dirname3.....` 
+压缩多个文件：`tar zcvf filename.tar.gz dirname1 dirname2 dirname3.....` 
 
 解压：`tar -zxvf filename.tar.gz` 
 
@@ -543,8 +547,6 @@ zip 命令既可以压缩文件，也可以压缩目录。压缩后文件的后�
 - -x：解压
 - -v：显示过程
 - -f：指定打包后的文件名
-
-
 
 
 
@@ -566,11 +568,11 @@ Linux 硬盘分 IDE 硬盘和 SCSI 硬盘，目前基本上是 SCSI 硬盘。
 
 统计/opt 文件夹下文件的个数 ：`ls -l /opt | grep "^-" | wc -l` 
 
-`df -h`：查询系统整体磁盘使用情况
+`df -h`：查询系统 **整体磁盘** 的使用情况
 
-![image-20210719101640320](Linux学习.assets/image-20210719101640320.png)
+![image-20210719125623145](Linux学习.assets/image-20210719125623145.png)
 
-`du -hac`： 查询指定目录的磁盘占用情况
+`du -hac dirname`： 查询 **指定目录** 的磁盘占用情况
 
 - -h：带单位；-a：文件一起显示；-c：汇总值
 
@@ -608,7 +610,7 @@ Linux 硬盘分 IDE 硬盘和 SCSI 硬盘，目前基本上是 SCSI 硬盘。
 
 2. 将`BOOTPROTO=dhcp` 这行修改为 `BOOTPROTO=static`
 
-   ifcfg-ens33 文件说明
+   ifcfg-ens33文件说明
 
    ```bach
    # 接口名（设备,网卡）
@@ -671,7 +673,7 @@ ps常用参数：
 - -o：显示自定义列，多个列之间用 `,` 分割
   - `ps -eo pid,tid,%cpu | grep 222` 查看222进程的 进程id，线程id，和cpu使用情况
 
-线程状态stat，使用`ps -eo pid,stat` 可以查看进程的状态
+进程状态stat，使用`ps -eo pid,stat` 可以查看进程的状态
 
 ```tex
 D     无法中断的休眠状态（通常 IO 的进程）
@@ -703,8 +705,6 @@ top可以**实时的**监控系统状态信息和进程所使用的资源。显�
 - -d 秒数：每个几秒就刷新。默认3秒
 - -i：不显示闲置或僵死进程
 - -p pid：动态查看指定的进程
-
-
 
 
 
@@ -835,10 +835,6 @@ apt 是 Advanced Packaging Tool 的简称，是一款安装包管理工具。**�
 `sudo apt show package_name`：显示包信息
 
 > 因为apt的服务器是在美国，有时候安装速度会很慢，所以可以去[国内镜像源](https://mirrors.tuna.tsinghua.edu.cn/) 下载
-
-
-
-
 
 
 
