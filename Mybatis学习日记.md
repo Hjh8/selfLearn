@@ -1291,11 +1291,9 @@ Mybatis系统中有两级缓存：`一级缓存`跟`二级缓存`。
    sqlSession2.close();
    ```
 
-结果如下：
+结果如下：(可以看出只执行了一次sql语句，说明两个sqlSession使用的是同一个二级缓存)
 
 ![11](Mybatis学习日记.assets/11.png)
-
-可以看出只执行了一次sql语句，说明两个sqlSession使用的是同一个二级缓存。
 
 
 
@@ -1315,12 +1313,13 @@ Mybatis系统中有两级缓存：`一级缓存`跟`二级缓存`。
 
 ## 7.3 和缓存有关的设置(了解)
 
+> 一级缓存是sqlSession级别的，二级缓存是namespace级别的
+
 1. `<setting name="cacheEnabled" value="false">` 默认关闭**二级缓存**，与一级缓存无关。
 2. 每个`<select>`标签都有属性`useCache="true"` 即每次查询之后都会将数据放入**一级缓存**中，当值会true且关闭sqlSession时会将该条数据放入到**二级缓存**中，若将它设为`false`仍会放入一级缓存但不会放入二级缓存。
 3. 每个**DML**标签都有属性`flushCache="true"`即每次执行完DML语句后都清空**一级跟二级缓存区**。
 4. 每个`<select>`标签还有一个属性`flushCache="false"` 执行查询默认不清空，如果将它设置会true，每次执行完查询语句后都会清空**一级跟二级缓存区**。
 5. `sqlSession.clearCache()`只是**清除**当前sqlSession的**一级缓存** 。
-6. `<setting name="localCacheScope" value="SESSION"/>` 本地缓存作用域
 
 ***
 
@@ -1344,7 +1343,7 @@ Mybatis系统中有两级缓存：`一级缓存`跟`二级缓存`。
 
 首先，创建好数据库配置文件（我叫做`jdbc.properties`）
 
-```java
+```properties
 # key-value的形式，其中key的命名最好使用 “.” 来表示层级
 jdbc.driver = com.mysql.cj.jdbc.Driver
 # 这里的&不用做转换
@@ -1355,14 +1354,14 @@ jdbc.password = 你的密码
 
 接着，在主配置文件中指定该文件的位置
 
-```java
+```xml
 <!--  指定properties的位置，从类路径开始  -->
 <properties resource="jdbc.properties"/>
 ```
 
 最后，在`<environment>`中通过**`${key}`**使用
 
-```java
+```xml
 <environment id="development">
     <transactionManager type="JDBC"/>
     <dataSource type="POOLED">
@@ -1376,8 +1375,6 @@ jdbc.password = 你的密码
 ```
 
 这时候你如果要修改数据库信息，只需要对`properties`修改就可以了。
-
-
 
 
 
@@ -1397,7 +1394,7 @@ jdbc.password = 你的密码
 
 1. 在`pom.xml`中`pagehelper`引入坐标
 
-   ```java
+   ```xml
    <!-- 引入插件pagehelper的坐标 -->
    <dependency>
      <groupId>com.github.pagehelper</groupId>
@@ -1408,7 +1405,7 @@ jdbc.password = 你的密码
 
 2. 在主配置文件的`<plugins>`中设置对应的**拦截器**
 
-   ```java
+   ```xml
    <plugins>
        <!--  pagehelper拦截器  -->
        <plugin interceptor="com.github.pagehelper.PageInterceptor"/>
@@ -1417,7 +1414,7 @@ jdbc.password = 你的密码
 
 3. 在查询之前使用`PageHelper`对象，告诉它页数跟显示数
 
-   ```java
+   ```xml
    // pageNum:第几页  pageSize：每页显示多少条数据
    PageHelper.startPage(1,2);
    List<Student> students = dao.selectAllStudent();
@@ -1490,7 +1487,7 @@ mybatis有哪些执行器，他们之间的区别
 mybatis是否支持延迟加载？
 ---
 
-什么是延迟加载？多表联查的时候先查出一个表的数据，然后在根据具体的条件去另一个表中查。
+什么是延迟加载？多表联查的时候先查出一个表的数据，然后需要用到其他表的数据时，再根据具体的条件去其他表中查。
 
 例如：查询订单信息，有时候需要关联查出用户信息。如果每次
 
@@ -1549,10 +1546,6 @@ Mybatis仅支持association关联对象和collection关联集合对象的延迟�
 ---
 
 接口映射就是在IBatis中任意定义接口,然后把接口里面的方法和SQL语句绑定，我们直接调用接口方法就可以,这样比起原来了SqlSession提供的方法我们可以有更加灵活的选择和设置。
-
-
-
-3 2.30
 
 
 
