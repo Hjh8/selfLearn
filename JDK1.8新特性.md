@@ -354,7 +354,7 @@ Stream
 
 - reduce(BinaryOperatorb)：
 
-- collect(Collector c)：将流转换为其他形式。如list
+- collect(Collector c)：将流中元素收集成另外一个数据结构，如list、set
 
   ```java
   
