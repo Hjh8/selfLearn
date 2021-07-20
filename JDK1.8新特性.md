@@ -203,19 +203,38 @@ for (String book: books){
 
 方法引用可以说是一个更加便捷的Lambda表达式。**Lambda表达式可以自定义抽象方法的实现代码，方法引用则是直接使用已实现的方法**。它的语法为`::`。
 
-简单应用：(按首字母排序)
+> 要实现的抽象方法的参数列表，必须与已实现方法的参数列表保持一致，才可以使用方法引用。
+
+简单应用：(输出数组中的元素)
 
 ```java
-// 定义字符串数组
-String[] books = new String[]{"java基础", "python程序设计", "C语言", "C++编程设计"};
-// 方法引用 String::compareTo
-Arrays.sort(books, String::compareTo);
-System.out.println(Arrays.toString(books));
+List books = Arrays.asList("java基础", "python程序设计", "C语言", "C++编程设计");
+// 方法引用 String::println
+books.forEach(System.out::println);
 ```
 
-`String::compareTo` 等价于 `(s1, s2) -> s1.compareTo(s2);` 
+`System.out::println` 等价于 `(e) -> System.out.println(e);` 
+
+因为println方法要接收一个参数，而lambda实现也是一个参数。所以将lambda改成方法引用。
 
 
+
+常见的五种方法引用格式：
+
+- 对象方法引用：`对象::实例方法` ，如 `System.out::println` 
+  - `this::实例方法` 调用自身已有的方法
+  - `super::实例方法` 调用父类已有的方法
+- 静态方法引用：`类::静态方法` ，如 `Math::abs` 
+- 实例方法引用：`类::实例方法` ，如 `String::compareTo` 
+- 构造方法引用：
+  - `类::new` 调用某类构造函数（单个对象）
+  - `类[]::new` 调用某类的构造函数（数组对象）
+
+
+
+`对象::实例方法` 跟 `类::实例方法` 的区别：
+
+`类::实例方法` 的**第一个参数** 作为**方法的执行者**，例如上面的`String::compareTo` 的第一个参数就是方法的执行体，第二个参数作为方法的形参。
 
 
 
