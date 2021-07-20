@@ -927,7 +927,7 @@ tips：`?`结尾的都是可选参数。也就是说 **返回值类型** 、**�
 
 第一步：在`pom.xml`中加入依赖
 
-```java
+```xml
 <!--  spring的maven依赖  -->
 <dependency>
   <groupId>org.springframework</groupId>
@@ -990,7 +990,7 @@ public class MyAspect {
 
 第四步：创建对象
 
-```java
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
@@ -1106,7 +1106,7 @@ public class MyAspect {
 
 配置文件
 
-```java
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
@@ -2473,7 +2473,7 @@ ApplicationContext扩展的功能：
 事务的实现原理
 ---
 
-在一个方法上加了@Transational注解或者 通过aop得知添加这个方法要添加事务后，spring会基于这个类生成一个代理对象，代理对象在执行这个方法的时候会先分析事务的属性，判断是否要创建新事务，如果需要则关闭自动提交，然后执行原来的方法，如果执行过程成出现了异常则进行回滚，否则正常提交事务。
+在一个方法上加了@Transational注解，spring会基于这个类生成一个代理对象，代理对象在执行这个方法的时候会先分析事务的属性，判断是否要创建新事务，如果需要则关闭自动提交，然后执行原来的方法，如果执行过程成出现了异常则进行回滚，否则正常提交事务。
 
 
 
