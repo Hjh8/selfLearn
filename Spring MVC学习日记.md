@@ -260,7 +260,7 @@ public class MyController {
 
 **@RequestParam**获取的是**param1**和**param2**。
 
-**@PathVariable**获取的是**111**
+**@PathVariable**获取的是**111** 
 
 ```java
 @RequestMapping("/springmvc/{id}")
@@ -685,27 +685,23 @@ public String doStringData(){
 
 相对地址：不带协议名称的是相对地址，例如`user/some.do`、`/user/some.do` 。相对地址不能独立使用，必须有个参考地址，通过参考地址+相对地址拼接成一个绝对地址。
 
-参考地址：
+参考地址：（项目名为test）
 
 1. 访问地址不加`/` 
 
-   访问的是：`https://localhost:8080/test/index.jsp` 
+   当你发起`user/some.do`请求
 
-   其中参考路径为：`https://localhost:8080/test` 
+   访问地址变为：`https://localhost:8080/test/user/some.do` 
 
-   资源：`index.jsp` 
-
-   当你发起`user/some.do`请求，访问地址变为：`https://localhost:8080/test/user/some.do` 
+   此时的参考路径是`https://localhost:8080/test` 
 
 2. 访问地址加`/` 
 
-   访问的是：`https://localhost:8080/test/index.jsp` 
+   当你发起`/user/some.do`请求，
 
-   其中参考路径为：`https://localhost:8080/test` 
+   访问地址变为：`https://localhost:8080/user/some.do` 
 
-   资源：`index.jsp` 
-
-   当你发起`/user/some.do`请求，访问地址变为：`https://localhost:8080/user/some.do` ，此时的参考路径是`https://localhost:8080` 。
+   此时的参考路径是`https://localhost:8080` 。
 
 > 不加斜杠，表示项目的根路径。加了斜杠，代表web服务器的根路径。
 
@@ -762,7 +758,7 @@ SpringMVC框架把原来servlet的请求转发和重定向进行了封装，现�
 
 使用：
 
-```
+```java
 // 请求转发
 mv.setViewName("forword:/WEB-INF/view/show.jsp");
 // 重定向
@@ -803,7 +799,7 @@ mv.setViewName("redirect:/WEB-INF/view/show.jsp");
        }
        // 不声明value则表示找不到指定异常的都交由该方法执行
        @ExceptionHandler
-       public ModelAndView doNameException(Exception ex){
+       public ModelAndView doAllException(Exception ex){
            ModelAndView mv = new ModelAndView();
            mv.addObject("ex", ex);
            mv.setViewName("Error");
