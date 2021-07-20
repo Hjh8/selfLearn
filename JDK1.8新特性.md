@@ -217,20 +217,38 @@ books.forEach(System.out::println);
 
 因为println方法要接收一个参数，而lambda实现也是一个参数。所以将lambda改成方法引用。
 
-
+***
 
 常见的五种方法引用格式：
 
 - 对象方法引用：`对象::实例方法` ，如 `System.out::println` 
+
   - `this::实例方法` 调用自身已有的方法
   - `super::实例方法` 调用父类已有的方法
+
 - 静态方法引用：`类::静态方法` ，如 `Math::abs` 
+
 - 实例方法引用：`类::实例方法` ，如 `String::compareTo` 
+
 - 构造方法引用：
+
   - `类::new` 调用某类构造函数（单个对象）
+
+    ```java
+    Supplier<Person> s = Person::new; // 无参构造
+    Person p = s.get();
+    System.out.println(p.toString());
+    ```
+
   - `类[]::new` 调用某类的构造函数（数组对象）
 
+    ```java
+    Function<Integer, Person[]> s = Person[]::new;
+    Person[] pa = s.apply(5);  // 等价于 new Person[5];
+    System.out.println(pa.length);
+    ```
 
+***
 
 `对象::实例方法` 跟 `类::实例方法` 的区别：
 
