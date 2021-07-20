@@ -258,5 +258,115 @@ books.forEach(System.out::println);
 
 
 
-Stream API
+Stream
 ---
+
+流Stream，可以让你以一种声明的方式处理数据。Stream 使用一种类似用 SQL 语句从数据库查询数据的直观方式来提供一种对 Java 集合运算和表达的高阶抽象。
+
+![image-20210720192721606](JDK1.8新特性.assets/image-20210720192721606.png)
+
+使用步骤：
+
+1. 创建流
+2. 指定中间操作链
+3. 终止操作，真正执行中间操作链
+
+特点：
+
+- 不是数据结构，不会存储元素。 
+- 不会改变源对象，而是返回一个持有结果的新Stream。 
+- Stream操作是延迟执行的，即等到需要结果的时候才执行。
+
+
+
+### 创建流
+
+创建流的方式有以下几种：
+
+1. Collection接口类.stream() 或 Collection接口类.parallelStream()
+
+   ```java
+   List<String> list = Arrays.asList(strArray);
+   Stream stream = list.stream();
+   ```
+
+2. Arrays.stream(T[] array)
+
+   ```java
+   String [] strArray = new String[] {"a", "b", "c"};
+   Stream stream = Arrays.stream(strArray);
+   ```
+
+3. Stream.generate(Supplier\<T> s)：创建无限流
+
+   ```java
+   Stream stream = Stream.generate(() -> Math.random());
+   ```
+
+
+
+### 中间操作
+
+多个**中间操作**可以连接起来形成一个**操作连**，除非操作连上触发终止操作，否则**中间操作不会执行任何的处理**！因为只会在 **终止操作时一次性全部处理** ，所以称为“惰性求值”
+
+筛选与切片
+
+|        方法         |                     描述                     |
+| :-----------------: | :------------------------------------------: |
+| filter(Predicate p) |                   过滤元素                   |
+|     distinct()      | 根据元素的hashCode() 和 equals()去除重复元素 |
+|  limit(long size)   |                获取size个元素                |
+|    skip(long n)     |            跳过n个元素后开始获取             |
+
+映射
+
+|        方法         |                      描述                      |
+| :-----------------: | :--------------------------------------------: |
+|   map(Function f)   | 接收一个函数作为参数，该函数会被应用到每个元素 |
+| flatMap(Function f) |          将所有的元素加入到同一个流中          |
+
+排序
+
+|         方法         |            描述            |
+| :------------------: | :------------------------: |
+| sorted(Comparator c) | 按比较器顺序排序，默认升序 |
+
+
+
+### 终止操作
+
+终端操作会从流的流水线生成结果，其结果可以是stream、List、Integer等值。
+
+查找与匹配类方法：
+
+- allMatch(Predicate p)：是否匹配所有元素
+- anyMatch(Predicate p)：是否匹配任一元素
+- noneMatch(Predicate p)：是否匹配不到元素
+- findFirst()：返回第一个元素
+- count()：返回流中元素总数
+- max(Comparator c)：流中最大值
+- min(Comparator c)：流中最小值
+- foreach(Consumer c)：遍历元素
+
+归约类方法：
+
+- reduce(T start, BinaryOperatorb)：
+
+- reduce(BinaryOperatorb)：
+
+- collect(Collector c)：将流转换为其他形式。如list
+
+  ```java
+  
+  ```
+
+  
+
+
+
+
+
+
+
+
+
