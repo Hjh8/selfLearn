@@ -201,6 +201,22 @@ for (String book: books){
 方法引用
 ---
 
+方法引用可以说是一个更加便捷的Lambda表达式。**Lambda表达式可以自定义抽象方法的实现代码，方法引用则是直接使用已实现的方法**。它的语法为`::`。
+
+简单应用：(按首字母排序)
+
+```java
+// 定义字符串数组
+String[] books = new String[]{"java基础", "python程序设计", "C语言", "C++编程设计"};
+// 方法引用 String::compareTo
+Arrays.sort(books, String::compareTo);
+System.out.println(Arrays.toString(books));
+```
+
+`String::compareTo` 等价于 `(s1, s2) -> s1.compareTo(s2);` 
+
+
+
 
 
 
