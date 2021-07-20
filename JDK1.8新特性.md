@@ -318,6 +318,18 @@ Stream
 |  limit(long size)   |                获取size个元素                |
 |    skip(long n)     |            跳过n个元素后开始获取             |
 
+```java
+Stream<Integer> stream = Stream.of(6, 4, 6, 7, 3, 9, 8, 10, 12, 14, 14);
+ 
+Stream<Integer> newStream = stream.filter(s -> s > 5) // 6 6 7 9 8 10 12 14 14
+        .distinct() // 6 7 9 8 10 12 14
+        .skip(2) // 9 8 10 12 14
+        .limit(2); // 9 8
+newStream.forEach(System.out::println);
+```
+
+
+
 映射
 
 |        方法         |                      描述                      |
