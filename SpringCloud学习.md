@@ -58,19 +58,63 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
 2.2 搭建两个微服务
 ---
 
+创建两个springboot项目（作为注册中心的客户端）
+
+![image-20210721210116272](SpringCloud学习.assets/image-20210721210116272.png)
 
 
 
 
 
+2.3 搭建与配置Eureka 服务注册中心
+---
+
+1. 创建另一个系统用于服务注册中心
+
+2. 添加eureka-server依赖：
+
+   ```xml
+   <dependency>   		
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+       <version>2.2.7.RELEASE</version>
+   </dependency>
+   ```
+
+3. 在 Spring Boot 的入口类上添加一个@EnableEurekaServer 注解，用于开启 Eureka 注册中心服务端
+
+4. 在配置文件中配置 Eureka 服务注册中心信息
+
+   ```properties
+   # 内嵌定时 tomcat 的端口
+   server.port=8093
+   # 设置该服务注册中心的 hostname
+   eureka.instance.hostname=localhost
+   # 由于我们目前创建的应用是一个服务注册中心，而不是普通的应用，默认情况下，这个应用会向注册中心（也是它自己）注册它自己，
+   # 设置为 false 表示禁止这种自己向自己注册的默认行为
+   eureka.client.register-with-eureka=false
+   # 表示不去检索其他的服务
+   eureka.client.fetch-registry=false
+   # 指定服务注册中心的位置
+   eureka.client.service-url.defaultZone=http://${eureka.instance.hostname}:${server.port}/eureka
+   ```
 
 
 
 
 
+2.4 向Eureka注册中心注册服务
+---
 
+在之前两个客户端系统中添加eureka-client依赖
 
-
+```xml
+<dependency>   		
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    <version>2.2.7.RELEASE</version>
+</dependency>
+```
 
 
 
