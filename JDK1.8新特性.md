@@ -337,6 +337,24 @@ newStream.forEach(System.out::println);
 |   map(Function f)   | 接收一个函数作为参数，该函数会被应用到每个元素 |
 | flatMap(Function f) |          将所有的元素加入到同一个流中          |
 
+```java
+List<String> list = Arrays.asList("a,b,c", "1,2,3");
+// 将每个元素转成一个新的且不带逗号的元素
+list.stream()
+    .map(s -> s.replaceAll(",", ""));
+	.forEach(System.out::println); // [abc 123]
+ 
+Stream<String> s3 = list.stream().flatMap(s -> {
+    String[] split = s.split(",");
+    // 将每个元素转换成一个stream
+    Stream<String> s2 = Arrays.stream(split);
+    return s2;
+});
+s3.forEach(System.out::println); // [a b c 1 2 3]
+```
+
+
+
 排序
 
 |         方法         |            描述            |
@@ -352,12 +370,32 @@ newStream.forEach(System.out::println);
 查找与匹配类方法：
 
 - allMatch(Predicate p)：是否匹配所有元素
+
+  ```java
+  List<Integer> list = Arrays.asList(1, 2, 3, 4, 5);
+  boolean m1 = list.stream().allMatch(e -> e > 3); //false
+  ```
+
 - anyMatch(Predicate p)：是否匹配任一元素
+
+  ```java
+  boolean m2 = list.stream().anyMatch(e -> e > 3); //true
+  ```
+
 - noneMatch(Predicate p)：是否匹配不到元素
+
 - findFirst()：返回第一个元素
+
 - count()：返回流中元素总数
+
 - max(Comparator c)：流中最大值
+
+  ```java
+  Integer max = list.stream().max(Integer::compareTo).get();
+  ```
+
 - min(Comparator c)：流中最小值
+
 - foreach(Consumer c)：遍历元素
 
 归约类方法：
@@ -369,12 +407,20 @@ newStream.forEach(System.out::println);
 - collect(Collector c)：将流中元素收集成另外一个数据结构，如list、set
 
   ```java
-  
+  // 将元素转成list存储
+  List<Integer> ages = list
+      .stream()
+      .map(Student::getAge)
+      .collect(Collectors.toList());
   ```
 
-  
-
-
+  ```java
+  // 字符串分隔符连接
+  String joinName = list
+      .stream()
+      .map(Student::getName)
+      .collect(Collectors.joining(",", "(", ")")); // (aa,bb,cc)
+  ```
 
 
 
