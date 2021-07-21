@@ -40,6 +40,23 @@ Spring Cloud 基于 Spring Boot 框架构建微服务架构
 
 一个服务就是一个系统，服务之间进行通信就等于系统之间通信，那系统之间要如何通信呢？需要把他们都注册到一个中心，我们称为“**服务注册中心**”。通过中心，系统之间就可以相互通信，获取到需要的结果。
 
+Spring Cloud 提供了多种服务注册与发现的实现方式，例如：Eureka、
+
+Consul、Zookeeper。在这里我们介绍Eureka。
+
+
+
+2.1 Eureka介绍
+---
+
+Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eureka 由两个组件组成：Eureka服务端和 Eureka客户端。Eureka服务端 是服务注册中心，而系统中的其他微服务，使用 Eureka客户端 连接到 Eureka服务端，并维持心跳连接。
+
+有了 Eureka 注册中心，系统的维护人员就可以通过 Eureka服务端 来监控系统中各个微服务是否正常运行。
+
+
+
+2.2 搭建两个微服务
+---
 
 
 
@@ -59,6 +76,7 @@ Spring Cloud 基于 Spring Boot 框架构建微服务架构
 
 
 
+Eureka与Zookeeper的比较
 
 
 
