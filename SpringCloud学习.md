@@ -172,33 +172,31 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
            return new RestTemplate();
        }
    }
-```
-   
-
+   ```
 > @LoadBalanced实现负载均衡，合理的把请求分配给不同的服务器，而不是单单让某个服务器处理，从而让每个服务器可以发挥最大程度的作用。
 >
 > 服务的真正调用由 ribbon实现，所以我们需要在调用服务提供者时使用 ribbon 来调用，而@LoadBalanced实际就是调用ribbon。
 
 5. 使用restTemplate进行系统通信
 
-   ```java
-   @RestController
-   public class ConsumerController {
-   
-       @Autowired
-       RestTemplate restTemplate;
-   
-       @RequestMapping("/consumer/hello")
-       public String hello(){
-           // 注册中心的服务名，而不是项目名
-           String baseURL = "http://01-SPRINGCLOUD-PROVIDER";
-           ResponseEntity<String> entity = restTemplate.getForEntity(baseURL+"/provider/hello", String.class);
-           System.out.println(entity); // <200,provider.hello,[Content-Type:"text/plain;charset=UTF-8", Content-Length:"14", Date:"Thu, 22 Jul 2021 01:28:26 GMT", Keep-Alive:"timeout=60", Connection:"keep-alive"]>
-           System.out.println(entity.getBody()); // provider.hello
-           return "consumer.hello";
-       }
-   }
-   ```
+```java
+@RestController
+public class ConsumerController {
+
+    @Autowired
+    RestTemplate restTemplate;
+
+    @RequestMapping("/consumer/hello")
+    public String hello(){
+        // 注册中心的服务名，而不是项目名
+        String baseURL = "http://01-SPRINGCLOUD-PROVIDER";
+        ResponseEntity<String> entity = restTemplate.getForEntity(baseURL+"/provider/hello", String.class);
+        System.out.println(entity); // <200,provider.hello,[Content-Type:"text/plain;charset=UTF-8", Content-Length:"14", Date:"Thu, 22 Jul 2021 01:28:26 GMT", Keep-Alive:"timeout=60", Connection:"keep-alive"]>
+        System.out.println(entity.getBody()); // provider.hello
+        return "consumer.hello";
+    }
+}
+```
 
 Ribbon 是什么？
 
@@ -284,10 +282,42 @@ Eureka 优先保证可用性，Eureka **各个节点是平等**的，某几个�
 自我保护机制是 Eureka 注册中心的重要特性，当 Eureka 注册中心进入自我保护模式时，在 Eureka Server 首页会输出如下警告信息：
 
 <p style="color:red;">EMERGENCY! EUREKA MAY BE INCORRECTLY CLAIMING INSTANCES ARE UP WHEN THEY'RE NOT. RENEWALS ARE LESSER THAN THRESHOLD AND HENCE THE INSTANCES ARE NOT BEING EXPIRED JUST TO BE SAFE</p>
-
 在没有 Eureka 自我保护的情况下，如果 Eureka Server 在一定时间内没有接收到某个微服务实例的心跳，Eureka Server 将会注销该实例。即使微服务实际是正常的，因为可能网络不好导致接收心跳较慢。
 
 Eureka 通过 **“自我保护模式”** 来解决这个问题 —— 当 Eureka Server 节点在短时间内丢失过多客户端时（可能发生了网络分区故障），那么就会把这个微服务节点进行保护。一旦进入自我保护模式，Eureka Server 就会保护服务注册表中的信息，不删除服务注册表中的数据（也就是不会注销任何微服务）。当网络故障恢复后，该 Eureka Server 节点会再自动退出自我保护模式
+
+***
+
+关于自我保护常用几个配置如下：
+
+服务器端配置：
+
+```properties
+# 测试时关闭自我保护机制，保证不可用服务及时踢出
+eureka.server.enable-self-preservation=false
+```
+
+客户端配置：
+
+```properties
+# 每间隔 2s，向服务端发送一次心跳，证明自己依然"存活"
+eureka.instance.lease-renewal-interval-in-seconds=2 
+# 如果90s之内没有给你发心跳，就代表我故障了，将我踢出掉
+eureka.instance.lease-expiration-duration-in-seconds=90
+```
+
+
+
+
+
+四、客户端负载均衡Ribbon
+===
+
+
+
+
+
+
 
 
 
