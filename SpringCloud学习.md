@@ -1,4 +1,4 @@
-1. 简介
+一、简介
 ===
 
 1.1 微服务概述
@@ -35,7 +35,7 @@ Spring Cloud 基于 Spring Boot 框架构建微服务架构
 
 
 
-2. Spring Cloud快速入门
+二、 Spring Cloud快速入门
 ===
 
 一个服务就是一个系统，服务之间进行通信就等于系统之间通信，那系统之间要如何通信呢？需要把他们都注册到一个中心，我们称为“**服务注册中心**”。通过中心，系统之间就可以相互通信，获取到需要的结果。
@@ -71,7 +71,7 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
 
 1. 创建另一个系统用于服务注册中心
 
-2. 添加eureka-server依赖：
+2. 添加eureka-server依赖：（**注意，springboot的版本要跟eureka一直**）
 
    ```xml
    <dependency>   		
@@ -79,6 +79,19 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
        <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
        <version>2.2.7.RELEASE</version>
    </dependency>
+   
+   
+   <dependencyManagement>
+           <dependencies>
+               <dependency>
+                   <groupId>org.springframework.cloud</groupId>
+                   <artifactId>spring-cloud-dependencies</artifactId>
+                   <version>Hoxton.RELEASE</version>
+                   <type>pom</type>
+                   <scope>import</scope>
+               </dependency>
+           </dependencies>
+       </dependencyManagement>
    ```
 
 3. 在 Spring Boot 的入口类上添加一个@EnableEurekaServer 注解，用于开启 Eureka 注册中心服务端
@@ -99,6 +112,10 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
    eureka.client.service-url.defaultZone=http://${eureka.instance.hostname}:${server.port}/eureka
    ```
 
+5. 访问页面
+
+   ![image-20210721231109426](SpringCloud学习.assets/image-20210721231109426.png)
+
 
 
 
@@ -106,7 +123,7 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
 2.4 向Eureka注册中心注册服务
 ---
 
-在之前两个客户端系统中添加eureka-client依赖
+1. 在之前两个客户端系统中添加eureka-client依赖
 
 ```xml
 <dependency>   		
@@ -114,11 +131,85 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
     <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
     <version>2.2.7.RELEASE</version>
 </dependency>
+
+<dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>Hoxton.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 ```
 
+2. 在 Spring Boot 的入口类上添加一个 **@EnableEurekaClient** 注解来表明自己是一个 eureka 客户端
+
+3. 配置服务名称和注册中心地址
+
+   ```properties
+   # 注册的客户端名字，一般与项目名一致
+   spring.application.name=XXX
+   # 服务端所在路径
+   eureka.client.service-url.defaultZone=http://localhost:8093/eureka
+   ```
+
+4. 自定义配置类，将RestTemplate放入容器中
+
+   ```java
+   package com.study.config;
+   
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   import org.springframework.web.client.RestTemplate;
+   
+   @Configuration
+   public class MyConfig {
+   
+       @LoadBalanced // 使用负载均衡
+       @Bean
+       public RestTemplate restTemplate(){
+           return new RestTemplate();
+       }
+   }
+```
+   
+
+> @LoadBalanced实现负载均衡，合理的把请求分配给不同的服务器，而不是单单让某个服务器处理，从而让每个服务器可以发挥最大程度的作用。
+>
+> 服务的真正调用由 ribbon实现，所以我们需要在调用服务提供者时使用 ribbon 来调用，而@LoadBalanced实际就是调用ribbon。
+
+5. 使用restTemplate进行系统通信
+
+   ```java
+   @RestController
+   public class ConsumerController {
+   
+       @Autowired
+       RestTemplate restTemplate;
+   
+       @RequestMapping("/consumer/hello")
+       public String hello(){
+           // 注册中心的服务名，而不是项目名
+           String baseURL = "http://01-SPRINGCLOUD-PROVIDER";
+           ResponseEntity<String> entity = restTemplate.getForEntity(baseURL+"/provider/hello", String.class);
+           System.out.println(entity); // <200,provider.hello,[Content-Type:"text/plain;charset=UTF-8", Content-Length:"14", Date:"Thu, 22 Jul 2021 01:28:26 GMT", Keep-Alive:"timeout=60", Connection:"keep-alive"]>
+           System.out.println(entity.getBody()); // provider.hello
+           return "consumer.hello";
+       }
+   }
+   ```
+
+Ribbon 是什么？
+
+Ribbon 是一个基于 HTTP 和 TCP 的客户端**负载均衡器**，当使用 Ribbon 对服务进行访问的时候，它会扩展 Eureka 客户端的服务发现功能，实现从 Eureka注册中心中获取服务端列表，并通过 Eureka 客户端来确定服务端是否己经启动。Ribbon 在 Eureka 客户端服务发现的基础上，实现了对服务实例的选择策略，从而实现对服务的负载均衡消费。
 
 
 
+三、服务注册中心Eureka
+===
 
 Eureka与Zookeeper的比较
 
