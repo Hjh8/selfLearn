@@ -101,17 +101,15 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
    ```properties
    # 内嵌定时 tomcat 的端口
    server.port=8093
-   # 设置该服务注册中心的 hostname
+   # 设置该服务注册中心的hostname名称
    eureka.instance.hostname=localhost
    # 由于我们目前创建的应用是一个服务注册中心，而不是普通的应用，默认情况下，这个应用会向注册中心（也是它自己）注册它自己，
    # 设置为 false 表示禁止这种自己向自己注册的默认行为
    eureka.client.register-with-eureka=false
    # 表示不去检索其他的服务
    eureka.client.fetch-registry=false
-   # 指定服务注册中心的位置
-   eureka.client.service-url.defaultZone=http://${eureka.instance.hostname}:${server.port}/eureka
    ```
-
+   
 5. 访问页面
 
    ![image-20210721231109426](SpringCloud学习.assets/image-20210721231109426.png)
@@ -211,13 +209,85 @@ Ribbon 是一个基于 HTTP 和 TCP 的客户端**负载均衡器**，当使用 
 三、服务注册中心Eureka
 ===
 
-Eureka与Zookeeper的比较
+3.1 Eureka高可集群
+---
+
+在微服务架构的这种分布式系统中，我们要充分考虑各个微服务组件的高可用性问题，不能有单点故障。
+
+由于注册中心 eureka 本身也是一个服务，如果它只有一个节点，那么它有可能发生故障，这样就不能注册与查询服务了，所以可以使用多个注册中心来解决，然后从多个这就是所谓的集群。
+
+eureka 服务注册中心它本身也是一个服务，它也可以看做是一个提供者，又可以看做是一个消费者，所以可以让其他服务注册中心 往自己这里注册，而自己也可以注册到其他中心，当一个注册中心有服务更改的时候，会同步到其他注册中心，从而达到高可用的效果。
+
+![image-20210722101647041](SpringCloud学习.assets/image-20210722101647041.png)
 
 
 
 
 
+3.2 Eureka与Zookeeper的比较
+---
 
+著名的 CAP 理论指出，一个分布式系统不可能同时满足 C(一致性)、A(可用性) 和 P(分区容错性)。由于分区容错性在是分布式系统中必须要保证的，因此我们只能在 A 和 C 之间进行权衡，在此 Zookeeper 保证的是 CP, 而 Eureka 则是 AP。
+
+**Zookeeper 保证 CP** 
+
+在 ZooKeeper 中，**节点被分为master和slaver**。当 master 节点因为网络故障与其他节点失去联系时，剩余节点会重新进行 leader 选举，但**选举 leader 需要一定时间且选举期间整个 ZooKeeper 集群都是不可用的**，这就导致在选举期间注册服务瘫痪。在云部署的环境下，因网络问题使得 ZooKeeper 集群失去 master 节点是大概率事件，虽然服务最终能够恢复，但是在选举时间内导致服务注册长期不可用是难以容忍的。
+
+**Eureka 保证 AP** 
+
+Eureka 优先保证可用性，Eureka **各个节点是平等**的，某几个节点挂掉不会影响正常节点的工作，剩余的节点依然可以提供注册和查询服务。而 Eureka 的客户端在向某个 Eureka 注册或时如果发现连接失败，则会自动切换至其它节点，只要有一台 Eureka 还在，就能保证注册服务可用(保证可用性)，只不过查到的信息可能不是最新的(不保证强一致性)。
+
+
+
+3.3 Eureka注册中心高可用集群搭建
+---
+
+1. 新创建一个系统，做为新的注册中心（**端口号假设为8094**）。
+
+2. 让两个注册中心相互注册到对方
+
+   旧注册中心的配置文件：
+
+   ```properties
+   # 内嵌定时 tomcat 的端口
+   server.port=8093
+   # 设置该服务注册中心的 ip地址，因为hostname不能重复，所以使用IP地址
+   eureka.instance.ip-address=127.0.0.1
+   # 设置为 false 表示禁止这种自己向自己注册的默认行为
+   eureka.client.register-with-eureka=false
+   # 表示不去检索其他的服务
+   eureka.client.fetch-registry=false
+   # 指定 新服务注册中心 的位置
+   eureka.client.service-url.defaultZone=http://127.0.0.1:8094/eureka
+   ```
+
+   新注册中心的配置文件：
+
+   ```properties
+   # 内嵌定时 tomcat 的端口
+   server.port=8094
+   # 设置该服务注册中心的 ip地址
+   eureka.instance.ip-address=127.0.0.1
+   # 设置为 false 表示禁止这种自己向自己注册的默认行为
+   eureka.client.register-with-eureka=false
+   # 表示不去检索其他的服务
+   eureka.client.fetch-registry=false
+   # 指定 旧服务注册中心 的位置
+   eureka.client.service-url.defaultZone=http://127.0.0.1:8093/eureka
+   ```
+
+
+
+3.4 Eureka服务注册中心自我保护机制
+---
+
+自我保护机制是 Eureka 注册中心的重要特性，当 Eureka 注册中心进入自我保护模式时，在 Eureka Server 首页会输出如下警告信息：
+
+<p style="color:red;">EMERGENCY! EUREKA MAY BE INCORRECTLY CLAIMING INSTANCES ARE UP WHEN THEY'RE NOT. RENEWALS ARE LESSER THAN THRESHOLD AND HENCE THE INSTANCES ARE NOT BEING EXPIRED JUST TO BE SAFE</p>
+
+在没有 Eureka 自我保护的情况下，如果 Eureka Server 在一定时间内没有接收到某个微服务实例的心跳，Eureka Server 将会注销该实例。即使微服务实际是正常的，因为可能网络不好导致接收心跳较慢。
+
+Eureka 通过 **“自我保护模式”** 来解决这个问题 —— 当 Eureka Server 节点在短时间内丢失过多客户端时（可能发生了网络分区故障），那么就会把这个微服务节点进行保护。一旦进入自我保护模式，Eureka Server 就会保护服务注册表中的信息，不删除服务注册表中的数据（也就是不会注销任何微服务）。当网络故障恢复后，该 Eureka Server 节点会再自动退出自我保护模式
 
 
 
