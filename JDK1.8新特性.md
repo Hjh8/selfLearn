@@ -286,7 +286,7 @@ Stream
 1. Collection接口类.stream() 或 Collection接口类.parallelStream()
 
    ```java
-   List<String> list = Arrays.asList(strArray);
+   List<String> list = Arrays.asList("a", "b", "c");
    Stream stream = list.stream();
    ```
 
@@ -332,10 +332,10 @@ newStream.forEach(System.out::println);
 
 映射
 
-|        方法         |                      描述                      |
-| :-----------------: | :--------------------------------------------: |
-|   map(Function f)   | 接收一个函数作为参数，该函数会被应用到每个元素 |
-| flatMap(Function f) |          将所有的元素加入到同一个流中          |
+|        方法         |                  描述                  |
+| :-----------------: | :------------------------------------: |
+|   map(Function f)   | 接收一个函数，该函数会被应用到每个元素 |
+| flatMap(Function f) |      将所有的元素加入到同一个流中      |
 
 ```java
 List<String> list = Arrays.asList("a,b,c", "1,2,3");
