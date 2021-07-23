@@ -340,11 +340,48 @@ Ribbon 是**客户端负载均衡**工具，所有客户端节点下的 服务�
 4.3 Ribbon负载均衡策略
 ---
 
-RoundRobinRule： 默认轮询的方式
-RandomRule： 随机方式
-WeightedResponseTimeRule： 根据响应时间来分配权重的方式，响应的越快，分配的值越大。
-BestAvailableRule： 选择并发量最小的方式
-RetryRule： 在一个配置时间段内当选择server不成功，则一直尝试使用subRule的方式选择一个可用的server
-ZoneAvoidanceRule： 根据性能和可用性来选择。
-AvailabilityFilteringRule： 过滤掉那些因为一直连接失败的被标记为circuit tripped的后端server，并过滤掉那些高并发的的后端server（active connections 超过配置的阈值）
+RoundRobinRule： 轮训策略（默认）。按照顺序依次对相同的所有服务进行访问。
+
+RandomRule： 随机策略。随机调用服务。
+
+WeightedResponseTimeRule： 响应时间加权重策略。根据响应时间来分配权重的方式，响应的越快，分配的值越大。
+
+BestAvailableRule： 最低并发策略。选择并发量最小的服务。
+
+RetryRule： 重试策略。先通过轮询策略选出一个服务，然后去访问，如果此服务失效，那么会重试一段时间后会选择其他的实例
+
+AvailabilityFilteringRule： 可用过滤策略。过滤掉那些因为一直连接失败的被标记为circuit tripped的服务，并过滤掉那些高并发的服务。
+
+> 可以自定义负载均衡策略。
+
+***
+
+指定负载均衡策略：
+
+在自定义配置类中，指定IRule对象。
+
+```java
+// 使用随机策略
+@Bean
+public IRule iRule(){
+    return new RandomRule();
+}
+```
+
+
+
+五、Rest请求模板类
+===
+
+
+
+
+
+
+
+
+
+
+
+
 
