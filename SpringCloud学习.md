@@ -313,6 +313,9 @@ eureka.instance.lease-expiration-duration-in-seconds=90
 四、客户端负载均衡Ribbon
 ===
 
+4.1 负载均衡介绍
+---
+
 负载均衡是指将一个请求均匀地分摊到不同的节点单元上执行，负载均衡分为硬件负载均衡和软件负载均衡：
 
 - **硬件负载均衡**：比如 F5、深信服、Array 等；
@@ -323,9 +326,14 @@ eureka.instance.lease-expiration-duration-in-seconds=90
 
 
 
-Ribbon 是**客户端负载均衡**工具，所有客户端节点下的服务端清单，需要自己从服务注册中心上获取，比如 Eureka 服务注册中心。在 Spring Cloud 中，由于 Spring Cloud 对 Ribbon 做了二次封装，所以默认会创建针对 Ribbon 的自动化整合配置； 
+4.2 Ribbon
+---
 
-![image-20210723135937583](SpringCloud学习.assets/image-20210723135937583.png)
+Ribbon 是**客户端负载均衡**工具，所有客户端节点下的服务端清单 需要自己从服务注册中心上获取，比如 Eureka 服务注册中心。在 Spring Cloud 中，由于 Spring Cloud 对 Ribbon 做了二次封装，所以默认会创建针对 Ribbon 的自动化整合配置； 
 
 
 
+
+
+4.3 Ribbon负载均衡策略
+---
