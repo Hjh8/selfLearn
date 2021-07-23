@@ -409,13 +409,44 @@ String s = restTemplate.getForObject("http://01-SPRINGCLOUD-PROVIDER/provider/he
 5.2 POST请求
 ---
 
-post请求跟get差不多，只不过传递参数不能用map，而是用MultiValueMap， 而且参数传递的位置也不一样。
+post请求跟get差不多，只不过传递参数不能用map，而是用MultiValueMap或者实体类， 而且参数传递的位置也不一样。
 
-- 
+- `postForEntity(URI url, Object request, Class<T> responseType)` 
+- `postForObject(URI url, Object request, Class<T> responseType)` 
+
+例如：
+
+```java
+MultiValueMap body = new LinkedMultiValueMap();
+body.add("id", 1);
+body.add("name", "codekiang");
+String s = restTemplate.patchForObject("http://01-SPRINGCLOUD-PROVIDER/provider/hello", body, String.class);
+
+==================================================
+    
+User user = new User();
+user.setId(1);
+user.setName("codekiang");
+String s = restTemplate.patchForObject("http://01-SPRINGCLOUD-PROVIDER/provider/hello", user, String.class);
+```
 
 
 
+5.3 PUT请求
+---
 
+put请求无返回值，传递参数跟get一样。
+
+![image-20210723171555660](SpringCloud学习.assets/image-20210723171555660.png)
+
+
+
+5.4 DELETE请求
+---
+
+delete请求无返回值，传递参数跟post类似，要使用MultiValueMap。
+
+![image-20210723171446218](SpringCloud学习.assets/image-20210723171446218.png)
 
 
 
