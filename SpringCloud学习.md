@@ -329,11 +329,22 @@ eureka.instance.lease-expiration-duration-in-seconds=90
 4.2 Ribbon
 ---
 
-Ribbon 是**客户端负载均衡**工具，所有客户端节点下的服务端清单 需要自己从服务注册中心上获取，比如 Eureka 服务注册中心。在 Spring Cloud 中，由于 Spring Cloud 对 Ribbon 做了二次封装，所以默认会创建针对 Ribbon 的自动化整合配置； 
+Ribbon 是**客户端负载均衡**工具，所有客户端节点下的 服务端清单 需要自己从服务注册中心上获取，比如 Eureka 服务注册中心。在发送请求前通过负载均衡算法选择一个服务器，然后进行访问，即在客户端就进行负载均衡算法分配。
 
+**服务器端负载均衡**：例如Nginx，通过Nginx进行负载均衡，先发送请求，然后通过负载均衡算法，在多个服务器之间选择一个进行访问；即在服务器端再进行负载均衡算法分配。
 
+> 客户端负载均衡 和 服务器负载均衡的核心差异在**服务端清单的存放位置**，客户端负载均衡服务端清单需要自己去注册中心获取，而 服务器负载均衡服务端清单由中间服务单独维护。
 
 
 
 4.3 Ribbon负载均衡策略
 ---
+
+RoundRobinRule： 默认轮询的方式
+RandomRule： 随机方式
+WeightedResponseTimeRule： 根据响应时间来分配权重的方式，响应的越快，分配的值越大。
+BestAvailableRule： 选择并发量最小的方式
+RetryRule： 在一个配置时间段内当选择server不成功，则一直尝试使用subRule的方式选择一个可用的server
+ZoneAvoidanceRule： 根据性能和可用性来选择。
+AvailabilityFilteringRule： 过滤掉那些因为一直连接失败的被标记为circuit tripped的后端server，并过滤掉那些高并发的的后端server（active connections 超过配置的阈值）
+
