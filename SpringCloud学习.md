@@ -373,11 +373,45 @@ public IRule iRule(){
 五、Rest请求模板类
 ===
 
+RestTemplate可以让我们方便的访问另一个服务，它是一个 HTTP 请求工具，它提供了常见的REST请求方案的模版，例如 GET 请求、POST 请求、PUT 请求、DELETE 请求。
 
 
 
+5.1 GET请求
+---
+
+不携带参数：
+
+- `getForEntity(String url, Class<T> responseType)`：返回封装好的HTTP响应对象，getBody()可以获取到响应数据
+- `getForObject(URI url, Class<T> responseType)`：直接返回响应数据
+
+携带参数：
+
+- `getForEntity(String url, Class<T> responseType, Map<String, ?> uriVariables)`：传递map
+- `getForEntity(String url, Class<T> responseType, Object... uriVariables)`：传递数组
+- `getForObejct(String url, Class<T> responseType, Map<String, ?> uriVariables)`：传递map
+- `getForObejct(String url, Class<T> responseType, Object... uriVariables)`：传递数组
+
+例如：
+
+```java
+// 封装参数
+Map<String, Object> params = new HashMap<>();
+params.put("id", 1);
+params.put("name", "codekiang");
+
+// 发送请求
+String s = restTemplate.getForObject("http://01-SPRINGCLOUD-PROVIDER/provider/hello?id={id}&name={name}", String.class, params);
+```
 
 
+
+5.2 POST请求
+---
+
+post请求跟get差不多，只不过传递参数不能用map，而是用MultiValueMap， 而且参数传递的位置也不一样。
+
+- 
 
 
 
