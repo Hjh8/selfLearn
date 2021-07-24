@@ -512,13 +512,23 @@ delete请求无返回值，传递参数跟post类似，要使用MultiValueMap。
 
 ***
 
-默认超时时间：
+修改超时时间：
 
 hystrix 默认超时时间是 1000 毫秒，如果你后端的响应超过此时间，就会触发断路器；
 
 修改 hystrix 的默认超时时间：
 
 `@HystrixCommand(fallbackMethod="error", commandProperties={@HystrixProperty(name="execution.isolation.thread.timeoutInMilliseconds", value="1500")})` 
+
+***
+
+异常处理：
+
+如果远程服务有一个异常抛出后我们不希望进入到服务降级方法中去处理，而是直接将异常抛给用户，那么我们可以在@HystrixCommand 注解中添加要忽略的异常。
+
+方式如下：
+
+`@HystrixCommand(fallbackMethod="errorFun", ignoreExceptions = Exception.class)`
 
 
 
@@ -528,6 +538,66 @@ hystrix 默认超时时间是 1000 毫秒，如果你后端的响应超过此时
 所谓**服务降级**，就是当某个服务熔断之后，服务端提供的服务将不再被调用，此时由客户端自己准备一个本地的fallback 回调，返回一个默认值来代表服务端的返回；这种做法，虽然不能得到正确的返回结果，但至少保证了服务的可用，比直接抛出错误或服务不可用要好很多，当然这需要根据具体的业务场景来选择；
 
 `@HystrixCommand(fallbackMethod="errorFun")` 此注解就是服务降级。
+
+
+
+6.4 Dashboard仪表盘
+---
+
+Hystrix Dashboard，它主要用来实时监控Hystrix的各项指标信息。通过Hystrix Dashboard反馈的实时信息，可以帮助我们快速发现系统中存在的问题。
+
+### 使用步骤
+
+1. 添加依赖
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-hystrix-dashboard</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-actuator</artifactId>
+   </dependency>
+   ```
+
+2. 在启动类上面引入注解 **@EnableHystrixDashboard**，启用Dashboard 功能。
+
+3. 配置文件中配置 springboot 监控端点的访问权限
+
+   ```properties
+   # 开放所有端点
+   management.endpoints.web.exposure.include=*
+   ```
+
+4. 浏览器中输入 http://主机:端口号/hystrix 可以访问到仪表盘界面
+
+
+
+### 参数解读
+
+![image-20210724095634713](SpringCloud学习.assets/image-20210724095634713.png)
+
+Hystrix Dashboard共支持三种不同的监控方式：
+
+- **默认的集群监控**：通过URL:http://集群主机名:port/turbine.stream 开启，实现对默认集群的监控。
+
+- **指定的集群监控**：通过URL:http://集群主机名:port/turbine.stream?cluster=[clusterName]开启，实现对clusterName集群的监控。
+
+- **单体应用的监控**：通过URL:http://服务地址:端口号/hystrix.stream开启，实现对具体某个服务实例的监控。
+
+其他参数：
+
+- **Delay**：控制服务器上轮询监控信息的延迟时间，默认为2000毫秒，可以通过配置该属性来降低客户端的网络和CPU消耗。
+
+- **Title**：监控的标题，默认是项目名
+- **Monitor Stream按钮**：开始监控
+
+
+
+
+
+
 
 
 
