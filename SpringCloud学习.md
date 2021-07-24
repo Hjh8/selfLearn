@@ -638,7 +638,9 @@ OpenFeign为微服务架构下服务之间的调用提供了解决方案，OpenF
 
 2. 在项目入口类上添加 **@EnableFeignClients** 注解表示开启 Spring Cloud Feign的支持功能；
 
-3. 定义服务接口
+3. 配置文件的编写跟ribbon差不多，也要被加入到注册中心
+
+4. 定义服务接口
 
    ```java
    @Component
@@ -651,7 +653,7 @@ OpenFeign为微服务架构下服务之间的调用提供了解决方案，OpenF
    }
    ```
 
-4. 定义controller，调用service
+5. 定义controller，调用service
 
    ```java
    @RestController
@@ -707,6 +709,111 @@ ribbon.ConnectTimeout=5000
 
 
 
+
+八、API网关Zuul
+===
+
+8.1 zuul介绍
+---
+
+微服务架构中有个 API 网关(Gateway)的概念，它就像一个安检站一样，所有外部的请求都需要经过它的调度与过滤，然后由 API 网关来实现请求路由、负载均衡、权限验证等功能；
+
+Zuul是Spring Cloud全家桶中的微服务API网关。
+
+
+
+8.2 zuul使用
+---
+
+1. 添加依赖
+
+   ```xml
+   <!-- 网关跟客户端一样，要注册到服务中心 -->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+   </dependency>
+   ```
+
+2. 在入口类上添加 **@EnableZuulProxy** 注解，开启 Zuul的 API 网关服务功能
+
+3. 修改配置文件
+
+   ```properties
+   server.port=8095
+   # 配置服务的名称
+   spring.application.name=05-springcloud-api-gateway
+   # 配置 API 网关到注册中心上
+   eureka.client.service-url.defaultZone=http://127.0.0.1:8093/eureka
+   # 配置路由规则
+   zuul.routes.04-springcloud-service-feign=/user/**
+   ```
+
+4. 此时可以访问 `http://localhost:8095/user/queryAll/` 可以放行，转发到04-springcloud-service-feign服务中
+
+
+
+8.3 路由规则
+---
+
+路由规则是指符合规则的请求才会被放行，在上面配置中则会放行所有符合 `/orders/**` 的请求，然后转发到 04-springcloud-service-feign 服务上。
+
+如果映射规则我们什么都不写，系统也给我们提供了一套**默认的配置规则**。
+
+```properties
+# 默认的规则
+zuul.routes.04-springcloud-service-feign=/04-springcloud-service-feign/**
+```
+
+即**默认可以通过服务名访问该服务的所有路径**。
+
+如果要想关闭某个微服务的路由创建默认规则，可以做如下配置：
+
+```properties
+# 关闭服务提供者的默认规则
+zuul.ignored-services=04-springcloud-service-provider
+```
+
+如果想让某个路由不可通过用户直接访问：
+
+```properties
+# 忽略掉某一些接口路径，注意第一个斜杠
+zuul.ignored-patterns=/**/hello/**
+```
+
+我们也可以统一的为路由规则增加前缀：
+
+```properties
+# 配置网关路由的前缀，注意斜杠
+zuul.prefix=/myapi
+```
+
+此时需要访问`/myapi/user/queryAll` 来访问
+
+***
+
+通配符含义：
+
+- `?`：匹配任意单个字符
+  - 如 `/05-springcloud-service-feign/?` 可以匹配 `/05-springcloud-service-feign/a`
+- `*`：匹配任意个字符
+  - 如 `/05-springcloud-service-feign/*` 可以匹配 `/05-springcloud-service-feign/aa` ，但**不能**匹配 `/05-springcloud-service-feign/a/b/c` 
+- `**`：匹配任意个字符，可以匹配 `/05-springcloud-service-feign/aa` ，**也能**匹配 `/05-springcloud-service-feign/a/b/c` 
+
+
+
+8.4 zuul拦截器
+---
+
+
+
+
+
+![在这里插入图片描述](SpringCloud学习.assets/20200806145302914.png)
 
 
 
