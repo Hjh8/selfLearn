@@ -595,6 +595,121 @@ Hystrix Dashboard共支持三种不同的监控方式：
 
 
 
+七、声明式服务消费 OpenFeign
+===
+
+7.1 OpenFeign 介绍
+---
+
+OpenFeign为微服务架构下服务之间的调用提供了解决方案，OpenFeign是一种面向接口、模板化的HTTP客户端。
+
+在Spring Cloud中使用OpenFeign，可以做到使用HTTP请求访问远程服务，就像调用本地方法一样的，开发者完全感知不到这是在调用远程方法，更感知不到在访问HTTP请求
+
+
+
+7.2 Fegin与OpenFeign
+---
+
+![img](SpringCloud学习.assets/1553023887a56256efc30fd4327760e0.png)
+
+简单来说，Feign 整合了 Ribbon 和 Hystrix 两个组件,就像 Spring Boot 是对 Spring+SpringMVC 的简化一样。而OpenFeign是对Feign的进一步封装。
+
+
+
+
+
+7.3 使用OpenFeign
+---
+
+1. 添加依赖
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+       <version>2.2.7.RELEASE</version>
+   </dependency>
+   
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-openfeign</artifactId>
+   </dependency>
+   ```
+
+2. 在项目入口类上添加 **@EnableFeignClients** 注解表示开启 Spring Cloud Feign的支持功能；
+
+3. 定义服务接口
+
+   ```java
+   @Component
+   // 另一个微服务在注册中心的名称
+   @FeignClient(name="04-springcloud-openfeign")
+   public interface FeignService {
+       // 另一个微服务的具体控制器访问路径
+   	@GetMapping("/feignHello")
+   	public String feignHello(String mes);
+   }
+   ```
+
+4. 定义controller，调用service
+
+   ```java
+   @RestController
+   public class FeignController {
+   	//把feignService注入到容器中去
+       @Autowired
+       FeignService feignService;
+       
+       @GetMapping("/feignTest")
+       @ResponseBody
+       public String feignTest(String mes){
+           String s = feignService.feignHello(mes);
+           return s;
+       }
+   }
+   ```
+
+ribbon跟openfeign调用另一个微服务方式的区别：
+
+![image-20210724122650503](SpringCloud学习.assets/image-20210724122650503.png)
+
+
+
+7.4 设置过期时间和开启熔断
+---
+
+```properties
+feign.hystrix.enabled=true
+# 读取到可用资源所用的时间
+ribbon.ReadTimeout=5000
+# 指的是建立连接所用的时间
+ribbon.ConnectTimeout=5000
+```
+
+如果要进行服务降级：
+
+1. 指定熔断回调逻辑
+
+   `@FeignClient(name="01-springcloud-service-provider", fallback = 回调类.class)` 
+
+2. 创建回调类（继承服务类）
+
+   ```java
+   @Component
+   public class MyFallback implements FeignService {
+       @Override
+       public String feignHello() {
+           return "error";
+       } 
+   }
+   ```
+
+
+
+
+
+
+
 
 
 
