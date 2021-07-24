@@ -1190,7 +1190,7 @@ for(int i = 1; i <= n; i++){
 
 // 查找x所属的集合
 int find(int x){
-    return f[x] == x ? f[x]: f[x] = find(f[x]);
+    return f[x] == x? f[x]: f[x] = find(f[x]);
 }
 
 //判断x y是否属于同一个集合
@@ -1391,7 +1391,8 @@ int main(){
 
 
 
-##学习
+学习
+---
 
 - 输入字符转数字：
 
