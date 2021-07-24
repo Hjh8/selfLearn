@@ -450,5 +450,84 @@ delete请求无返回值，传递参数跟post类似，要使用MultiValueMap。
 
 
 
+六、服务熔断 Hystrix
+===
+
+6.1 Hystrix是什么
+---
+
+在微服务之间通过远程调用实现信息交互时，如果某个服务的响应太慢或者故障，则会造成调用者延迟或调用失败，当大量请求到达，则会造成请求的堆积，从而导致调用者也无法继续响应，导致故障在分布式系统间蔓延。
+
+为了解决此问题，微服务架构中引入了一种叫熔断器的服务保护机制。
+
+> “熔断器”本身是一种开关装置，用于在电路上保护线路过载，当线路中有电器发生短路时，能够及时切断故障电路，防止发生过载、发热甚至起火等严重后果。
+
+微服务架构中的熔断器，就是当服务方没有响应，调用方不会进行长时间的等待，而是直接返回一个错误响应；
+
+**Hystrix** 是由Netflix开源的一个延迟和容错库，用于隔离访问远程系统、服务或者第三方库，防止级联失败，从而提升系统的可用性、容错性与局部应用的弹性，是一个实现了超时机制和断路器模式的工具类库。
+
+
+
+6.2 Hystrix快速入门
+---
+
+1. 在微服务上添加依赖
+
+   ```xml
+   <!--Spring Cloud 熔断器起步依赖-->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+       <version>2.2.7.RELEASE</version>
+   </dependency>
+   ```
+
+2. 在入口类中使用 **@EnableCircuitBreaker** 注解开启断路器功能
+
+3. 在调用远程服务的方法上添加注解：`@HystrixCommand( fallbackMethod="回调方法")` 
+
+   ```java
+   // 超时或发生错误时调用errorFun方法
+   @HystrixCommand(fallbackMethod="errorFun")
+   @RequestMapping("/consumer/hello")
+   public String hello(){
+       String baseURL = "http://01-SPRINGCLOUD-PROVIDER";
+       ResponseEntity<String> entity = restTemplate.getForEntity(baseURL+"/provider/hello", String.class);
+       System.out.println(entity);
+       return "consumer.hello";
+   }
+   
+   // Throwable可以拿到错误信息
+   public String errorFun(Throwable throwable){
+       System.out.println("error:" + throwable.getMessage());
+       return "error";
+   }
+   ```
+
+> @SpringCloudApplication 等价于下面三个注解：
+>
+> @EnableCircuitBreaker
+> @EnableEurekaClient
+> @SpringBootApplication
+
+***
+
+默认超时时间：
+
+hystrix 默认超时时间是 1000 毫秒，如果你后端的响应超过此时间，就会触发断路器；
+
+修改 hystrix 的默认超时时间：
+
+`@HystrixCommand(fallbackMethod="error", commandProperties={@HystrixProperty(name="execution.isolation.thread.timeoutInMilliseconds", value="1500")})` 
+
+
+
+6.3 服务降级
+---
+
+所谓**服务降级**，就是当某个服务熔断之后，服务端提供的服务将不再被调用，此时由客户端自己准备一个本地的fallback 回调，返回一个默认值来代表服务端的返回；这种做法，虽然不能得到正确的返回结果，但至少保证了服务的可用，比直接抛出错误或服务不可用要好很多，当然这需要根据具体的业务场景来选择；
+
+`@HystrixCommand(fallbackMethod="errorFun")` 此注解就是服务降级。
+
 
 
