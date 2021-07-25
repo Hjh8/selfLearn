@@ -762,7 +762,7 @@ Zuul是Spring Cloud全家桶中的微服务API网关。
 
 路由规则是指符合规则的请求才会被放行，在上面配置中则会放行所有符合 `/orders/**` 的请求，然后转发到 04-springcloud-service-feign 服务上。
 
-如果映射规则我们什么都不写，系统也给我们提供了一套**默认的配置规则**。
+如果映射规则我们什么都不写，系统也给我们提供了一套默认的配置规则。
 
 ```properties
 # 默认的规则
@@ -774,14 +774,14 @@ zuul.routes.04-springcloud-service-feign=/04-springcloud-service-feign/**
 如果要想关闭某个微服务的路由创建默认规则，可以做如下配置：
 
 ```properties
-# 关闭服务提供者的默认规则
+# 关闭服务提供者的默认规则（多个服务名称使用逗号','分隔）
 zuul.ignored-services=04-springcloud-service-provider
 ```
 
 如果想让某个路由不可通过用户直接访问：
 
 ```properties
-# 忽略掉某一些接口路径，注意第一个斜杠
+# 忽略掉某些接口路径，注意第一个斜杠
 zuul.ignored-patterns=/**/hello/**
 ```
 
@@ -806,14 +806,75 @@ zuul.prefix=/myapi
 
 
 
-8.4 zuul拦截器
+8.4 zuul过滤器
 ---
 
+Zuul中提供了过滤器定义，可以用来过滤代理请求，提供额外功能逻辑。如：权限验证，日志记录等。
+
+过滤器实现方式
+
+继承父类`ZuulFilter`。在父类中提供了4个抽象方法，分别是：**filterType, filterOrder, shouldFilter, run**。其功能分别是：
+
+- <font size="4" color="red">filterType()</font>：返回字符串数据，代表当前**过滤器的类型**。可选值有-pre, route, post, error。
+  - `pre`：在**请求被路由前**执行，通常用于处理身份认证，日志记录等；
+  - `route`： 在**路由执行后，服务调用前**被调用；
+  - `error`： **任意一个过滤器发生异常**的时候执行或**远程服务调用超时**执行，通常用于处理异常；
+  - `post`： 在**route或error执行后被调用**，一般用于收集服务信息，统计服务性能指标等，也可以对response结果做特殊处理。
+
+- <font size="4" color="red">filterOrder()</font>：返回int数据，指定过滤器执行顺序，返回值越小，执行顺序越优先。
+- <font size="4" color="red">shouldFilter()</font>：返回boolean数据，代表当前filter是否生效。
+- <font size="4" color="red">run()</font>：具体的**过滤执行逻辑**。如pre类型的过滤器，可以通过对请求的验证来决定是否将请求路由到服务上；如post类型的过滤器，可以对服务响应结果做加工处理。
+
+![zuul过滤器生命周期](SpringCloud学习.assets/20200806145302914.png)
+
+
+
+```java
+@Component
+public class LoggerFilter extends ZuulFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoggerFilter.class);
+    
+    @Override
+    public String filterType() {
+        return "pre";
+    }
+    
+    @Override
+    public int filterOrder() {
+        return 0;
+    }
+    
+    @Override
+    public boolean shouldFilter() {
+        return true;
+    }
+
+    @Override
+    public Object run() throws ZuulException {
+        // 通过zuul，获取请求上下文
+        RequestContext rc = RequestContext.getCurrentContext();
+        HttpServletRequest request = rc.getRequest();
+        
+        String token = request.getParameter("token");
+        if (token == null) {
+            ctx.setSendZuulResponse(false);
+            ctx.setResponseStatusCode(401);
+            ctx.addZuulResponseHeader("content-type","text/html;charset=utf-8");
+            ctx.setResponseBody("非法访问");
+        }
+        // 返回值没有意义，可以是任意值
+        return null;
+    }
+}
+```
 
 
 
 
-![在这里插入图片描述](SpringCloud学习.assets/20200806145302914.png)
+
+九、springcloud配置
+===
 
 
 
