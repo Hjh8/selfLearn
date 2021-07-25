@@ -4,11 +4,7 @@
 1.1 微服务概述
 ---
 
-> 微服务一词源于 Martin Fowler（马丁.福勒）的名为 Microservices 的博文，可以在他的官方博客上找到这篇文章：http://martinfowler.com/articles/microservices.html
->
-> 中文翻译版本：https://www.martinfowler.cn/articles/microservices.html
-
-微服务是系统架构上的一种设计风格， 它的主旨是将一个原本独立的系统拆分成多个小型服务，这些小型服务都各自运行，服务之间通过基于 HTTP 的 RESTful API 进行通信协作；
+微服务是系统架构上的一种设计风格，它的主旨是将一个原本独立的系统拆分成多个小型服务，这些小型服务都各自运行，服务之间通过基于 HTTP 的 RESTful API 进行通信协作；
 
 分布式强调系统的拆分，微服务也是强调系统的拆分，微服务架构属于分布式架构的范畴；
 
@@ -31,7 +27,7 @@
 
 Spring Cloud 为开发人员提供了快速构建分布式系统中一些常见模式的工具。比如：配置管理，服务发现，断路器，智能路由、微代理、控制总线、全局锁、决策竞选、分布式会话和集群状态管理等 。
 
-Spring Cloud 基于 Spring Boot 框架构建微服务架构
+Spring Cloud 是基于 Spring Boot 框架构建微服务架构。
 
 
 
@@ -40,9 +36,7 @@ Spring Cloud 基于 Spring Boot 框架构建微服务架构
 
 一个服务就是一个系统，服务之间进行通信就等于系统之间通信，那系统之间要如何通信呢？需要把他们都注册到一个中心，我们称为“**服务注册中心**”。通过中心，系统之间就可以相互通信，获取到需要的结果。
 
-Spring Cloud 提供了多种服务注册与发现的实现方式，例如：Eureka、
-
-Consul、Zookeeper。在这里我们介绍Eureka。
+Spring Cloud 提供了多种服务注册与发现的实现方式，例如：Eureka、Consul、Zookeeper。在这里我们介绍Eureka。
 
 
 
@@ -51,7 +45,7 @@ Consul、Zookeeper。在这里我们介绍Eureka。
 
 Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eureka 由两个组件组成：Eureka服务端和 Eureka客户端。Eureka服务端 是服务注册中心，而系统中的其他微服务，使用 Eureka客户端 连接到 Eureka服务端，并维持心跳连接。
 
-有了 Eureka 注册中心，系统的维护人员就可以通过 Eureka服务端 来监控系统中各个微服务是否正常运行。
+有了 Eureka 注册中心，微服务之间可以相互调用，并且系统的维护人员也可以通过 Eureka服务端 来监控系统中各个微服务是否正常运行。
 
 
 
@@ -80,21 +74,20 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
        <version>2.2.7.RELEASE</version>
    </dependency>
    
-   
    <dependencyManagement>
-           <dependencies>
-               <dependency>
-                   <groupId>org.springframework.cloud</groupId>
-                   <artifactId>spring-cloud-dependencies</artifactId>
-                   <version>Hoxton.RELEASE</version>
-                   <type>pom</type>
-                   <scope>import</scope>
-               </dependency>
-           </dependencies>
-       </dependencyManagement>
+       <dependencies>
+           <dependency>
+               <groupId>org.springframework.cloud</groupId>
+               <artifactId>spring-cloud-dependencies</artifactId>
+               <version>Hoxton.RELEASE</version>
+               <type>pom</type>
+               <scope>import</scope>
+           </dependency>
+       </dependencies>
+   </dependencyManagement>
    ```
-
-3. 在 Spring Boot 的入口类上添加一个@EnableEurekaServer 注解，用于开启 Eureka 注册中心服务端
+   
+3. 在 Spring Boot 的入口类上添加一个**@EnableEurekaServer** 注解，用于开启 Eureka 注册中心服务端
 
 4. 在配置文件中配置 Eureka 服务注册中心信息
 
@@ -131,16 +124,16 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
 </dependency>
 
 <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Hoxton.RELEASE</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-dependencies</artifactId>
+            <version>Hoxton.RELEASE</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
 ```
 
 2. 在 Spring Boot 的入口类上添加一个 **@EnableEurekaClient** 注解来表明自己是一个 eureka 客户端
@@ -173,7 +166,7 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
        }
    }
    ```
-> @LoadBalanced实现负载均衡，合理的把请求分配给不同的服务器，而不是单单让某个服务器处理，从而让每个服务器可以发挥最大程度的作用。
+> @LoadBalanced实现负载均衡，合理的把请求分配给不同的服务器，从而让每个服务器可以发挥最大程度的作用。
 >
 > 服务的真正调用由 ribbon实现，所以我们需要在调用服务提供者时使用 ribbon 来调用，而@LoadBalanced实际就是调用ribbon。
 
@@ -198,10 +191,6 @@ public class ConsumerController {
 }
 ```
 
-Ribbon 是什么？
-
-Ribbon 是一个基于 HTTP 和 TCP 的客户端**负载均衡器**，当使用 Ribbon 对服务进行访问的时候，它会扩展 Eureka 客户端的服务发现功能，实现从 Eureka注册中心中获取服务端列表，并通过 Eureka 客户端来确定服务端是否己经启动。Ribbon 在 Eureka 客户端服务发现的基础上，实现了对服务实例的选择策略，从而实现对服务的负载均衡消费。
-
 
 
 三、服务注册中心Eureka
@@ -210,11 +199,11 @@ Ribbon 是一个基于 HTTP 和 TCP 的客户端**负载均衡器**，当使用 
 3.1 Eureka高可集群
 ---
 
-在微服务架构的这种分布式系统中，我们要充分考虑各个微服务组件的高可用性问题，不能有单点故障。
+在微服务架构中，我们要充分考虑各个微服务组件的高可用性问题，不能出现单点故障。
 
-由于注册中心 eureka 本身也是一个服务，如果它只有一个节点，那么它有可能发生故障，这样就不能注册与查询服务了，所以可以使用多个注册中心来解决，然后从多个这就是所谓的集群。
+由于注册中心eureka 本身也是一个服务，如果它只有一个节点，那么它有可能发生故障，这样就不能注册与查询服务了，所以可以使用多个注册中心，这就是所谓的集群。
 
-eureka 服务注册中心它本身也是一个服务，它也可以看做是一个提供者，又可以看做是一个消费者，所以可以让其他服务注册中心 往自己这里注册，而自己也可以注册到其他中心，当一个注册中心有服务更改的时候，会同步到其他注册中心，从而达到高可用的效果。
+eureka 它也可以看做是一个提供者，又可以看做是一个消费者，所以可以让其他服务注册中心 往自己这里注册，而自己也可以注册到其他中心，当一个注册中心有服务更改的时候，会同步到其他注册中心，从而达到高可用的效果。
 
 ![image-20210722101647041](SpringCloud学习.assets/image-20210722101647041.png)
 
@@ -326,7 +315,7 @@ eureka.instance.lease-expiration-duration-in-seconds=90
 
 
 
-4.2 Ribbon
+4.2 Ribbon介绍
 ---
 
 Ribbon 是**客户端负载均衡**工具，所有客户端节点下的 服务端清单 需要自己从服务注册中心上获取，比如 Eureka 服务注册中心。在发送请求前通过负载均衡算法选择一个服务器，然后进行访问，即在客户端就进行负载均衡算法分配。
