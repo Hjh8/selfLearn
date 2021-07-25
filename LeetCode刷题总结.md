@@ -11,6 +11,7 @@ java版本
   - 最大值：Integer.MAX_VALUE
   - 最小值：Integer.MIN_VALUE
 - 数组赋值：Arrays.fill(arr, val);
+- 字符转int：‘4’-48=4
 
 
 
