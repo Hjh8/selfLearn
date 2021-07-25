@@ -876,11 +876,87 @@ public class LoggerFilter extends ZuulFilter {
 九、springcloud配置
 ===
 
+在分布式系统中，尤其是当我们的分布式项目越来越多，每个项目都有自己的配置文件，对配置文件的统一管理就成了一种需要。
+
+Spring Cloud Config项目是一个解决分布式系统的配置管理方案。它包含了Client和Server两个部分，server提供配置文件的存储、以接口的形式将配置文件的内容提供出去，client通过接口获取数据、并依据此数据初始化自己的应用。
+
+Spring cloud 使用 git 或 svn 存放配置文件，默认情况下使用 git。配置中心在读取远程配置文件后会先保存一份在本地。
+
+![image-20210725102214224](SpringCloud学习.assets/image-20210725102214224.png)
+
+**好处**：
+
+- 集中管理配置文件
+- 运行期间动态更新配置
+- 可以对配置文件进行版本管理
 
 
 
+9.1 搭建配置中心
+---
+
+1. 创建项目，加入依赖
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-config-server</artifactId>
+   </dependency>
+   ```
+
+2. 在启动类上添加注解 **@EnableConfigServer** 
+
+3. 在 application.properties 中配置一下 git 仓库信息
+
+   ```properties
+   server.port=3721
+   spring.application.name=06-springcloud-config-server
+   
+   # 配置git仓库地址
+   spring.cloud.config.server.git.uri=https://github.com/XXXX
+   # 配置仓库路径
+   spring.cloud.config.server.git.search-paths=myconfig
+   # 配置仓库的分支
+   spring.cloud.config.label=master
+   # 访问git仓库的用户名
+   spring.cloud.config.server.git.username=用户名
+   # 访问git仓库的用户密码
+   spring.cloud.config.server.git.password=密码
+   ```
+
+配置文件命名要求：application-profile.yml 或 application-profile.properties
+
+对应的http请求地址：`/{application}/{profile}[/{label}]`
+
+- {application} 表示配置文件的名字，对应的配置文件即 application，
+
+- {profile} 表示环境，有 dev、test、online 及默认，
+
+- {label} 表示分支，默认我们放在 master 分支上
 
 
+
+9.2 客户端使用
+---
+
+1. 添加依赖
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-config</artifactId>
+   </dependency>
+   ```
+
+2. 创建 `bootstrap.properties` 文件，文件内容如下:
+
+   ```properties
+   server.port=8091
+   spring.application.name=application
+   spring.cloud.config.profile=dev
+   spring.cloud.config.label=master
+   spring.cloud.config.uri=配置中心所在的地址
+   ```
 
 
 
