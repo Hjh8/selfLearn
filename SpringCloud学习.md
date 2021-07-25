@@ -776,7 +776,7 @@ Zuul是Spring Cloud全家桶中的微服务API网关。
 8.3 路由规则
 ---
 
-路由规则是指符合规则的请求才会被放行，在上面配置中则会放行所有符合 `/orders/**` 的请求，然后转发到 04-springcloud-service-feign 服务上。
+路由规则是指符合规则的请求才会被放行，在上面配置中则会放行所有符合 `/user/**` 的请求，然后转发到 04-springcloud-service-feign 服务上。
 
 如果映射规则我们什么都不写，系统也给我们提供了一套默认的配置规则。
 
@@ -794,7 +794,7 @@ zuul.routes.04-springcloud-service-feign=/04-springcloud-service-feign/**
 zuul.ignored-services=04-springcloud-service-provider
 ```
 
-如果想让某个路由不可通过用户直接访问：
+如果想禁止某些路由：
 
 ```properties
 # 忽略掉某些接口路径，注意第一个斜杠
@@ -831,7 +831,7 @@ Zuul中提供了过滤器定义，可以用来过滤代理请求，提供额外�
 
 继承父类`ZuulFilter`。在父类中提供了4个抽象方法，分别是：**filterType, filterOrder, shouldFilter, run**。其功能分别是：
 
-- <font size="4" color="red">filterType()</font>：返回字符串数据，代表当前**过滤器的类型**。可选值有-pre, route, post, error。
+- <font size="4" color="red">filterType()</font>：返回字符串数据，代表当前**过滤器的类型**。可选值有 pre, route, post, error。
   - `pre`：在**请求被路由前**执行，通常用于处理身份认证，日志记录等；
   - `route`： 在**路由执行后，服务调用前**被调用；
   - `error`： **任意一个过滤器发生异常**的时候执行或**远程服务调用超时**执行，通常用于处理异常；
@@ -843,7 +843,7 @@ Zuul中提供了过滤器定义，可以用来过滤代理请求，提供额外�
 
 ![zuul过滤器生命周期](SpringCloud学习.assets/20200806145302914.png)
 
-
+代码演示：
 
 ```java
 @Component
