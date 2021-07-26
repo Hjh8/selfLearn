@@ -894,6 +894,35 @@ Mysql基础架构
 
 
 
+二阶段提交
+---
+
+为了让两份日志之间的逻辑一致， redo log 的写入拆成了两个步骤： **prepare 和 commit **，在这两个步骤之间将记录写入binlog中，这就是 " 两阶段提交 "。
+
+1. 事务提交之后，将记录在redolog中，此时redolog处于prepare状态
+2. 将记录写入binlog
+3. 将redolog的状态改为commit
+
+![img](Mysql 学习.assets/20190418193314931.png)
+
+
+
+### 为什么要二阶段
+
+假设时刻A主机挂掉了，数据库进行数据恢复的时候会查看redolog的状态跟binlog的记录。如果redolog 处于prepare状态，并且binlog中没有这个记录，说明该记录还没有写入到binlog中。
+
+如果时刻B主机挂掉了，此时binlog中有记录，redolog 处于prepare状态，说明该记录还没有真正的提交。
+
+从而达到数据的一致性。
+
+
+
+### redo log 和 binlog
+
+1. redo log 是 InnoDB 引擎特有的； binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。
+2. redo log 是物理日志，记录的是 “ 在某个数据页上做了什么修改 ” ； binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如 “ 给 ID=2 这一行的 c 字段加 1 ”。
+3. redolog的大小是固定的，满了之后就擦除一些记录。binlog是追加写入的，即一个文件满了就切换到下一个文件。
+
 
 
 三大范式
