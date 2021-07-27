@@ -117,9 +117,9 @@ Condition 类也是lock接口的实现类，其实现线程间的通信。
 
 `lock.newCondition()`：获取Condition对象。
 
-`await()`：会使当前线程等待，同时会释放锁，当其他线程调用signal()时,线程会重新获得锁并继续执行。
+`await()`：会使当前线程等待，同时会释放锁，当其他线程调用signal()时，线程会重新获得锁并继续执行。
 
-`signal()`：用于唤醒一个指定的正在等待的线程。区别于notify()，notify是随机唤醒一个。
+`signal()`：用于唤醒一个**指定的**正在等待的线程。区别于notify()，notify是随机唤醒一个。
 
 - 比如`a.signal()` 就只会唤醒Condition a对象。
 
