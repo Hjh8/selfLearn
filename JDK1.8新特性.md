@@ -307,7 +307,7 @@ Stream
 
 ### 中间操作
 
-多个**中间操作**可以连接起来形成一个**操作连**，除非操作连上触发终止操作，否则**中间操作不会执行任何的处理**！因为只会在 **终止操作时一次性全部处理** ，所以称为“惰性求值”
+多个**中间操作**可以连接起来形成一个**操作连**，除非操作链上触发终止操作，否则**不会执行任何中间操作**！因为只会在 **终止操作时一次性全部处理** ，所以称为“惰性求值”
 
 筛选与切片
 
@@ -335,13 +335,13 @@ newStream.forEach(System.out::println);
 |        方法         |                  描述                  |
 | :-----------------: | :------------------------------------: |
 |   map(Function f)   | 接收一个函数，该函数会被应用到每个元素 |
-| flatMap(Function f) |      将所有的元素加入到同一个流中      |
+| flatMap(Function f) |    每个元素返回流，然后汇总成一个流    |
 
 ```java
 List<String> list = Arrays.asList("a,b,c", "1,2,3");
 // 将每个元素转成一个新的且不带逗号的元素
 list.stream()
-    .map(s -> s.replaceAll(",", ""));
+    .map(s -> s.replaceAll(",", ""))
 	.forEach(System.out::println); // [abc 123]
  
 Stream<String> s3 = list.stream().flatMap(s -> {
@@ -350,7 +350,7 @@ Stream<String> s3 = list.stream().flatMap(s -> {
     Stream<String> s2 = Arrays.stream(split);
     return s2;
 });
-s3.forEach(System.out::println); // [a b c 1 2 3]
+s3.forEach(System.out::print); // [abc123]
 ```
 
 

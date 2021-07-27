@@ -265,6 +265,8 @@ Man man = (Man)obj2;
 
 - 同一类中的static变量都存储在同一空间（栈）中，所有的对象实例都可以共享该空间
 
+- static修饰的变量只能是成员变量，不能是局部变量；
+
   - ```java
     public class Potato(){
         static int price;
@@ -277,17 +279,16 @@ Man man = (Man)obj2;
         
     	public static void main(String args[]){
             Potato p1 = new Potato(20, "爆炒土豆丝");
-            
-            Potato p2 = new Potato(25, "黄焖土豆丝");
+            Potato p2 = new Potato(50, "黄焖土豆丝");
         }
     }
     ```
+    
+![image-20200715195945506](Java易遗忘知识点.assets/image-20200715195945506.png)
+  
+- static方法，也是可以直接通过类名来调用。**static方法里面的所有东西都必须是静态的**，比如静态方法里面禁止调用非静态方法，不可以使用非静态成员变量。**【注意】非静态方法可以调用静态方法**。
 
-    ![image-20200715195945506](Java易遗忘知识点.assets/image-20200715195945506.png)
-
-- static方法，也是可以直接通过类名来调用。**static方法里面的所有东西都必须是静态的**，比如静态方法里面禁止调用非静态方法，不可以使用非静态变量。**【注意】非静态方法可以调用静态方法**。
-
-- static修饰代码块。static代码块只会在类第一次加载时被调用，即在程序运行期间，static代码块只会运行一次。**【注意】执行顺序static块 > 匿名块 > 构造函数**
+- static修饰代码块。static代码块只会在类第一次加载时被调用，即在程序运行期间，static代码块只会运行一次。**【注意】执行顺序static块 > 匿名代码块 > 构造函数** 
 
   ```java
   class StaticBlock(){
@@ -400,7 +401,7 @@ public class Test(){
 
 字符串跟包装类都有两种创建方式：
 
-- **字面量**：此方式创建的变量会放在**`栈`**空间中，如`String a = “abc”`、`Integer i = 10`
+- **字面量**：此方式创建的变量会放在**`栈`**空间中，如`String a = “abc”`、`Integer i = 10` 
 - **new**：此方式创建的变量会放在**`堆`**空间中，如`String a = new String("abc")`、`Integer i = new Integer(10)` 
 
 **tips：栈内存容量小，读取速度快；堆内存容量大，读取速度慢。**
