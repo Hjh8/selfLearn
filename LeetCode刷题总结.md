@@ -78,6 +78,17 @@ List
 
 
 
+Queue
+---
+
+- 创建：`Queue<String> q = new LinkedList<>();` 
+- 添加：offer(value)，返回boolean；
+- 删除：poll()，移除并返问队列头部的元素  如果队列为空，则返回null
+- 查看队头元素：peek()
+- 判空：isEmpty()
+- 清空：clear()
+- 是否包含：contains(Obj)
+
 
 
 回溯
