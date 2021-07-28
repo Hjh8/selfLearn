@@ -42,7 +42,7 @@
 3. 在`pom.xml`文件中的`dependencies`标签中加入maven的`mybatis`跟`数据库驱动`的坐标。
 4. 与第二步接口同目录下创建`sql映射文件`，里面写sql语句。一般一个表对应一个映射文件。
 5. 在resources包中（如果没有就手动创建）创建mybatis的主配置文件。一个项目就一个主配置文件，其提供了数据库的连接信息和sql映射文件的位置。
-6. 使用mybatis
+6. 使用mybatis=
 
 
 
