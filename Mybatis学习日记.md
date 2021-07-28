@@ -1271,7 +1271,7 @@ Mybatis系统中有两级缓存：`一级缓存`跟`二级缓存`。
    </mapper>
    ```
    
-3. `javabean`要实现序列化接口。（因为保证缓存的安全，mybatis使用了序列化跟反序列化的技术）
+3. `javabean`要实现序列化接口。（因为保证缓存的安全，mybatis使用了序列化跟反序列化的57技术）
 
    `public class Student implements Serializable` 
 
