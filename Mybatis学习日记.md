@@ -1467,7 +1467,20 @@ Mybatis的工作原理
 
 
 
-指定mapper映射文件的地址方式有四种：resource、url、class和包。
+指定mapper映射文件方式
+---
+
+指定mapper映射文件方式有四种：resource、url、class、package。
+
+```xml
+<mappers>
+    <!-- 除了package其他都是mapper标签 -->
+    <package name="dao"/>
+    <mapper resource="com/dao/EmployeeMapper.xml"/>
+    <mapper url="file:E:/Study/Test/src/com/EmployeeMapper.xml"/>
+    <mapper class="dao.adminDao.EmployeeMapper"/>
+</mappers>
+```
 
 
 
@@ -1476,9 +1489,10 @@ mybatis有哪些执行器，他们之间的区别
 
 执行器有三种：simple（默认）、reuse、batch
 
-- simpleExecutor：每执行一次update或select就开启一个statement对象，用完立刻关闭。
-- reuseExecutor：执行update或select，以sql作为key查找statement对象，存在就使用，不存在就创建。用完后不关闭，而是放入map中。
-- batchExecutor：执行update时，将所有的sql添加到批处理中，统一执行。
+- simpleExecutor：每执行一次sql开启一个statement对象，用完立刻关闭。
+- reuseExecutor：执行器内会缓存预编译通过的 sql，相同的sql使用同一个statement对象。对象用完后不关闭，而是放入map中。
+- batchExecutor：将所有的sql添加到批处理中，统一执行。更新大量数据时有明显的速度提升，如果是查询则跟simpleExecutor没什么区别。
+  - **批处理操作必须手动处理/提交事物** 
 
 如何指定执行器？settings标签中指定ExecutorType的方式或者openSession(ExecutorType et) 的方式。
 
@@ -1487,60 +1501,64 @@ mybatis有哪些执行器，他们之间的区别
 mybatis是否支持延迟加载？如何进行的？
 ---
 
-什么是延迟加载？多表联查的时候先查出一个表的数据，然后需要用到其他表的数据时，再根据具体的条件去其他表中查。
+MyBatis中的延迟加载，也称为懒加载，是指在进行表的关联查询时，按照设置 延迟规则 推迟对关联对象的select查询。
 
-例如：查询订单信息，有时候需要关联查出用户信息。如果每次
+例如在进行一对多查询的时候，只查询出一方，当程序中需要多方的数据时，mybatis再发出sql语句进行查询，这样子延迟加载就可以的减少数据库压力。
 
-`select * from orders o, user u where o.user_id = u.id;` 会比较耗时，因为有时候不需要用户信息。
+延迟加载的应用**要求**：关联对象的查询与主加载对象的查询必须是**分别**进行的select语句，**不能是使用多表连接**所进行的select查询。因为，多表连接查询，实质是对一张表的查询，对由多个表连接后形成的一张表的查询。会一次性将多张表的所有信息查询出来。
 
-所以我们可以先查询出所有的订单信息，然后如果需要用户的信息，我们在根据查询的订单信息的某个字段去关联用户信息。
+相关配置：
 
-1. `select * from orders;` 
-2. `select * from user where user.id=orders.user_id;` 
-
-因为两步但是单表查询，执行效率要高很多。并且如果我们不需要关联用户信息，那么我们就不必执行第二步，程序没有进行多余的操作。
+```xml
+<settings>
+	<!-- 开启延迟加载-->
+    <setting name="lazyLoadingEnabled" value="true"/>
+    <!-- 配置侵入式延迟加载, 默认为false（深度加载）
+          侵入式：默认只会执行主加载SQL，那么当访问主加载对象的详细信息时才会执行关联对象的SQL查询
+          深度延迟：默认只执行主加载SQL，那么当调用到主加载对象中关联对象的信息时才会执行关联对象的SQL查询
+        -->
+    <setting name="aggressiveLazyLoading" value="false"/>
+</settings>
+```
 
 ***
 
-Mybatis仅支持association关联对象和collection关联集合对象的延迟加载，association指的就是一对一，collection指的就是一对多查询。在Mybatis配置文件中，可用setting启用延迟加载`lazyLoadingEnabled`。
+Mybatis仅支持association关联对象和collection关联集合对象的延迟加载，association指的就是一对一，collection指的就是一对多查询（查询结果是list）
 
 例：
 
 ```xml
-<mapper namespace="com.ys.lazyload.OrdersMapper">
-    <!--
-         延迟加载：
-         select user_id from order WHERE id=1;
-         select * from user WHERE id=user_id
-    -->
-    <select id="getOrderByOrderId" resultMap="getOrderMap">
-        select * from orders
+<mapper namespace="cn.xh.dao.UserDao">
+    <select id="findCategory" resultMap="categoryMap">
+        select * from category
     </select>
-    <resultMap type="com.ys.lazyload.Orders" id="getOrderMap">
-        <id column="id" property="id"/>
-        <result column="number" property="number"/>
-        <!-- select:指定延迟加载需要执行的statement的id
-             property:resultMap中type指定类中的属性名
-             column:和select查询关联的字段user_id
-         -->
-        <association column="user_id" select="getUserByUserId"
-                     property="user" javaType="com.ys.lazyload.User">
-        </association>
+    <resultMap id="categoryMap" type="cn.xh.pojo.Category">
+        <id column="cid" property="cid"></id>
+        <result column="cname" property="cname"></result>
+        <!--  
+		 select属性表示要执行的sql语句
+		 column表示执行sql语句要传的参数
+		 property表示查询出来的结果给哪个属性
+		-->
+        <collection property="books" column="cid" select="findBook"></collection>
     </resultMap>
-    <select id="getUserByUserId" resultType="com.ys.lazyload.User">
-        select * from user where id=#{id}
+
+    <select id="findBook" parameterType="int" resultType="cn.xh.pojo.Book">
+        select * from book where cid = #{cid}
     </select>
 </mapper>
 ```
 
 
 
+
+
 延迟加载的原理
 ---
 
-使用CGLIB创建目标对象的代理对象，当调用目标方法时，进入拦截器方法，比如调用a.getB().getName()，拦截器invoke()方法发现a.getB()是null值，那么就会单独执行事先保存好的查询关联B对象的sql，把B查询上来，然后调用a.setB(b)，于是a的对象b属性就有值了，接着完成a.getB().getName()方法的调用。
+使用CGLIB创建目标对象的代理对象，当调用目标方法时，进入拦截器方法，比如调用a.getB().getName()，拦截器invoke()方法发现a.getB()是null值，那么就会**单独执行事先保存好的查询关联B对象的sql**，把B查询上来，然后调用a.setB(b)，于是a的对象b属性就有值了，接着完成a.getB().getName() 方法的调用。
 
-即每次先查询主表的数据，当需要获取其他表数据为null是会去数据库中查询该表的数据。
+即每次先查询主表的数据，当需要获取其他表数据为null时会去数据库中查询该表的数据。
 
 
 
