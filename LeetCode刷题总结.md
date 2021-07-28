@@ -104,6 +104,56 @@ Trie树，也叫字典树、前缀树，用于统计和排序大量的字符串�
 
 ![img](LeetCode刷题总结.assets/v2-9d07fbd164fc0d737aabe428b4484bd1_720w.png)
 
+```java
+class Trie {
+    private Trie[] children;
+    private boolean isEnd;
+
+    public Trie() {
+        children = new Trie[26];
+        isEnd = false;
+    }
+    
+    public void insert(String word) {
+        Trie node = this;
+        for (int i = 0; i < word.length(); i++) {
+            char ch = word.charAt(i);
+            int index = ch - 'a';
+            if (node.children[index] == null) {
+                node.children[index] = new Trie();
+            }
+            node = node.children[index];
+        }
+        // 标记该节点是一个单词
+        node.isEnd = true;
+    }
+    
+    public boolean search(String word) {
+        Trie node = searchPrefix(word);
+        return node != null && node.isEnd;
+    }
+    
+    public boolean startsWith(String prefix) {
+        return searchPrefix(prefix) != null;
+    }
+
+    private Trie searchPrefix(String prefix) {
+        Trie node = this;
+        for (int i = 0; i < prefix.length(); i++) {
+            char ch = prefix.charAt(i);
+            int index = ch - 'a';
+            if (node.children[index] == null) {
+                return null;
+            }
+            node = node.children[index];
+        }
+        return node;
+    }
+}
+```
+
+
+
 
 
 回溯
@@ -156,7 +206,17 @@ Trie树，也叫字典树、前缀树，用于统计和排序大量的字符串�
        }
    ```
 
-   
+
+
+
+位运算
+---
+
+1. 任何数和 0 做异或运算，结果仍然是原来的数，即a⊕0=a。
+2. 任何数和自身做异或运算，结果是 0，即 a⊕a=0。
+3. 异或运算满足交换律和结合律，**a⊕b⊕a**=b⊕0=b
+
+[136. 只出现一次的数字](https://leetcode-cn.com/problems/single-number/) 
 
 
 
