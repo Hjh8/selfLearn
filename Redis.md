@@ -1,3 +1,7 @@
+
+
+
+
 Redis6
 ===
 
@@ -408,14 +412,21 @@ dir ./ # rdb文件保存的目录
 ```cmd
 maxclients 10000 # 设置redis同时可以与多少个客户端进行连接
 maxmemory <bytes> # 设置redis可以使用的最大内存量
-maxmemory-policy noeviction # 内存满了之后的执行策略
-    # volatile-lru：使用LRU算法移除key，只对设置了过期时间的键；（最近最少使用）
-    # allkeys-lru：在所有集合key中，使用LRU算法移除key
-    # volatile-random：在过期集合中移除随机的key，只对设置了过期时间的键
-    # allkeys-random：在所有集合key中，移除随机的key
-    # volatile-ttl：移除那些TTL值最小的key，即那些最近要过期的key
-    # noeviction：不进行移除。针对写操作，只是返回错误信息
+maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 ```
+
+最大内存：64位的电脑最大内存默认无限制，32位的电脑最大内存超过3G。
+
+- [ ] 什么命令可以查看内存情况？`info memory` 
+
+淘汰策略：
+
+- volatile-lru：设置了过期时间的键中，使用LRU算法移除key
+- allkeys-lru：在所有集合key中，使用LRU算法移除key
+- volatile-random：随机移除设置了过期时间的key
+- allkeys-random：在所有集合key中，移除随机的key
+- volatile-ttl：移除最近要过期的key
+- noeviction：不进行移除。针对写操作，只是返回错误信息
 
 
 
