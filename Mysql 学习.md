@@ -322,14 +322,14 @@ select ename from emp where ewage > (select avg(ewage) from emp);
 
 一个完整的sql语句格式：
 
-```
+```xml
 								  执行顺序
 select 字段							5
-from 表名			 				    1
+from 表名								1
 where 条件							2
 group by 要分组字段			   		  3
 having 再次过滤的条件					 4
-order by 排序字段;				   	   6
+order by 排序字段					   6
 ```
 
 
@@ -880,6 +880,55 @@ mysql默认使用的存储引擎是`InnoDB`，默认字符集是`UTF8`。
 
 
 
+4.2 常用的函数
+---
+
+- truncate(x,y)：返回数值 x 保留到小数点后 y 位
+
+  - ```sql
+    SELECT truncate(1.23456,3); 
+    -- 返回 1.234
+    ```
+
+- length(s)：返回字符串s的长度
+
+- concat(s1,s2…sn)：字符串 s1,s2 等多个字符串合并为一个字符串
+
+  - ```sql
+    SELECT concat('hel','llo');
+    -- 返回 hello
+    ```
+
+- upper(s) / lower(s)：将字符串s转为 大写/小写
+
+- trim(s)：去掉字符串 s 开始和结尾处的空格
+
+  - ltrim(s) / rtrim(s) 去掉左边/右边的空格
+
+- curdate()：返回当前日期。如 2021-07-29
+
+- curtime()：返回当前时间。 如 11:40:45
+
+- now()：获取当前日期时间。如 2021-07-29 11:40:45
+
+- 从日期中选择出月份数：month(date)
+
+- 从日期中选择出周数：week(date)
+
+- 从日期中选择出年数：year(date)
+
+- 从时间中选择出小时数：hour(time)
+
+- 从时间中选择出分钟数：minute(time)
+
+- 从时间中选择出今天是周几：weekday(date)
+
+  - 星期一为0，…，星期天为6
+
+
+
+
+
 3.Mysql面试
 ===
 
@@ -896,6 +945,14 @@ Mysql基础架构
 
 二阶段提交
 ---
+
+### redo log 和 binlog
+
+1. redo log 是 InnoDB 引擎特有的； binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。
+2. redo log 是物理日志，记录的是 “ 在某个数据页上做了什么修改 ” ； binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如 “ 给 ID=2 这一行的 c 字段加 1 ”。
+3. redolog的大小是固定的，满了之后就擦除一些记录。binlog是追加写入的，即一个文件满了就切换到下一个文件。
+
+***
 
 为了让两份日志之间的逻辑一致， redo log 的写入拆成了两个步骤： **prepare 和 commit **，在这两个步骤之间将记录写入binlog中，这就是 " 两阶段提交 "。
 
@@ -914,14 +971,6 @@ Mysql基础架构
 如果时刻B主机挂掉了，此时binlog中有记录，redolog 处于prepare状态，说明该记录还没有真正的提交。
 
 从而达到数据的一致性。
-
-
-
-### redo log 和 binlog
-
-1. redo log 是 InnoDB 引擎特有的； binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。
-2. redo log 是物理日志，记录的是 “ 在某个数据页上做了什么修改 ” ； binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如 “ 给 ID=2 这一行的 c 字段加 1 ”。
-3. redolog的大小是固定的，满了之后就擦除一些记录。binlog是追加写入的，即一个文件满了就切换到下一个文件。
 
 
 
@@ -1179,7 +1228,7 @@ myisam中只有非聚簇索引。
   - 如果查询条件是 `WHERE x=1 AND z=3;` 不符合最左匹配原则，无法使用组合索引。但会先使用索引x找到x=1的数据，然后再在找到的数据中匹配z=3的数据。
 - 索引下推：利用出现在where中的组合索引字段都筛选完之后才返回到server层。
   - `select * from tuser where name like '张%' and age=18 and ismale=1;` 其中 (name, age)是组合索引。
-  - 使用索引下推时，会先找到 name以张开头 的数据，然后再匹配 age=18的数据，最后将最后匹配到的数据返回到server，在server层中再筛选出 ismale=1的数据
+  - 使用索引下推时，会先找到 name以张开头的数据，然后再匹配 age=18的数据，最后将最后匹配到的数据返回到server，在server层中再筛选出 ismale=1的数据
   - 不使用索引下推时，找到 name以张开头 的数据后直接返回到server层，然后再在server层做数据的筛选。
 
 
@@ -1378,7 +1427,7 @@ RR：为了解决幻读，引入了间隙锁。
 主从复制
 ---
 
-主机master数据更新后根据配置和策略自动同步到从机slave，**Master**以**写**为主，**Slave**以**读**为主。mysql默认采用异步的方式复制的方式，这样从节点就不用一直访问主服务器来更新自己的数据。
+主机master数据更新后根据配置和策略自动同步到从机slaver，**Master**以**写**为主，**Slave**以**读**为主。mysql默认采用异步复制的方式，这样从节点就不用一直访问主服务器来更新自己的数据。
 
 原理如下：
 
