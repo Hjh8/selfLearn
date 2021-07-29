@@ -421,10 +421,12 @@ maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 
 淘汰策略：
 
-- volatile-lru：在设置了过期时间的键中，使用LRU算法移除key
-- allkeys-lru：在所有集合key中，使用LRU算法移除key
+- volatile-lru：在设置了过期时间的键中，使用 **LRU算法** 移除key
+- allkeys-lru：在所有集合key中，使用 **LRU算法** 移除key（最近**最少使用**）
 - volatile-random：在设置了过期时间的键中，随机移除key
 - allkeys-random：在所有集合key中，随机移除key
+- volatile-lfu：在设置了过期时间的键中使用 **lfu算法** 移除key
+- allkeys-lfu：在所有键中使用 **lfu算法** 移除key（使用**频率**最少）
 - volatile-ttl：移除最近要过期的key
 - noeviction：不进行移除。
 
@@ -432,7 +434,7 @@ maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 
 当内存不足时，Redis会根据配置的缓存策略淘汰部分key，以保证写入成功。当内存实在放不下时，Redis直接返回 **out of memory** 错误。
 
-Redis的数据已经设置了TTL，不是过期就已经删除了吗？为什么还存在所谓的淘汰策略呢？这个原因需要从redis的过期策略聊起。
+> 一个键到了过期时间之后不是马上从内存中删除。而是会继续存活在内存中，然后redis根据淘汰策略来删除。
 
 
 
@@ -1174,6 +1176,9 @@ redis 实现高并发主要依靠主从架构，一主多从，主机负责写�
 redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后可以及时自动的切换。
 
 
+
+LRU原理以及代码实现
+---
 
 
 
