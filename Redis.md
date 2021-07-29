@@ -123,6 +123,11 @@ string的数据结构为简单动态字符串，内部结构的实现类似于Ja
 - `getrange k s e`：获得值的范围，**左闭右闭**。
 - `setrange k s v`：用 v 覆写 k 所储存的从s开始的字符串值。
 
+应用场景：
+
+1. 存储单键
+2. 分布式锁
+
 
 
 ### 列表 list
@@ -153,6 +158,13 @@ Redis 列表是简单的**字符串列表**。你可以在列表的头部（左�
 - `lrem k n v`：从左边第一个元素开始，删除 n 个 v
 - `lset k index v`：将列表 k 下标为index的值替换成 v
 
+***
+
+应用场景：
+
+1. 推送消息
+2. 关注列表
+
 
 
 ### 集合 set
@@ -172,6 +184,13 @@ set是string类型的集合，具有自动排序去重功能，当你需要存�
 - `sunion k1 k2`：返回两个集合的**并集**元素。
 - `sdiff k1 k2`：返回两个集合的**差集**元素。(k1中存在的，不包含k2的)
 
+***
+
+应用场景：
+
+1. 抽奖活动
+2. 共同关注
+
 
 
 ### 哈希 hash
@@ -188,6 +207,13 @@ hash类型对应的数据结构是两种：ziplist，hashtable。当field-value�
 - `hvals k`：列出该哈希表的所有value
 - `hincrby k field increment`：为哈希表 k 中的 field 的 value 加上increment
 - `hsetnx k field value`：当field不存在时，设置哈希表 k 中的 field-value
+
+***
+
+应用场景：
+
+1. 存放对象
+2. 购物车
 
 
 
@@ -208,6 +234,11 @@ zset类似于TreeMap，内部成员member会按照评分score进行排序，可�
 - `zrem k member`：删除该集合的member 
 - `zcount k min max`：统计该集合，[min, max]区间内的元素个数 
 - `zrank k member`：返回member在集合中的排名，从0开始
+
+应用场景：
+
+1. 点赞
+2. 排行榜
 
 ***
 
