@@ -1366,7 +1366,7 @@ Mybatis的学习日记在我的另一篇博客：[Mybatis学习日记（全）](
 
 第一步：在`pom.xml`中加入依赖
 
-```java
+```xml
 <dependencies>
   <dependency>
     <groupId>junit</groupId>

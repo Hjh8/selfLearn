@@ -920,7 +920,7 @@ public interface HandlerInterceptor {
 
 
 
-5. 总结
+总结
 ===
 
 SpringMVC执行流程示意图：
