@@ -415,7 +415,7 @@ maxmemory <bytes> # 设置redis可以使用的最大内存量
 maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 ```
 
-最大内存：64位的电脑最大内存默认无限制，32位的电脑最大内存超过3G。
+在redis中，允许用户设置的最大使用内存大小：64位的电脑默认无限制，32位的电脑默认不超过3G。
 
 - [ ] 什么命令可以查看内存情况？`info memory` 
 
@@ -423,10 +423,18 @@ maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 
 - volatile-lru：在设置了过期时间的键中，使用LRU算法移除key
 - allkeys-lru：在所有集合key中，使用LRU算法移除key
-- volatile-random：随机移除设置了过期时间的key
-- allkeys-random：在所有集合key中，移除随机的key
+- volatile-random：在设置了过期时间的键中，随机移除key
+- allkeys-random：在所有集合key中，随机移除key
 - volatile-ttl：移除最近要过期的key
-- noeviction：不进行移除。针对写操作，只是返回错误信息
+- noeviction：不进行移除。
+
+***
+
+当内存不足时，Redis会根据配置的缓存策略淘汰部分key，以保证写入成功。当内存实在放不下时，Redis直接返回 **out of memory** 错误。
+
+Redis的数据已经设置了TTL，不是过期就已经删除了吗？为什么还存在所谓的淘汰策略呢？这个原因需要从redis的过期策略聊起。
+
+
 
 
 
@@ -1164,6 +1172,8 @@ public void testLock() {
 redis 实现高并发主要依靠主从架构，一主多从，主机负责写，多个从机负责读的操作。如果想要在实现高并发的同时，可以容纳大量的数据，那么就需要 redis 集群，把数据分布在多个服务器上。
 
 redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后可以及时自动的切换。
+
+
 
 
 
