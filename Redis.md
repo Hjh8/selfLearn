@@ -421,7 +421,7 @@ maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 
 淘汰策略：
 
-- volatile-lru：设置了过期时间的键中，使用LRU算法移除key
+- volatile-lru：在设置了过期时间的键中，使用LRU算法移除key
 - allkeys-lru：在所有集合key中，使用LRU算法移除key
 - volatile-random：随机移除设置了过期时间的key
 - allkeys-random：在所有集合key中，移除随机的key
