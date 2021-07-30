@@ -14,6 +14,7 @@ java版本
 - 部分排序：Arrays.sort(array, 0, 4)
 - 字符转int：‘4’-48=4
 - 数组深拷贝：System.arraycopy(src, srcPos, dest, destPos, length)
+- 数组范围拷贝：dest = Arrays.copyOfRange(src, start, end)
 
 
 
@@ -97,6 +98,13 @@ Queue
 - 判空：isEmpty()
 - 清空：clear()
 - 是否包含：contains(Obj)
+
+
+
+Map
+---
+
+- getOrDefault(key, 默认值);
 
 
 
