@@ -378,7 +378,7 @@ Redis 3.2 中增加了对GEO类型的支持。GEO，Geographic，地理信息的
 <p style="text-align:center;">### NETWORK ###</p>
 网络相关配置
 
-```cmd
+```bash
 bind = 127.0.0.1 # 默认只接收本机的访问请求
 protected-mode yes # 保护模式，默认开启
 port 6379 # 端口号
@@ -389,7 +389,7 @@ tcp-keepalive 300 # 每隔n秒检测一次客户端是否还活跃
 <p style="text-align:center;">### GENERAL ###</p>
 通用设置
 
-```cmd
+```bash
 daemonize yes # 是否是守护线程，即后台启动。默认为no
 pidfile /var/run/redis_6379.pid # 若以后台运行则需要指定一个pid文件
 loglevel notice # 日志级别
@@ -400,7 +400,7 @@ databases 16 # 数据库的数量
 <p style="text-align:center;">### SNAPSHOTTING ###</p>
 快照相关设置：通常进行持久化设置
 
-```cmd
+```bash
 save 900 1 # 900s内，如果至少一个key进行了修改，则进行持久化操作
 save 300 10 # 300s内，如果至少十个key进行了修改，则进行持久化操作
 save 60 10000 # 60s内，如果至少10000个key进行了修改，则进行持久化操作
@@ -424,7 +424,7 @@ dir ./ # rdb文件保存的目录
 
 2. 命令的方式
 
-   ```cmd
+   ```bash
    config set requirepass 123456
    config rewrite # 写入配置文件中，不然重启就没了
    ```
@@ -436,7 +436,7 @@ dir ./ # rdb文件保存的目录
 <p style="text-align:center;">### LIMIT ###</p>
 限制设置
 
-```cmd
+```bash
 maxclients 10000 # 设置redis同时可以与多少个客户端进行连接
 maxmemory <bytes> # 设置redis可以使用的最大内存量
 maxmemory-policy noeviction # 内存满了之后执行淘汰策略
@@ -444,7 +444,7 @@ maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 
 在redis中，允许用户设置的最大使用内存大小：64位的电脑默认无限制，32位的电脑默认不超过3G。
 
-- [ ] 什么命令可以查看内存情况？`info memory` 
+- [ ] 哪个命令可以查看内存情况？`info memory` 
 
 淘汰策略：
 
@@ -459,7 +459,7 @@ maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 
 ***
 
-当内存不足时，Redis会根据配置的缓存策略淘汰部分key，以保证写入成功。当内存实在放不下时，Redis直接返回 **out of memory** 错误。
+当内存不足时，Redis会根据配置的缓存淘汰策略移除部分key，以保证写入成功。当内存实在放不下时，Redis直接返回 **out of memory** 错误。
 
 > 一个键到了过期时间之后不是马上从内存中删除。而是会继续存活在内存中，然后redis根据淘汰策略来删除。
 
@@ -551,9 +551,9 @@ public class demo {
 
    ```properties
    # Redis服务器地址
-   spring.redis.host=192.168.140.136
+   spring.redis.host=IP地址
    # Redis服务器连接端口
-   spring.redis.port=6379
+   spring.redis.port=端口
    # Redis数据库索引（默认为0）
    spring.redis.database= 0
    # 连接超时时间（毫秒）
@@ -642,7 +642,7 @@ public class demo {
 
 
 
-事务和锁机制
+事务
 ---
 
 Redis事务是一个单独的隔离操作：事务中的所有命令都会按顺序地执行。事务在执行的过程中，不会被其他命令请求所打断。需要注意的是，redis的事务不保证原子性，事务中如果有一条命令执行失败，其后的命令仍然会被执行，不会回滚。
@@ -810,7 +810,7 @@ Redis默认会将快照文件存储在Redis当前进程的工作目录的dump.rd
 优点：
 
 1. 适合大规模的数据恢复
-2. 结束磁盘空间
+2. 节省磁盘空间
 3. 最大化redis性能，因为父进程只需要fork子进程去保存文件。
 
 缺点：
