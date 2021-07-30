@@ -106,6 +106,27 @@ Map
 
 - getOrDefault(key, 默认值);
 
+```java
+public int[] intersect(int[] nums1, int[] nums2) {
+    int[] ans = new int[nums1.length];
+    int index = 0;
+    Map<Integer, Integer> map = new HashMap<>();
+    for(int i: nums1){
+        map.put(i, map.getOrDefault(i, 0) + 1);
+    }
+    for(int i: nums2){
+        int n = map.getOrDefault(i, 0);
+        if(n > 0){
+            ans[index++] = i;
+            map.put(i, --n);
+        }
+    }
+    return Arrays.copyOfRange(ans, 0, index);
+}
+```
+
+
+
 
 
 字典树
