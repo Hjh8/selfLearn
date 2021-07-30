@@ -13,6 +13,7 @@ java版本
 - 数组赋值：Arrays.fill(arr, val);
 - 部分排序：Arrays.sort(array, 0, 4)
 - 字符转int：‘4’-48=4
+- 数组深拷贝：System.arraycopy(src, srcPos, dest, destPos, length)
 
 
 
