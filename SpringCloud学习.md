@@ -832,14 +832,15 @@ Zuul中提供了过滤器定义，可以用来过滤代理请求，提供额外�
 继承父类`ZuulFilter`。在父类中提供了4个抽象方法，分别是：**filterType, filterOrder, shouldFilter, run**。其功能分别是：
 
 - <font size="4" color="red">filterType()</font>：返回字符串数据，代表当前**过滤器的类型**。可选值有 pre, route, post, error。
-  - `pre`：在**请求被路由前**执行，通常用于处理身份认证，日志记录等；
+  - `pre`：在**请求被路由执行前**，通常用于处理身份认证，日志记录等；
   - `route`： 在**路由执行后，服务调用前**被调用；
   - `error`： **任意一个过滤器发生异常**的时候执行或**远程服务调用超时**执行，通常用于处理异常；
   - `post`： 在**route或error执行后被调用**，一般用于收集服务信息，统计服务性能指标等，也可以对response结果做特殊处理。
-
 - <font size="4" color="red">filterOrder()</font>：返回int数据，指定过滤器执行顺序，返回值越小，执行顺序越优先。
 - <font size="4" color="red">shouldFilter()</font>：返回boolean数据，代表当前filter是否生效。
-- <font size="4" color="red">run()</font>：具体的**过滤执行逻辑**。如pre类型的过滤器，可以通过对请求的验证来决定是否将请求路由到服务上；如post类型的过滤器，可以对服务响应结果做加工处理。
+- <font size="4" color="red">run()</font>：具体的**过滤执行逻辑**。
+  - 如pre类型的过滤器，可以通过对请求的验证来决定是否将请求路由发送给服务；.
+  - 如post类型的过滤器，可以对服务响应结果做加工处理。
 
 ![zuul过滤器生命周期](SpringCloud学习.assets/20200806145302914.png)
 
