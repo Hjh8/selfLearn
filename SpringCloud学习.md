@@ -4,7 +4,7 @@
 1.1 微服务概述
 ---
 
-微服务是系统架构上的一种设计风格，它的主旨是将一个原本独立的系统拆分成多个小型服务，这些小型服务都各自运行，服务之间通过基于 HTTP 的 RESTful API 进行通信协作；
+微服务是系统架构上的一种设计风格，它的主旨是将一个原本独立的系统拆分成多个小型服务，这些小型服务都各自运行，服务之间通过基于 HTTP 的 RESTful API 进行通信协作 ；
 
 分布式强调系统的拆分，微服务也是强调系统的拆分，微服务架构属于分布式架构的范畴；
 
@@ -65,10 +65,10 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，也就是 Eur
 
 1. 创建另一个系统用于服务注册中心
 
-2. 添加eureka-server依赖：（**注意，springboot的版本要跟eureka一直**）
+2. 添加eureka-server依赖：（**注意，springboot的版本要跟eureka一致**）
 
    ```xml
-   <dependency>   		
+   <dependency>
        <groupId>org.springframework.cloud</groupId>
        <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
        <version>2.2.7.RELEASE</version>
