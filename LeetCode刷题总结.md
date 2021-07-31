@@ -286,7 +286,7 @@ public class QuickSort {
 
         // 从左右两边交替扫描，直到left = right
         while (left < right) {
-            while (right > left && arr[right] >= key) {
+            while (left < right && arr[right] >= key) {
                 // 从右往左扫描，找到第一个比基准值小的元素
                 right--;
             }
