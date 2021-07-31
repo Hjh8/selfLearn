@@ -88,6 +88,21 @@ Set
 
 
 
+Stack
+---
+
+- 创建对象：`Stack<Integer> s = new Stack<>();` 
+- 判空：empty() 
+- 添加元素：push(obj)
+- 弹出栈顶元素：pop()
+- 返回栈顶元素：peek()
+- 查找元素：search(obj)
+- 清空：clear()
+
+
+
+
+
 Queue
 ---
 
