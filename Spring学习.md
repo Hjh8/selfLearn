@@ -2481,3 +2481,10 @@ spring事务是基于数据库事务和AOP机制的
 
 
 
+BeanFactory和FactoryBean区别
+---
+
+BeanFactory负责生产和管理Bean的一个工厂接口。
+
+FactoryBean: 一种Bean创建的方式，可以对Bean进行扩展。比如ProxyFactoryBean
+
