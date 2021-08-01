@@ -2524,7 +2524,7 @@ BeanFactory和FactoryBean区别
 
 BeanFactory负责生产和管理Bean的一个工厂接口。
 
-FactoryBean: 一种Bean创建的方式，可以对Bean进行扩展。比如ProxyFactoryBean
+FactoryBean: 一种Bean创建的方式，可以对Bean进行扩展。比如ProxyFactoryBean。
 
 
 
@@ -2536,7 +2536,6 @@ FactoryBean: 一种Bean创建的方式，可以对Bean进行扩展。比如Proxy
 ```java
 @Service
 public class TestService1 {
-
     @Autowired
     private TestService2 testService2;
 
@@ -2546,7 +2545,6 @@ public class TestService1 {
 
 @Service
 public class TestService2 {
-
     @Autowired
     private TestService1 testService1;
 
@@ -2573,21 +2571,47 @@ public class TestService2 {
 
 > 为什么单例bean可以解决循环依赖？只有单例bean会通过三级缓存提前暴露对象来解决循环依赖问题。
 >
-> 为什么构造器中注入不能解决循环依赖？因为不能提前暴露。
+> 为什么构造器中注入不能解决循环依赖？因为要在Bean调用构造器实例化之前保留对象。
 
 spring内部有三级缓存：
 
 - **singletonObjects**：一级缓存，是一个ConcurrentHashMap。用于保存实例化、完成属性赋值的bean实例
 - **earlySingletonObjects**：二级缓存，是一个HashMap。用于保存实例化完成的bean实例
-- **singletonFactories**：三级缓存，是一个HashMap。用于保存 bean创建工厂（FactoryBean），以便于后面扩展有机会创建代理对象。
+- **singletonFactories**：三级缓存，是一个HashMap。用于保存 bean创建工厂（ObjectFactory），以便于后面扩展有机会创建代理对象。
 
-首先，在getBean()的时候会先从一级缓冲中获取A的实例，如果获取都直接返回。否则会去二级缓存中找，找不到则去三级缓存中找。都找不到则创建实例，创建实例的时候会**提前暴露**，将A的创建工厂添加到三级缓存。
+首先，在getBean()的时候会先从一级缓冲中获取A的实例，如果获取都直接返回。否则会去二级缓存中找，找不到则去三级缓存中找。都找不到则创建实例，实例化的时候会**提前暴露**，将A的创建工厂添加到三级缓存。
 
-然后对A对象的属性进行赋值。去一级缓存获取B实例，为空，此时也会去各级缓存中找。都找不到则会创建B实例，创建的时候也**提前暴露**，将B的创建信息添加到三级缓存。
+然后对A对象的属性进行赋值。去一级缓存获取B实例，为空，此时也会去各级缓存中找。都找不到则会创建B实例，实例化的时候也**提前暴露**，将B的创建信息添加到三级缓存。
 
-然后对B对象的属性进行赋值，先去一级缓存中获取A实例，获取为null则逐级往上找，最后找到三级缓存中的A的创建工厂，利用创建工厂获取到A刚实例化的对象，将其放到二级缓存中并返回给B的属性完成属性赋值。
+然后对B对象的属性进行赋值，先去一级缓存中获取A实例，获取为null则逐级往上找，最后找到三级缓存中的A的创建工厂，利用创建工厂获取到A刚实例化的对象，将其放到二级缓存中并返回给B的属性完成属性赋值。与此同时删除三级缓存中A的创建工厂。
+
+B对象初始化完成之后放入一级缓存中。此时A也可以完成初始化，放入一级缓存中。
+
+![img](Spring学习.assets/b4af3d32d0dc95746107f70997a15c89.png)
 
 
 
+### 为什么需要二级缓存
 
+二级缓存为了存储 三级缓存的创建出来的早期Bean， 为了**避免三级缓存重复执行**。如果重复去三级缓存获取早期Bean的话，每次返回的对象都是不同的。
+
+同时也可以分离成熟Bean和纯净Bean(未注入属性)的存放，**保证我们getBean是完整最终的Bean**。因为多线程下可能会读取到不完整的Bean。
+
+
+
+### 为什么需要三级缓存
+
+其实二级缓存就完全可以解决循环依赖的问题了。**使用三级缓存是为了防止在使用aop的情形下，注入到其他属性的时候是最终的代理对象**。
+
+在三级缓存中根据bean创建工厂获取刚实例化对象的时候，会先判断该对象是否被AOP代理了，是的话则返回代理对象，将代理对象放到二级缓存中。
+
+> 为什么不直接把代理对象放入二级缓存？去掉三级缓存
+>
+> 在实例化阶段就得执行后置处理器，判断有 AnnotationAwareAspectJAutoProxyCreator 并创建代理对象。
+
+
+
+### 第三级缓存中为什么要添加 `ObjectFactory`对象，直接保存实例对象不行吗？
+
+便于对实例对象进行增强，如果直接放实例对象，那就不能在后续操作中增强对象了。比如创建AOP的代理对象。
 
