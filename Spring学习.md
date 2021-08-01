@@ -2470,6 +2470,44 @@ ApplicationContext扩展的功能：
 
 
 
+依赖注入的两种方式
+---
+
+常用的注入方式主要有两种：构造方法注入，setter注入。
+
+- 构造方法注入：调用构造方法来完成对象赋值
+
+  ```java
+  public class Student {
+      private Student student;
+      
+      public Student(Student student) {
+          this.Student = student;
+      }
+  }
+  ```
+
+- setter注入：使用setter方法来完成对象赋值
+
+  ```java
+  public class Student {
+      private Student student;
+      
+      public void setStudent(Student student) {
+         this.student = student;
+      }
+  }
+  ```
+
+
+
+autowire自动注入的方式
+---
+
+autowire有四个自动注入方式：byName、byType、constructor、autodetect（先使用构造器注入，不行的话是要byType方式）
+
+
+
 Spring事务是如何实现的
 ---
 
