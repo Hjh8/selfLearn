@@ -140,6 +140,14 @@ Redis 列表是简单的**字符串列表**。你可以在列表的头部（左�
 
 首先在列表元素较少的情况下它会将所有的元素紧挨着一起存储，使用一块连续的内存空间，这个结构是ziplist，即是压缩列表。
 
+![image-20210801102417952](Redis.assets/image-20210801102417952.png)
+
+- zlbytes表示这个ziplist占用的大小
+- zltail表示最后一个元素的偏移量，可以很快速的从后往前找。
+- entry表示元素
+- zllen表示元素个数。
+- zlend标记ziplist的结尾
+
 当数据量比较多的时候会改成quicklist，如下图所示：
 
 ![image-20210708225035910](Redis.assets/image-20210708225035910.png)
@@ -171,7 +179,7 @@ Redis 列表是简单的**字符串列表**。你可以在列表的头部（左�
 
 set是string类型的集合，具有自动排序去重功能，当你需要存储一个列表数据，又不希望出现重复数据时，set是一个很好的选择，并且set可以判断某个成员是否在该set里，这个是list所不能提供的。
 
-它底层其实是一个value为null的hash表，所以添加，删除，查找的复杂度都是O(1)。
+> 它底层其实是一个value为null的hash表，所以添加，删除，查找的复杂度都是O(1)
 
 - `sadd k v1 v2 .....`：将一个或多个元素加入到集合 key 中，已经存在的元素将被忽略
 - `smembers k`：取出该集合的所有值。
@@ -197,7 +205,7 @@ set是string类型的集合，具有自动排序去重功能，当你需要存�
 
 hash是一个string类型的field和value的映射表，hash特别适合用于**存储对象**，类似Java里面的Map<String,Object>。
 
-hash类型对应的数据结构是两种：ziplist，hashtable。当field-value长度较短且个数较少时，使用ziplist，否则使用hashtable。
+hash类型对应的数据结构是两种：**ziplist，hashtable**。当field-value长度较短且个数较少时，使用ziplist，否则使用hashtable。
 
 - `hset k field1 value1 field2 value2 ... `：批量设置field-value
   - k通常表示一个对象，可以结合id使用，如`hset user:12 name hjh age 10` 
@@ -248,7 +256,10 @@ zset底层使用了两个数据结构
 
    ![image-20210709093008848](Redis.assets/image-20210709093008848.png)
 
-2. skiplist：在member个数大于等于128时，使用skiplist存储数据。由hashmap跟跳跃表实现。hashmap保存着从 member 到 score 的映射，跳跃表按 score 从小到大保存所有集合元素。这两种数据结构会**通过指针来共享相同元素的成员和分值**。
+2. skiplist：在member个数大于等于128时，使用skiplist存储数据。由hash表跟跳跃表实现。
+
+   - 跳表的每个节点包含了 层高、score、指向member在hashtable中地址的指针。
+   - 跳表按 score 从小到大保存所有集合元素。
 
 跳跃表结构：
 
@@ -445,23 +456,6 @@ maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 在redis中，允许用户设置的最大使用内存大小：64位的电脑默认无限制，32位的电脑默认不超过3G。
 
 - [ ] 哪个命令可以查看内存情况？`info memory` 
-
-淘汰策略：
-
-- volatile-lru：在设置了过期时间的键中，使用 **LRU算法** 移除key
-- allkeys-lru：在所有集合key中，使用 **LRU算法** 移除key（最近**最少使用**）
-- volatile-random：在设置了过期时间的键中，随机移除key
-- allkeys-random：在所有集合key中，随机移除key
-- volatile-lfu：在设置了过期时间的键中使用 **lfu算法** 移除key
-- allkeys-lfu：在所有键中使用 **lfu算法** 移除key（使用**频率**最少）
-- volatile-ttl：移除最近要过期的key
-- noeviction：不进行移除。
-
-***
-
-当内存不足时，Redis会根据配置的缓存淘汰策略移除部分key，以保证写入成功。当内存实在放不下时，Redis直接返回 **out of memory** 错误。
-
-> 一个键到了过期时间之后不是马上从内存中删除。而是会继续存活在内存中，然后redis根据淘汰策略来删除。
 
 
 
@@ -1203,8 +1197,34 @@ redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后�
 
 
 
-LRU原理以及代码实现
+淘汰策略跟回收策略
 ---
+
+淘汰跟回收的区别：淘汰是内存不足时将部分key删除（不过期key），而回收是尽量回收无用空间（比如说删除过期key）。
+
+***
+
+当内存不足时，Redis会根据配置的缓存 淘汰策略 移除部分key，以保证写入成功。当内存实在放不下时，Redis直接返回 **out of memory** 错误。
+
+淘汰策略：
+
+- volatile-lru：在设置了过期时间的键中，使用 **LRU算法** 移除key
+- allkeys-lru：在所有集合key中，使用 **LRU算法** 移除key（最近**最少使用**）
+- volatile-random：在设置了过期时间的键中，随机移除key
+- allkeys-random：在所有集合key中，随机移除key
+- volatile-lfu：在设置了过期时间的键中使用 **lfu算法** 移除key
+- allkeys-lfu：在所有键中使用 **lfu算法** 移除key（使用**频率**最少）
+- volatile-ttl：移除最近要过期的key
+- noeviction：不进行移除。
+
+***
+
+一个键到了过期时间之后不是马上从内存中删除。而是会继续存活在内存中，然后redis根据 回收策略 来删除。
+
+回收策略（删除策略）：
+
+- 惰性删除：当访问一个key时，判断其是否过期，若过期直接删除
+- 定期删除：定期主动删除已过期的key
 
 
 
