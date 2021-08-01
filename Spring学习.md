@@ -2526,3 +2526,68 @@ BeanFactory负责生产和管理Bean的一个工厂接口。
 
 FactoryBean: 一种Bean创建的方式，可以对Bean进行扩展。比如ProxyFactoryBean
 
+
+
+循环依赖
+---
+
+循环依赖：一个或多个对象实例之间构成一个环形调用。比如A依赖B，B依赖A。
+
+```java
+@Service
+public class TestService1 {
+
+    @Autowired
+    private TestService2 testService2;
+
+    public void test1() {
+    }
+}
+
+@Service
+public class TestService2 {
+
+    @Autowired
+    private TestService1 testService1;
+
+    public void test2() {
+    }
+}
+```
+
+循环依赖的主要场景：
+
+1. 单例的setter注入。（能解决）
+2. 非单例的setter注入。（不能解决）
+3. 构造器注入。（不能解决）
+
+
+
+### spring怎么检测是否存在循环依赖？
+
+在Bean在创建的时候给该Bean做标记，如果递归调用回来发现Bean存在标记，则说明这个bean正在创建中，这就说明产生了循环依赖。
+
+
+
+### spring如何解决循环依赖？
+
+> 为什么单例bean可以解决循环依赖？只有单例bean会通过三级缓存提前暴露对象来解决循环依赖问题。
+>
+> 为什么构造器中注入不能解决循环依赖？因为不能提前暴露。
+
+spring内部有三级缓存：
+
+- **singletonObjects**：一级缓存，是一个ConcurrentHashMap。用于保存实例化、完成属性赋值的bean实例
+- **earlySingletonObjects**：二级缓存，是一个HashMap。用于保存实例化完成的bean实例
+- **singletonFactories**：三级缓存，是一个HashMap。用于保存 bean创建工厂（FactoryBean），以便于后面扩展有机会创建代理对象。
+
+首先，在getBean()的时候会先从一级缓冲中获取A的实例，如果获取都直接返回。否则会去二级缓存中找，找不到则去三级缓存中找。都找不到则创建实例，创建实例的时候会**提前暴露**，将A的创建工厂添加到三级缓存。
+
+然后对A对象的属性进行赋值。去一级缓存获取B实例，为空，此时也会去各级缓存中找。都找不到则会创建B实例，创建的时候也**提前暴露**，将B的创建信息添加到三级缓存。
+
+然后对B对象的属性进行赋值，先去一级缓存中获取A实例，获取为null则逐级往上找，最后找到三级缓存中的A的创建工厂，利用创建工厂获取到A刚实例化的对象，将其放到二级缓存中并返回给B的属性完成属性赋值。
+
+
+
+
+
