@@ -2522,9 +2522,11 @@ spring事务是基于数据库事务和AOP机制的
 BeanFactory和FactoryBean区别
 ---
 
-BeanFactory负责生产和管理Bean的一个工厂接口。
+BeanFactory：是IOC容器的核心接口，在它的实现类中装载着整体的bean对象。
 
-FactoryBean: 一种Bean创建的方式，可以对Bean进行扩展。比如ProxyFactoryBean。
+FactoryBean: 是一个bean对象，它可以生产或者修饰bean对象。例如给对象创建代理对象。
+
+- `factoryBean.getObject(id)` 根据对象id从BeanFactory中获取对象。
 
 
 
@@ -2571,7 +2573,7 @@ public class TestService2 {
 
 > 为什么单例bean可以解决循环依赖？只有单例bean会通过三级缓存提前暴露对象来解决循环依赖问题。
 >
-> 为什么构造器中注入不能解决循环依赖？因为构造器注入是在实例化之后才进行注入的。
+> 为什么构造器中注入不能解决循环依赖？因为构造方法创建实例，每次都要new一个要构造的实例bean，而A创建时，依赖B，就去创建B，B又依赖了A，这样会无限递归创建。
 
 spring内部有三级缓存：
 
