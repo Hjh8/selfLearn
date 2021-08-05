@@ -119,6 +119,8 @@ Queue
 Map
 ---
 
+- 新增：put(k, v)
+- 取出：get(k)
 - getOrDefault(key, 默认值);
 
 ```java
