@@ -96,8 +96,6 @@ lock是一个接口，需要手动的加锁和释放锁，并且在发生异常�
 
 ReentrantLock是lock实现类，它是可重入锁，其可以通过 `lock()` 加锁，`unlock()` 解锁。
 
-> 可重入锁是指一个线程获得锁之后，该线程可以再次获取该锁而无需等待。
-
 ```java
 public void insert(Thread thread) {
     Lock lock = new ReentrantLock();
@@ -109,11 +107,26 @@ public void insert(Thread thread) {
 }
 ```
 
+> 可重入锁是指一个线程获得锁之后，该线程可以再次获取该锁而无需等待。
+>
+> 例如：
+>
+> ```java
+> // 加锁
+> lock.lock();
+> System.out.println(thread.getName()+"得到了锁");
+> // 再加一次锁
+> lock.lock();
+> lock.unlock();
+> // 释放锁
+> lock.unlock();
+> ```
+
 
 
 ### Condition
 
-Condition 类也是lock接口的实现类，其实现线程间的通信。
+Condition 类也是lock接口的实现类，其可以实现线程间的通信。
 
 `lock.newCondition()`：获取Condition对象。
 
@@ -135,11 +148,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 class DemoClass{
-    //加减对象
+    // 共享对象
     private int number = 0;
-    //声明锁
+    // 声明锁
     private Lock lock = new ReentrantLock();
-    //声明钥匙
+    // 声明Condition
     private Condition condition = lock.newCondition();
     
     /**
@@ -160,6 +173,7 @@ class DemoClass{
             lock.unlock();
         }
     }
+    
     /**
      * 减一
      */
@@ -180,14 +194,14 @@ class DemoClass{
 }
 ```
 
-注意代码中判断条件是while，而不是if，需要在唤醒之后再次判断条件成不成立，不然signalAll的时候全都被唤醒，即使条件不成立也会往下执行，这也叫做**虚假唤醒**。
+【注意】代码中判断条件是while，而不是if，需要在唤醒之后再次判断条件成不成立，不然signalAll的时候全都被唤醒，即使条件不成立也会往下执行，这也叫做**虚假唤醒**。
 
 
 
 CopyOnWriteArrayList
 ---
 
-在很多应用场景中，读操作可能会远远大于写操作。由于读操作根本不会修改原有的数据，因此如果每次读取都进行加锁操作，其实是一种资源浪费。
+在很多应用场景中，读操作可能会远远大于写操作。由于读操作不会修改原有的数据，因此如果每次读操作都进行加锁，这其实是一种资源浪费。
 
 ArrayList是非线程安全的，CopyOnWriteArrayList是线程安全的。
 
@@ -206,9 +220,9 @@ System.out.println(list);
 CopyOnWriteArrayList添加新元素是否需要扩容？
 ---
 
-CopyOnWriteArrayList 底层并非动态扩容数组，不能动态扩容，其线程安全是通过 ReentrantLock 来保证的。
+CopyOnWriteArrayList 底层并非动态扩容数组，而是每次添加的时候都往新数组中添加。
 
-当向 CopyOnWriteArrayList 添加元素时，线程获取锁的执行权后，`add` 方法中会新建一个容量为（旧数组容量+1）的数组，然后将旧数组数据拷贝到该数组中，并将新加入的数据放入新数组尾部，接着使用新数组替换旧数组。
+当向 CopyOnWriteArrayList 添加元素时，线程获取锁的执行权后，`add` 方法中会新建一个容量为 **旧数组容量+1** 的数组，然后将旧数组数据拷贝到新数组中，并将新加入的数据放入新数组尾部，接着使用新数组替换旧数组。
 
 代码如下：
 
@@ -229,7 +243,7 @@ public boolean add(E e) {
 }
 ```
 
-CopyOnWriteArrayList 适用于，读多写少的情况下（读写分离）！因为每次调用修改数组结构的方法都需要重新新建数组，性能低！
+> CopyOnWriteArrayList 适用于 读多写少的情况。因为每次进行写操作都需要重新创建数组，性能低。
 
 
 
@@ -245,7 +259,7 @@ CopyOnWriteArraySet是通过CopyOnWriteArrayList实现的，即去重的时候�
 公平锁和非公平锁
 ---
 
-**公平锁**：多个线程按照申请锁的顺序去获得锁，线程会直接进入队列去排队，只有队列的第一个线程才能得到锁。
+**公平锁**：多个线程按照申请锁的**顺序**去获得锁。线程会直接进入队列去排队，只有队列的第一个线程才能得到锁。
 
 - 优点：所有的线程都能得到资源，不会饿死在队列中。
 - 缺点：吞吐量会下降很多
@@ -289,7 +303,7 @@ CopyOnWriteArraySet是通过CopyOnWriteArrayList实现的，即去重的时候�
 Callable&FutureTask
 ---
 
-实现Callable接口是创建线程的第三种方式，只不过不能像Runanble接口的实现类一样直接new然后放到Thread中。只要借助**FutureTask** 类来进行适配。
+实现Callable接口是创建线程的第三种方式，只不过不能像Runanble接口的实现类一样直接new然后放到Thread中。要借助**FutureTask** 类来进行适配。
 
 Callable 接口的特点如下：
 
@@ -306,13 +320,11 @@ class MyThread implements Callable<Integer>{
 }
 ```
 
-
-
 ***
 
 FutureTask：常用于后台完成任务。
 
-- 在主线程中需要执行比较耗时的操作时，但又不想阻塞主线程时，可以把这些作业交给 Future 对象在后台完成
+- 在主线程中需要执行比较耗时的操作，但又不想阻塞主线程时，可以把这些作业交给 FutureTask对象在后台完成
 - 一般 FutureTask 多用于耗时的计算，主线程可以在完成自己的任务后，再去获取结果 `get()` 。如果结果尚未完成，则阻塞 get 方法。
 
 ```java
@@ -321,6 +333,7 @@ FutureTask<Integer> ft = new FutureTask(new MyThread());
 // 启动线程
 new Thread(ft, "线程ft").start();
 for (int i = 0; i < 10; i++) {
+    // 获取到call方法的返回值200
     System.out.println(ft.get());
 }
 ```
@@ -370,11 +383,9 @@ countDownLatch.countDown();  // 计数器减一
 
 ***
 
-场景2：让单个线程等待，多个线程(任务)完成后，进行汇总合并。
+场景2：让单个线程等待，多个线程(任务)完成后，让单个线程执行汇总合并。
 
-当并发任务存在前后依赖关系时；比如数据详情页需要同时调用多个接口获取数据，并发请求获取到数据后、需要进行结果合并；或者多个数据操作完成后，需要数据check；
-
-这其实都是：在多个线程(任务)完成后，进行汇总合并的场景。
+当并发任务存在前后依赖关系时；比如数据详情页需要同时调用多个接口获取数据，并发请求获取到数据后、需要进行结果合并；或者多个数据操作完成后，需要数据check；这其实都是：在多个线程(任务)完成后，单个线程进行汇总合并的场景。
 
 ```java
 CountDownLatch countDownLatch = new CountDownLatch(5);
@@ -389,11 +400,9 @@ for (int i = 0; i < 5; i++) {
     }).start();
 }
 
-countDownLatch.await();// 主线程在阻塞，当计数器==0，就唤醒主线程往下执行。
+countDownLatch.await(); // 主线程在阻塞，当计数器==0，就唤醒主线程往下执行。
 System.out.println("主线程:在所有任务运行完成后，进行结果汇总");
 ```
-
-
 
 
 
@@ -401,15 +410,17 @@ System.out.println("主线程:在所有任务运行完成后，进行结果汇�
 
 CyclicBarrier 的构造方法第一个参数是目标障碍数，每次执行 await方法 障碍数会加一，如果达到了目标障碍数，才会执行 cyclicBarrier.await()之后的语句。
 
-CyclicBarrier 跟CountdownLatch不一样的是，**CountdownLatch是一次性的，而CycliBarrier是可以重复使用的**，只需调用一下reset方法。
+CyclicBarrier 跟CountdownLatch不一样的是，**CountdownLatch是一次性的，而CycliBarrier是可以重复使用的**，只需调用一下`reset方法`。
 
 - ` CyclicBarrier(int parties, Runnable barrierAction)`：指定目标障碍数和到达目标障碍数时要做的事情
--  `await()`：parties加一，线程等待。
-- `reset()`：重置
+-  `await()`：障碍数加一，线程等待。
+- `reset()`：重置CyclicBarrier
+
+模拟多人到达会议后进行开会：
 
 ```java
 // 会议需要三个人
-CyclicBarrier cyclicBarrier = new CyclicBarrier(3, new Runnable() {
+CyclicBarrier cyclicBarrier = new CyclicBarrier(3,  new Runnable() {
     @Override
     public void run(){
         // 三个人都到齐之后 开会
@@ -432,7 +443,7 @@ for (int i = 0; i < 3; i++) {
 
 ### Semaphore
 
-可以理解为线程池分配线程，而Semaphore相当于锁池分配锁，可以使线程达到同步的效果。Semaphore 信号量通常用于那些资源有明确访问数量限制的场景，常用于限流 。
+Semaphore通过分配和回收令牌，使线程达到同步的效果。Semaphore 信号量通常用于那些资源有**明确访问数量限制**的场景，常用于**限流** 。
 
 - Semaphore(int n)：构造方法，指定令牌数
 - acquire()：获取一个令牌，运行执行。在获取到令牌之前线程一直处于阻塞状态。
@@ -546,7 +557,9 @@ class MyData{
 
 ![image-20210717124635149](JUC学习.assets/image-20210717124635149.png)
 
-锁降级目的是保证数据可见性，如果当前的线程A在修改完数据后，没有获取读锁而是直接释放了写锁，那么假设此时另一个线程B获取了写锁并修改了数据，那么A线程无法感知到数据已被修改，则数据出现错误。如果遵循锁降级的步骤，线程A在释放写锁之前获取读锁，那么线程B在获取写锁时将被阻塞，直到线程A完成数据处理过程，释放读锁。
+**锁降级目的是保证数据可见性**，如果当前的线程A在修改完数据后，没有获取读锁而是直接释放了写锁，那么假设此时另一个线程B获取了写锁并修改了数据，那么A线程无法感知到数据已被修改，则数据出现错误。如果遵循锁降级的步骤，线程A在释放写锁之前获取读锁，那么线程B在获取写锁时将被阻塞，直到线程A完成数据处理过程，释放读锁。
+
+> 锁降级只能是 写锁 中加 读锁，不能 读锁 中加 写锁。因为多个线程在读，突然其实一个线程加写锁的话，就会打算其他线程的读操作。
 
 
 
@@ -561,11 +574,11 @@ BlockingQueue当队列满/空闲的时候会自动帮我们阻塞和唤醒线程
 
 常用方法：
 
-| 方法 | 抛出异常  | 返回特殊值 | 一直阻塞 | 超时退出           |
-| ---- | --------- | ---------- | -------- | ------------------ |
-| 插入 | add(e)    | offer(e)   | put(e)   | offer(e,time,unit) |
-| 移除 | remove()  | poll()     | take()   | poll(time,unit)    |
-| 检查 | element() | peek()     | 不可用   | 不可用             |
+|    方法    | 抛出异常  | 返回特殊值 | 一直阻塞 |      超时退出      |
+| :--------: | :-------: | :--------: | :------: | :----------------: |
+|  插入元素  |  add(e)   |  offer(e)  |  put(e)  | offer(e,time,unit) |
+| 移除首元素 | remove()  |   poll()   |  take()  |  poll(time,unit)   |
+| 查看首元素 | element() |   peek()   |  不可用  |       不可用       |
 
 1、放入数据
 
@@ -578,7 +591,7 @@ BlockingQueue当队列满/空闲的时候会自动帮我们阻塞和唤醒线程
 
 - remove()：取走队列的首元素，若队列为空报错
 - poll()：取走队列的首元素，若队列为空则返回false
-- take()：取走 队列的首元素，若队列为空则阻塞，直到队列有元素。
+- take()：取走队列的首元素，若队列为空则阻塞，直到队列有元素。
 - poll(time, unit)：取走队列的首元素，若队列为空则等待time，若等待time后还没有元素则返回false
 
 ```java
@@ -639,9 +652,9 @@ ThreadPool 线程池
 
 Java中的线程池是通过Executor框架实现的。
 
-- `Executors.newCachedThreadPool()`：可缓存线程池。该线程池的线程数可以根据任务数量随时改变，因为它的线程最大值是在初始化的时候设置为 Integer.MAX_VALUE 所以它容易造成堆内存溢出。
-- `Executors.newFixedThreadPool(n)`：定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。
-- `Executors.newSingleThreadExecutor()`：单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。速度慢。
+- `Executors.newCachedThreadPool()`：可缓存线程池。该线程池的**线程数**可以根据任务数量**随时改变**，因为它的线程最大值是在初始化的时候设置为 Integer.MAX_VALUE 所以它容易造成堆内存溢出。
+- `Executors.newFixedThreadPool(n)`：定长线程池，可控制线程池的**最大线程数**，超出这个数的任务会在队列中等待。**在线程池空闲时，不会释放工作线程**，因为他们都是核心线程。
+- `Executors.newSingleThreadExecutor()`：单线程化的线程池，它只会用**一个工作线程**来执行任务，保证所有任务按照指定顺序(FIFO, 优先级)执行。速度慢。
 
 
 
@@ -653,11 +666,11 @@ Java中的线程池是通过Executor框架实现的。
 
 **keep_alive_time**：临时线程的最大存活时间。
 
-**work_quue**：存放待执行的任务，是一个阻塞队列。
+**work_queue**：任务队列。存放待执行的任务，是一个阻塞队列。
 
 **ThreadFactory**：线程工厂，生产执行任务的线程。
 
-**Handler**：拒绝策略。当线程池没有能力处理的时候，会启动拒绝策略。
+**Handler**：拒绝策略。当线程池没有能力处理任务的时候，会启动拒绝策略。
 
 1. AbortPolicy：不执行新任务，直接抛出异常，提示线程池已满
 2. DisCardPolicy：不执行新任务，也不抛出异常
@@ -684,21 +697,19 @@ Java中的线程池是通过Executor框架实现的。
 
 ![image-20210717175203420](JUC学习.assets/image-20210717175203420.png)
 
-
+自定义线程池：
 
 ```java
 ExecutorService threadPool = new ThreadPoolExecutor(
-    2,
-    9,
-    2L,
-    TimeUnit.SECONDS,
-    new LinkedBlockingQueue<Runnable>(),
-    Executors.defaultThreadFactory(),
-    new ThreadPoolExecutor.CallerRunsPolicy()
+    2, // core_pool_size
+    9, // max_pool_size
+    2L, // keep_alive_time
+    TimeUnit.SECONDS, // keep_alive_time
+    new LinkedBlockingQueue<Runnable>(), // work_queue
+    Executors.defaultThreadFactory(), // ThreadFactory
+    new ThreadPoolExecutor.CallerRunsPolicy() // Handler
 );
 ```
-
-
 
 
 
@@ -725,11 +736,11 @@ cpu通过时间片分配算法来循环执行任务，当前线程执行一个�
 Synchronized和Lock区别
 ---
 
-1. Synchronized是关键字，lock是接口
-2. Synchronized会自动上锁和释放锁，lock要手动。且发生异常时lock不会自动释放锁。
-3. Synchronized可以锁代码块和方法，lock只能锁代码块
-4. Synchronized获取到锁之后其他线程会一直等待下去。而lock锁不一定会等待下去。
-5. Synchronized是可重入锁、非公平。lock也是重入锁，但是可以设置使用公平锁或者非公平锁。
+1. Synchronized是关键字；lock是接口
+2. Synchronized会自动上锁和释放锁；lock要手动，即使发生异常时lock也不会自动释放锁。
+3. Synchronized可以锁代码块和方法；lock只能锁代码块
+4. Synchronized获取到锁之后其他线程会一直等待下去；而lock锁不一定会等待下去。
+5. Synchronized是可重入锁、非公平；lock也是重入锁，但是可以设置使用公平锁或者非公平锁。
 
 
 
@@ -738,7 +749,7 @@ AQS
 
 AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是java并发包的基础类，很多API都是基于AQS来实现加锁和释放锁的功能。其内部维护了state跟node节点等变量来实现锁的功能。
 
-比如ReentrantLock的属性中就包括了AQS：
+比如ReentrantLock的属性中就包括了AQS子类：
 
 ![image-20210717191817092](JUC学习.assets/image-20210717191817092.png)
 
@@ -749,7 +760,9 @@ AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是j
 AQS是如何实现加锁解锁的呢？其内部维护了两个属性：state、Node。
 
 - state表示是否有线程加锁，0表示没有，非0表示有线程正在使用锁。
-- Node其实是双向链表的节点，包含了前后指针、Thread（使用锁的线程）。多个Node节点形成的双向链表，我们称之为等待队列（用于区分公平锁和非公平锁）
+- Node其实是双向链表的节点，包含了前后指针、Thread（使用锁的线程）。多个Node节点形成的双向链表，我们称之为等待队列。
+
+> 公平锁和非公平锁利用**等待队列**来实现
 
 ![image-20210718201235136](JUC学习.assets/image-20210718201235136.png)
 
@@ -757,9 +770,9 @@ AQS是如何实现加锁解锁的呢？其内部维护了两个属性：state、
 
 **加锁**的实现步骤：
 
-1. 当一个线程使用lock()方法加锁的时候，会使用CAS操作将state值从0变为1。如果修改成功则将Thread设置为自己。
-2. 如果修改失败说明当前有线程使用该锁，此时这个线程会判断这个锁是不是属于自己，是的话允许加锁，state+1；**这也是可重入锁的实现。** 
-3. 若不是属于自己，则该线程使用CAS操作进入到等待队列中，然后调用 LockSupport.park(this) 进入阻塞
+1. 当一个线程使用lock()方法加锁的时候，会使用 <u>CAS操作将state从0变成1</u>。如果修改成功则将 节点中的Thread设置为自己。
+2. 如果修改失败说明当前有线程正在使用该锁，此时这个线程会 <u>判断这个锁是不是属于自己</u>，是的话允许加锁，然后state值加一；**这也是可重入锁的实现。** 
+3. 若不是属于自己，则该线程使用 <u>CAS操作进入到等待队列</u>中，然后调用 LockSupport.park(this) 进入阻塞
 4. 当锁对象释放之后，会重新尝试去获取。
 
 **解锁**实现步骤：
@@ -768,7 +781,11 @@ AQS是如何实现加锁解锁的呢？其内部维护了两个属性：state、
 
 > LockSupport提供的是一个许可，如果存在许可，线程在调用`park`的时候，会立马返回，此时 许可 会被消费掉变成不可用。如果没有许可，则会阻塞。调用unpark的时候，许可变成可用。
 >
-> 注意，许可只有一个，不可累加。
+> **注意，许可只有一个，不可累加。** 
+
+***
+
+图示加锁过程：
 
 ![image-20210718201530124](JUC学习.assets/image-20210718201530124.png)
 
@@ -778,7 +795,7 @@ AQS是如何实现加锁解锁的呢？其内部维护了两个属性：state、
 
 ### 公平和非公平锁的原理
 
-这两者的实现是靠AQS的阻塞队列。使用公平锁的情况下，获取锁的时候会先判断获取到锁的节点的下一个节点是不是自己，是的话才尝试加锁，不是的话就继续阻塞。
+这两者的实现是靠AQS的**阻塞队列**。使用公平锁的情况下，线程获取锁的时候会先判断获取到当前节点的下一个节点是不是自己，是的话才尝试加锁，不是的话就继续阻塞。
 
 而使用非公平锁时，直接就尝试加锁。
 
