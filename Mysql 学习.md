@@ -945,12 +945,12 @@ Mysql基础架构
 ### redo log 和 binlog
 
 1. redo log 是 InnoDB 引擎特有的； binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。
-2. redo log 是物理日志，记录的是 “ 在某个数据页上做了什么修改 ” ； binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如 “ 给 ID=2 这一行的 c 字段加 1 ”。
-3. redolog的大小是固定的，满了之后就擦除一些记录。binlog是追加写入的，即一个文件满了就切换到下一个文件。
+2. redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给ID=2的c字段加1”。
+3. redolog的大小是固定的 (4G)，满了之后就擦除一些记录。binlog是追加写入的，即一个文件满了就切换到下一个文件。
 
 ***
 
-为了让两份日志之间的逻辑一致， redo log 的写入拆成了两个步骤： **prepare 和 commit **，在这两个步骤之间将记录写入binlog中，这就是 " 两阶段提交 "。
+为了让两份日志之间的逻辑一致， redolog 的写入拆成了两个步骤： **prepare 和 commit **，在这两个步骤之间将记录写入binlog中，这就是 " 两阶段提交 "。
 
 1. 事务提交之后，将记录在redolog中，此时redolog处于prepare状态
 2. 将记录写入binlog
@@ -1358,7 +1358,7 @@ Read View可简化成下面三部分：
 
 隔离性：利用锁和 MVCC 机制。
 
-持久性：通过redolog实现，redolog会记录数据库的每一个写操作。
+持久性：通过redolog实现，redolog会记录数据库的每一个写操作。当数据库空闲的时候会将redolog的内容更新到数据库中，然后擦除redolog的内容。
 
 
 
@@ -1450,8 +1450,6 @@ RR：为了解决幻读，引入了间隙锁。
 - slave会在一定时间间隔内对master的binlog进行探测，看其是否发送改变。如果发生改变则**使用一个IO线程**去获取binlog。
 - 同时master为**每个从机的IO线程开启一个dump线程**，用于传输binlog。slave获取到binlog后会将其内容写到本地的 **relay log** 中，然后**使用一个sql线程** 读取relay log中的内容并执行，使本地数据跟 master的数据保持一致。
 - 最后slave的IO线程 跟 sql线程 进入睡眠状态，等待下一次被唤醒。
-
-
 
 
 
