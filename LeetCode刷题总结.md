@@ -329,6 +329,34 @@ public class QuickSort {
 
 
 
+堆排序
+---
+
+```java
+public static void main(String[] args) {
+    int[] a = {7, 6, 7, 11, 5, 12, 3, 0, 1};
+    for(int i=0; i<a.length; i++){
+        int k = i;
+        // 构建小根堆，若要大根堆，换个符号即可
+        while (k > 0 && a[k] > a[k/2]){
+            swap(a, k, k/2);
+            k /= 2;
+        }
+    }
+    for (int i : a) {
+        System.out.print(i+" ");
+    }
+}
+
+public static void swap(int[] a, int i, int j) {
+    int t = a[i];
+    a[i] = a[j];
+    a[j] = t;
+}
+```
+
+
+
 二叉树
 ---
 
@@ -1329,7 +1357,15 @@ int main(){
 
 
 
-## 堆代码模板
+堆排序代码模板
+---
+
+> 堆排序是指 层序遍历得到的结果是有序的。小根堆就是升序，根节点要最小；大根堆就是降序，根节点要最大。
+
+思路：
+
+1. 每次用下标往上（除2）跟父节点进行比较
+2. 满足就交换，然后一直重复操作
 
 ```c++
 #include<iostream>
@@ -1342,7 +1378,8 @@ int main(){
 	for (int i = 1; i <= n;i++){ // 建立小顶堆
 		cin >> a[i];
 		int k=i;
-        // 若建立大根堆则 a[k] > a[k/2]
+              // 下标从1开始，所以k>1
+              // 若建立大根堆则 a[k] > a[k/2]
 		while(k>1 && a[k] < a[k/2]){
 			swap(a[k], a[k/2]);
 			k /= 2;
@@ -1360,6 +1397,12 @@ int main(){
 
 
 ## 拓扑排序代码模板
+
+思路：
+
+1. 用一个队列存放所有入度为0的节点。
+2. 每次拿出队列的首元素，然后将首元素所连的点的入度都减一。减一后为0则表示该点没有入度，将其入队。
+3. 注意，所有入了队的要记录。
 
 ```c++
 #include<iostream>
@@ -1389,7 +1432,7 @@ void topusort(){
 		num++;
 		for (int i = 0; i < g[u].size(); i++){
 			int v = g[u][i];
-			// 没被访问过
+			// 该点没有入队
 			if (vis[v] == 0){
 				indegree[v]--;
 				if (indegree[v] == 0){
