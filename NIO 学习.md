@@ -18,9 +18,9 @@ I/O 模型：就是用什么样的通道或者说是通信模式和架构进行�
 
 `IO复用`：复用模型需要使用到 select函数/poll函数/epoll函数，用户线程首先将IO请求的socket添加到select中，随后select阻塞。当内核数据准备就绪时，select被唤醒返回到用户程序，然后遍历所有的socket后找到就绪的socket，随后用户线程读取数据并继续执行。
 
-poll跟select差不多，只不过**select**是采用**bitmap**来存放socket，而**poll**是**链表**，所以没有数量限制。
+poll跟select差不多，只不过**select**是采用**数组**来存放socket，而**poll**是**链表**，所以没有数量限制。
 
-而epoll是采用红黑树存放socket跟双向链表关联节点，不用遍历socket即可知道是哪个socket就绪
+而epoll是采用**红黑树**存放socket，每个socket以**双向链表方式关联监听事件**，所以可以一次性就知道是哪个socket就绪。epoll对于select的改进还有：**把 就绪socket 跟 等待socket 分开（用两个红黑树存储）**，如果监听到哪个等待的socket就绪，把该socket移到就绪socket中，每次将就绪的socket返回即可。而select是将全部的socket数组返回（不管是否就绪）。
 
 > 复用模型 与 阻塞模型的区别是：**复用模型的一个用户线程可以阻塞处理多个IO请求，而阻塞模型的一个用户线程只能阻塞处理一个IO请求**。
 
