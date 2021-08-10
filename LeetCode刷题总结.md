@@ -96,7 +96,7 @@ Stack
 - 添加元素：push(obj)
 - 弹出栈顶元素：pop()
 - 返回栈顶元素：peek()
-- 查找元素：search(obj)
+- 查找元素：search(obj)，返回下标
 - 清空：clear()
 
 
@@ -121,6 +121,7 @@ Map
 
 - 新增：put(k, v)
 - 取出：get(k)
+- 包含：containsKey(key)
 - getOrDefault(key, 默认值);
 
 ```java
