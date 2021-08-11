@@ -819,7 +819,22 @@ public class Singleton {
 
 volatile关键字可以使用**内存屏障**技术来禁止指令重排序。内存屏障是特殊的指令。
 
+在volatile修饰的变量进行读/写操作时会加上屏障（指令）：
 
+- 在每个 volatile **写**操作的**前面**插入一个**StoreStore**屏障。表示前面的写完，volatile修饰的变量才可以写。
+- 在每个 volatile **写**操作的**后面**插入一个**StoreLoad**屏障。表示volatile修饰的变量写完，后面的才可以读。
+- 在每个 volatile **读**操作的**后面**插入一个**LoadLoad**屏障。表示volatile修饰的变量读完，后面的才可以读。
+- 在每个 volatile **读**操作的**后面**插入一个**LoadStore**屏障。表示volatile修饰的变量读完，后面的才可以写。
+
+**volatile写操作** 示意图：
+
+![image-20210811095633650](JVM学习.assets/image-20210811095633650.png)
+
+
+
+**volatile读操作**示意图：
+
+![image-20210811095705579](JVM学习.assets/image-20210811095705579.png)
 
 
 
