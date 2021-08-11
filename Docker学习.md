@@ -31,11 +31,13 @@ docker中有几个核心概念：
 
 使用`docker run 镜像名` 运行镜像。
 
-使用 `docker info` 展示docker信息
-
 
 
 ### 镜像配置
+
+> docker有类似maven的[仓库网站](https://registry.hub.docker.com/)，可以查看对应镜像的版本号：
+>
+> ![image-20210811193033558](Docker学习.assets/image-20210811193033558.png)
 
 由于远程仓库是在国外，每次拉取的速度比较慢，所以可以使用国内的镜像仓库地址：
 
@@ -68,12 +70,22 @@ docker为我们提供了一个hello-world案例，我们只需要通过`docker r
 
 ### 常见镜像命令
 
-1. 辅助命令
-2. 
+- `docker images [image]`：查看本地的镜像，可以指定镜像名称
+- `docker pull image:version`：拉取远程仓库的image
+- `docker rmi [-f] image:version`：删除本地仓库的image，-f参数表示强制删除
 
 
 
+### 容器相关操作
 
+- `docker load -i xx.tar`：将被打包成jar包的镜像文件导入本地仓库
+- `docker info`：展示docker信息
+- `docker run [-p hostPort:imagePort ] [-d] [--name] image:tag`：运行容器。如果不加-p参数，主机访问不到该容器。**容器可以多次执行，相互没有影响，即使容器端口一样，但是主机端口不能一样**。
+  - **-p hostPort:hostPort**：将主机端口跟容器端口进行映射。例如 `docker run -p 8080:8080 tomcat`：启动tomcat容器，且映射到主机端口。
+  - **-d**：表示后台运行。
+  - **--name**：指定容器启动的名字（唯一）
+- `docker ps`：查看当前正在运行的容器
+- 
 
 
 
