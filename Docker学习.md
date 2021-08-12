@@ -78,14 +78,42 @@ docker为我们提供了一个hello-world案例，我们只需要通过`docker r
 
 ### 容器相关操作
 
+#### 查看容器信息
+
 - `docker load -i xx.tar`：将被打包成jar包的镜像文件导入本地仓库
 - `docker info`：展示docker信息
+
+- `docker ps [-a] [-q]`：查看当前正在运行的容器。
+  - **-a**：表示显示全部，包括结束和正在运行的容易。
+  - **-q**：查询正在运行的**容器id**。
+
+
+
+#### 运行容器
+
 - `docker run [-p hostPort:imagePort ] [-d] [--name] image:tag`：运行容器。如果不加-p参数，主机访问不到该容器。**容器可以多次执行，相互没有影响，即使容器端口一样，但是主机端口不能一样**。
   - **-p hostPort:hostPort**：将主机端口跟容器端口进行映射。例如 `docker run -p 8080:8080 tomcat`：启动tomcat容器，且映射到主机端口。
   - **-d**：表示后台运行。
   - **--name**：指定容器启动的名字（唯一）
-- `docker ps`：查看当前正在运行的容器
-- 
+- `docker start 容器名称/id`：启动容器
+- `docker restart 容器名称/id`：重启容器
+- `docker stop 容器名称/id`：停止容器
+- `docker rm [-f] 容器名称/id `：删除容器
+  - `docker rm -f $(docker ps -aq)`：删除所有的容器
+
+
+
+#### 查看容器日志
+
+- `docker logs [-f] [-t] 容器名称/id`：查看容器运行日志。
+  - -f：实时查看日志
+  - -t：显示时间
+
+
+
+#### 查看容器内进程
+
+`docker top 容器名称/id`
 
 
 
