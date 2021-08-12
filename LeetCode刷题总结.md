@@ -91,7 +91,32 @@ Set
 Deque
 ---
 
-- 
+java中的stack已被淘汰，使用deque双端队列可以实现堆和栈的功能。
+
+创建：`Deque<Integer> deque = new LinkedList<>()` 
+
+判空：isEmpty()
+
+**插入元素** 
+
+- **addFirst():** 向队头插入元素，如果元素为空，则发生NPE
+- **addLast():** 向队尾插入元素，如果为空，则发生NPE
+- **offerFirst():** 向队头插入元素，如果插入成功返回true，否则返回false
+- **offerLast():** 向队尾插入元素，如果插入成功返回true，否则返回false
+
+**移除元素** 
+
+- **removeFirst():** 返回并移除队头元素，如果该元素是*null*，则发生*NoSuchElementException*
+- **removeLast():** 返回并移除队尾元素，如果该元素是*null*，则发生*NoSuchElementException*
+- **pollFirst():** 返回并移除队头元素，如果队列无元素，则返回*null*
+- **pollLast():** 返回并移除队尾元素，如果队列无元素，则返回*null*
+
+**获取元素** 
+
+- **getFirst():** 获取队头元素但不移除，如果队列无元素，则发生*NoSuchElementException*
+- **getLast():** 获取队尾元素但不移除，如果队列无元素，则发生*NoSuchElementException*
+- **peekFirst():** 获取队头元素但不移除，如果队列无元素，则返回*null*
+- **peekLast():** 获取队尾元素但不移除，如果队列无元素，则返回*null*
 
 
 
@@ -355,17 +380,18 @@ public static void swap(int[] a, int i, int j) {
 // 前序
 public List<Integer> preorderTraversal(TreeNode root) {
     List<Integer> ans = new ArrayList<>();
-    Stack<TreeNode> stack = new Stack<>();
-    if(root != null) stack.push(root);
-    while(!stack.empty()){
-        TreeNode h = stack.pop();
+    Deque<TreeNode> stack = new LinkedList<>();
+    if(root == null) return ans;
+    stack.addLast(root);
+    while(!stack.isEmpty()){
+        TreeNode h = stack.removeLast();
         ans.add(h.val);
         // 相反顺序
         if(h.right != null){
-            stack.push(h.right);
+            stack.addLast(h.right);
         }
         if(h.left != null){
-            stack.push(h.left);
+            stack.addLast(h.left);
         }
     }
     return ans;
@@ -374,22 +400,46 @@ public List<Integer> preorderTraversal(TreeNode root) {
 // 中序
 public List<Integer> inorderTraversal(TreeNode root) {
     List<Integer> ans = new ArrayList<>();
-    Stack<TreeNode> stack = new Stack<>();
-    if(root != null) stack.push(root);
-     while (root != null || !stack.empty()) {
-         while (root != null) {
-             stack.push(root);
-             // 左
-             root = root.left;
-         }
-         root = stack.pop();
-         ans.add(root.val);
-         root = root.right;
-     }
+    Deque<TreeNode> stack = new LinkedList<>();
+    while (root != null || !stack.isEmpty()) {
+        while (root != null) {
+            stack.addLast(root);
+            root = root.left;
+        }
+        root = stack.removeLast();
+        ans.add(root.val);
+        root = root.right;
+    }
     return ans;
 }
 
 // 后序
+public List<Integer> postorderTraversal(TreeNode root) {
+    List<Integer> ans = new ArrayList<>();
+    Deque<TreeNode> stack = new LinkedList<>();
+    // 表示当前遍历完的子树
+    TreeNode h = null;
+    while(root != null || !stack.isEmpty()){
+        // 一直走到最左边
+        while(root != null){
+            stack.addLast(root);
+            root = root.left;
+        }
+        root = stack.getLast();
+        // 有右子树，且右子树还没遍历过
+        if(root.right != null && h != root.right){
+            // 指向右子树
+            root = root.right;
+        }
+        else{
+            ans.add(root.val);
+            h = root;
+            stack.removeLast();
+            root = null;
+        }
+    }
+    return ans;
+}
 ```
 
 
