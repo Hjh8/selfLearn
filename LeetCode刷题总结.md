@@ -88,18 +88,10 @@ Set
 
 
 
-Stack
+Deque
 ---
 
-- 创建对象：`Stack<Integer> s = new Stack<>();` 
-- 判空：empty() 
-- 添加元素：push(obj)
-- 弹出栈顶元素：pop()
-- 返回栈顶元素：peek()
-- 查找元素：search(obj)，返回下标
-- 清空：clear()
-
-
+- 
 
 
 
@@ -353,6 +345,54 @@ public static void swap(int[] a, int i, int j) {
     a[j] = t;
 }
 ```
+
+
+
+普通树 非递归遍历
+---
+
+```java
+// 前序
+public List<Integer> preorderTraversal(TreeNode root) {
+    List<Integer> ans = new ArrayList<>();
+    Stack<TreeNode> stack = new Stack<>();
+    if(root != null) stack.push(root);
+    while(!stack.empty()){
+        TreeNode h = stack.pop();
+        ans.add(h.val);
+        // 相反顺序
+        if(h.right != null){
+            stack.push(h.right);
+        }
+        if(h.left != null){
+            stack.push(h.left);
+        }
+    }
+    return ans;
+}
+
+// 中序
+public List<Integer> inorderTraversal(TreeNode root) {
+    List<Integer> ans = new ArrayList<>();
+    Stack<TreeNode> stack = new Stack<>();
+    if(root != null) stack.push(root);
+     while (root != null || !stack.empty()) {
+         while (root != null) {
+             stack.push(root);
+             // 左
+             root = root.left;
+         }
+         root = stack.pop();
+         ans.add(root.val);
+         root = root.right;
+     }
+    return ans;
+}
+
+// 后序
+```
+
+
 
 
 
@@ -1179,6 +1219,32 @@ tree build(int la, int ra, int lb, int rb){
 	return tr;
 }
 
+int main(){
+	tree t;
+	cin >> n;
+	for (int i = 0; i < n; i++){
+		cin >> post[i];
+	}
+	for (int i = 0; i < n; i++){
+		cin >> mid[i];
+	}
+	t = build(0, n - 1, 0, n - 1);
+	bfs(t);
+	cout << endl;
+	prePrint(t);
+	cout << endl;
+	midPrint(t);
+	cout << endl;
+	postPrint(t);
+	return 0;
+}
+```
+
+
+
+### 普通树的各种遍历
+
+```c++
 // 层次遍历
 void bfs(tree t){
 	int i = 1;
@@ -1219,27 +1285,9 @@ void postPrint(tree t){
 	postPrint(t->right);
 	cout << t->data << " ";
 }
-
-int main(){
-	tree t;
-	cin >> n;
-	for (int i = 0; i < n; i++){
-		cin >> post[i];
-	}
-	for (int i = 0; i < n; i++){
-		cin >> mid[i];
-	}
-	t = build(0, n - 1, 0, n - 1);
-	bfs(t);
-	cout << endl;
-	prePrint(t);
-	cout << endl;
-	midPrint(t);
-	cout << endl;
-	postPrint(t);
-	return 0;
-}
 ```
+
+
 
 
 
