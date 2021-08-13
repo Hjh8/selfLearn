@@ -720,7 +720,7 @@ el表达式好是好，可是需要给每个路径前都加上就很麻烦，有
 
 升级版：上面的base标签固定了href，如果换个项目，href的代码就要改变，此时我们可以动态的获取项目目录。
 
-```html
+```jsp
 <%
 	String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContentPath()+"/";   
 %>
@@ -730,8 +730,6 @@ el表达式好是好，可是需要给每个路径前都加上就很麻烦，有
 </head>
 ```
 
-
-
 # 3. SSM整合开发
 
 springMVC容器是管理controller控制器对象的，Spring容器是管理service、dao、工具类对象的。我们要做的是将合适的对象交给合适的容器创建和管理。
@@ -739,8 +737,6 @@ springMVC容器是管理controller控制器对象的，Spring容器是管理serv
 容器内的对象可以直接互相调用，但是controller要如何调用service。因为springMVC容器是Spring容器的子容器，类似继承关系，所以在controller中可以直接调用service，但不能在service中调用controller。
 
 总结起来就是：**在service中使用dao对象进行数据库操作，在controller中使用service对象执行业务逻辑**。 
-
-
 
 
 
@@ -915,10 +911,6 @@ public interface HandlerInterceptor {
 3. 过滤器侧重于数据过滤。拦截器用来验证请求的。
 4. 过滤器在拦截器之前执行。
 5. 过滤器是tomcat创建的对象，拦截器是框架创建的对象。
-
-
-
-
 
 总结
 ===
