@@ -355,6 +355,10 @@ public class MyController {
 
 可以看到参数是成功接收了，只不过出现了乱码。原因是我们使用post请求，框架不会自动帮我们匹配编码，如果我们**使用get请求就不会出现乱码问题**。
 
+
+
+#### 过滤器解决乱码
+
 那如何解决这乱码问题呢？试想一下我们自己写servlet的时候如何解决乱码问题，是不是在代码的最上面加上`request.setCharacterEncoding("utf-8");` 等代码。那现在我们是用框架，没办法在接收参数前进行设置编码，所以我们应该使用**过滤器**来进行设置编码，而SpringMVC框架为我们提供了一个可以设置编码的过滤器`CharacterEncodingFilter` 
 
 下面看看它的源码：
@@ -390,11 +394,7 @@ public class MyController {
 </filter-mapping>
 ```
 
-***
-
 上面的逐个接收参数是要求属性名跟形参名一致，那不一致的咋办，这就要在每个形参前使用**`@RequestParam`**注解，比如：`public ModelAndView doSome(@RequestParam("myName") String name, int age)` 告诉框架**myName**才是要接收的参数名。
-
-
 
 ***
 
@@ -739,7 +739,8 @@ springMVC容器是管理controller控制器对象的，Spring容器是管理serv
 
 
 
-# 4. SpringMVC的核心技术
+4.SpringMVC的核心技术
+===
 
 ## 4.1 重定向和请求转发
 

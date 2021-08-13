@@ -1176,6 +1176,7 @@ spring:
    public class MyConfig {
        @Bean
        public FilterRegistrationBean filterRegistrationBeanster(){
+           // 传入自定义过滤器
            FilterRegistrationBean registration = FilterRegistrationBean(new MyFilter());
            registration.addUrlPatterns("/*");
            return registration;
