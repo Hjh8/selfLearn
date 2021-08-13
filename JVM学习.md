@@ -841,7 +841,7 @@ volatile关键字可以使用**内存屏障**技术来禁止指令重排序。�
 
 ### happens-before
 
-happens-before：在Java内存模型中，happens-before的意思是**前一个操作的结果可以被后续操作获取**。happens-before规则定义一些禁止编译优化的场景，保证并发编程的正确性。
+在Java内存模型中，happens-before的意思是**前一个操作的结果可以被后续操作获取**。happens-before规则定义一些禁止编译优化的场景，保证并发编程的正确性。
 
 规则如下：
 
@@ -853,6 +853,10 @@ happens-before：在Java内存模型中，happens-before的意思是**前一个�
 - **线程中断**的happen-before原则：B被A打断（ Thread.interrupt() ），A的所有操作B都可以看见。
 - **线程终结**的happen-before原则：线程中的所有操作都 happen-before 线程的终止检测。
 - **对象创建**的happen-before原则：一个对象的初始化完成先于他的 finalize() 方法调用。
+
+> as-if-serial规则是指不管怎么重排序，**单线程**程序的执行结果都不能被改变。
+>
+> 而happens-before规则是规定多线程情况下的。
 
 
 
@@ -953,6 +957,15 @@ TLAB的本质其实是三个指针管理的区域：start，top 和 end，其中
 1. **句柄**：Java 堆中将会划分出一块内存来作为句柄池，此时reference存储的就是对象的句柄地址，而句柄中包含了对象实例数据与对象类型数据的具体地址信息。==优点==：gc的时候，当对象的地址改变时，reference的指向不用改变。
 
 2. **直接指针**： reference存储的直接就是对象的地址。==优点==：访问速度快。
+
+
+
+synchronized如何保证原子、可见、有序性
+---
+
+- 原子性：底层使用 `monitorenter`加锁 跟 `monitorexit`解锁 指令来保证原子性，而这两个指令在JMM中是通过lock跟unlock实现的，即同一时刻只允许一个线程访问。
+- 可见性：synchronized在解锁之前，必须先把里面的共享变量 **同步回主存** 中，这样解锁后，后续其它线程就可以访问到被修改后的值，从而保证可见性。
+- 有序性：因为synchronized中的代码只能是一个线程执行，结果始终是不会乱的。**synchronized**虽然能够保证有序性，但是**无法禁止指令重排序**。
 
 
 

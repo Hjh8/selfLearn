@@ -53,7 +53,7 @@ synchronized 是 Java 中的关键字，是一种同步锁。当一个线程获�
 
 Synchronized还可以通过 `wait()` 跟 `notify()/notifyAll()` 进行线程间通信。
 
->  原理看JVM。
+>  Synchronized原理看JVM。
 
 它可以修饰代码块，普通方法和静态方法。
 
@@ -80,8 +80,6 @@ synchronized(xxx.class){
     可能出现安全问题的代码
 }
 ```
-
-
 
 
 
@@ -726,6 +724,13 @@ sleep跟wait区别
 
 
 
+为什么wait跟notify要依赖sync
+---
+
+wait/notify是线程之间的通信，多线程存在竞争，如果不加锁的话，那么进行wait/notify操作的条件很可能会被修改，以至于不能进行正确的操作。所以我们需要强制wait/notify在synchronized中
+
+
+
 什么是线程上下文切换
 ---
 
@@ -739,8 +744,10 @@ Synchronized和Lock区别
 1. Synchronized是关键字；lock是接口
 2. Synchronized会自动上锁和释放锁；lock要手动，即使发生异常时lock也不会自动释放锁。
 3. Synchronized可以锁代码块和方法；lock只能锁代码块
-4. Synchronized获取到锁之后其他线程会一直等待下去；而lock锁不一定会等待下去。
-5. Synchronized是可重入锁、非公平；lock也是重入锁，但是可以设置使用公平锁或者非公平锁。
+4. Synchronized是不可中断的，其他线程会一直**阻塞**；而lock锁可以是不可中断(lock)，即其他线程会一直**等待**下去，也可以是可中断的(tryLock)。
+5. Synchronized是可重入锁、非公平；lock也是可重入锁，但是可以设置使用公平锁或者非公平锁。
+
+> **不可中断**是指获取到锁之后其他线程会一直等待或阻塞下去。
 
 
 
@@ -793,11 +800,23 @@ AQS是如何实现加锁解锁的呢？其内部维护了两个属性：state、
 
 
 
+### 为什么使用park不用wait
+
+如果使用wait和notify，需要保证wait操作在notify操作之前，不然线程会一直**等待**下去。
+
+park跟unPark的顺序则没有硬性要求，unpark可以在park之前，且执行多次也没影响，**许可证**始终只有一个。
+
+
+
+### 公平和非公平锁的原理
+
 ### 公平和非公平锁的原理
 
 这两者的实现是靠AQS的**阻塞队列**。使用公平锁的情况下，线程获取锁的时候会先判断获取到当前节点的下一个节点是不是自己，是的话才尝试加锁，不是的话就继续阻塞。
 
 而使用非公平锁时，直接就尝试加锁。
+
+
 
 
 
