@@ -536,7 +536,7 @@ spring还可以使用注解的方式来完成对象的创建，属性的赋值�
 1. 在属性定义的上面，无需set方法。（推荐）
 2. 在set方法的上面
 
-```
+```java
 package ba02;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -549,7 +549,7 @@ public class Student {
     private String name;
     private int age;
 
-	@Value("28")
+    @Value("28")
     public void setAge(int age) {
         System.out.println("调用了setAge");
         this.age = age;
@@ -792,8 +792,6 @@ public class WebSocketConfig {
 
 
 
-
-
 ### 2.3.6 小结
 
 IoC的解耦合是实现业务对象之间的解耦合，例如Service跟dao之间的解耦合。
@@ -814,15 +812,11 @@ xml配置文件和注解的对比
 
 AOP面向切面编程是从动态角度考虑程序运行过程，**其底层采用的是动态代理模式实现的**。也可以说是动态代理的规范化，把动态代理实现的步骤和方式都定义好了，让我们程序员以统一的形式使用动态代理。为什么要统一？因为动态代理太灵活了，A人员可以用一种方式实现此功能，B人员可以使用另一种方式实现，C人员还有第三种方式，这对于开发来说肯定是不允许的。
 
-
-
 常用的动态代理方式有两种：`JDK的动态代理`和`CGLIB生成代理`（常用于框架）。
 
 1. JDK的动态代理是使用Proxy、Method、InvocatinHandler创建代理对象。
 
 2. CGLIB代理的生成原理是生成目标类的子类，此子类对象就是代理对象。所以使用CGLIB生成动态代理时，**要求目标类必须能够继承即不是final修饰的类**。
-
-
 
 使用AOP的好处可以减少代码纠缠，即交叉业务与主业务逻辑可以分开。例如，转账，在真正转账业务逻辑前后，需要权限控制、日志记录、加载事务、结束事务等交叉业务逻辑，其代码量大且复杂，大大影响了主业务逻辑----转账。
 
@@ -870,8 +864,6 @@ AOP的技术实现框架有两种：
 ### 3.2.1 aspectJ
 
 aspectJ实现AOP有两种方式：`xml配置文件`跟`注解`。本文中主要介绍注解的方式。
-
-
 
 切入点表达式
 
@@ -1013,8 +1005,6 @@ public class MyAspect {
 ![image-20200923205337985](Spring学习.assets/image-20200923205337985.png)
 
 **tips：**前置通知所修饰的切面方法即`public void myBefore()`，必须用public void修饰。方法参数可有可无。
-
-
 
 ***
 
@@ -1648,7 +1638,7 @@ public void test01()
 
 创建jdbc.properties文件
 
-```
+```properties
 # 注意在文件中的&可以不用转义
 jdbc.url = jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=UTC
 jdbc.username = root
@@ -2281,7 +2271,7 @@ public class RegisterServlet extends HttpServlet {
 
 第七步：创建显示注册成功的jsp
 
-```html
+```jsp
 <%@page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
@@ -2473,7 +2463,7 @@ ApplicationContext扩展的功能：
 依赖注入的两种方式
 ---
 
-常用的注入方式主要有两种：构造方法注入，setter注入。
+常用的注入方式主要有两种：**构造方法注入**，**setter注入**。
 
 - 构造方法注入：调用构造方法来完成对象赋值
 

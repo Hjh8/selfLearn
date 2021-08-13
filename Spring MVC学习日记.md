@@ -10,13 +10,16 @@ SpringMVC向spring一样，使用`@Controller`创建控制器对象，把对象�
 
 使用`@Controller`创建的对象只是一个普通类对象，不是servlet，但springMVC赋予了它一些额外的功能。
 
-**【注意】只有继承了`HttpServlet`的类才是servlet**
+**【注意】只有继承了`HttpServlet`的类才是servlet** 
 
+在springMVC中，有一个对象是servlet，它就是`DispatherServlet` ，它叫做**中央调度器**，也叫前端控制器，负责接收用户的所有请求，然后分配给合适的控制器对象。以后的项目中都离不开它。
 
-
-在springMVC中，有一个对象是servlet，它就是`DispatherServlet` ，它叫做**中央调度器**，也叫前端控制器，负责接收用户的所有请求，然后分配给合适的控制器对象。以后的项目中都离不开DispatherServlet。
-
-
+> controller对象并不是线程安全的：
+>
+> 有几种解决方法：
+>
+> 1. 在Controller中使用ThreadLocal变量
+> 2. 在spring配置文件Controller中声明 scope="prototype"，每次都创建新的controller
 
 
 
@@ -484,7 +487,7 @@ public ModelAndView doObj(ParamObj obj){
 
 
 
-**案例：Student对象响应ajax请求** 
+### 案例：Student对象响应ajax请求
 
 1. 加入处理json的工具库依赖，springmvc默认使用**jackson**。
 
@@ -509,7 +512,7 @@ public ModelAndView doObj(ParamObj obj){
    <mvc:annotation-driven />
    ```
 
-   处理器方法的上面加上`@ResponseBody`注解，其可以将转换后的json通过HttpServletResponse输出给浏览器
+   处理器方法的上面加上`@ResponseBody`注解，其可以将转换后的json通过**HttpServletResponse**输出给浏览器
 
    ```java
    @RequestMapping(value = "/some.do")
@@ -563,9 +566,7 @@ public ModelAndView doObj(ParamObj obj){
 
 
 
-
-
-`<mvc:annotation-driven>` 的原理：
+`<mvc:annotation-driven>` 的原理
 ---
 
 注解驱动实际是一个消息转换器接口`HttpMessageConverter`，接口里定义了java对象转为json、xml等数据格式的方法，此接口有很多的实现类，这些实现类完成了格式转换的具体操作。
@@ -580,8 +581,6 @@ public ModelAndView doObj(ParamObj obj){
 
 1. StringHttpMessageConverter：读取和写出**字符串**格式的数据
 2. MappingJackson2HttpMessageConverter：读取和写入**json**格式的数据，
-
-
 
 
 
@@ -673,7 +672,7 @@ public String doStringData(){
 
 第二种访问静态资源的方式：springmvc配置文件中加入`<mvc:resources />` 标签，比如`<mvc:resources location="/static/" mapping="/static/**" />` 代表着符合mapping的路径都去location目录下找，其中`**`是通配符。
 
-**tips：静态资源一般放在webapps根目录下。**
+**tips：静态资源一般放在webapps根目录下。** 
 
 但是这两个标签都会与`@RequestMapping`注解有冲突，都需要**配合`<mvc:annotation-driven />` 注解驱动一起使用**。
 
@@ -734,7 +733,7 @@ el表达式好是好，可是需要给每个路径前都加上就很麻烦，有
 
 springMVC容器是管理controller控制器对象的，Spring容器是管理service、dao、工具类对象的。我们要做的是将合适的对象交给合适的容器创建和管理。
 
-容器内的对象可以直接互相调用，但是controller要如何调用service。因为springMVC容器是Spring容器的子容器，类似继承关系，所以在controller中可以直接调用service，但不能在service中调用controller。
+容器内的对象可以直接互相调用，但是controller要如何调用service。因为**springMVC容器是Spring容器的子容器**，类似继承关系，所以在controller中可以直接调用service，但不能在service中调用controller。
 
 总结起来就是：**在service中使用dao对象进行数据库操作，在controller中使用service对象执行业务逻辑**。 
 
