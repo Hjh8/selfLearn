@@ -1563,7 +1563,17 @@ Mybatis仅支持association关联对象和collection关联集合对象的延迟�
 分页插件原理
 ---
 
+> mybatis插件的原理都是通过**动态代理**跟**拦截器**实现的。每个插件都有一个对应的拦截器，mybatis会给每个插件创建代理对象，代理对象的代理类会获取插件指定的方法，然后交给插件对应的拦截器执行。
 
+Executor会为**所有的插件创建代理对象**（JDK方式），代理类为Plugin类，Plugin的invoke方法里面会**获取query方法**然后交给 对应拦截器实现的**intercept方法** 去执行。这里的intercept方法的实现就是PageHelper拦截器的intercept方法。
+
+所有的查询在mybatis底层都是调用query方法，所以执行查询方法时都会被代理类获取然后调用PageHelper拦截器实现的intercept方法。
+
+在PageHelper拦截器实现的intercept方法中，首先拿到所有的参数（根据MappedStatement获取），然后获取到用户设置的分页参数（**被PageHelper封装成Page对象放到ThreadLocal中**，保证线程安全）。
+
+拿到这些参数之后会**根据不同的数据库进行sql语句的拼接**，最后执行拼接后的sql语句。
+
+比如Mysql，会在原sql上使用`new StringBuilder.append("limit ? ?")`的方式，拼接sql语句。
 
 
 
