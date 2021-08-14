@@ -2369,8 +2369,8 @@ IOC（Inversion of Control）：控制反转，是一个思想，将对象的创
 
 ![img](Spring学习.assets/20547106-f2930c91e4c04a7d.webp)
 
-1. 首先，通过**BeanDefinitionReader** 读取指定的配置文件生成bean的定义信息（BeanDefinition），当所有的bean定义信息都生成之后完成BeanFactory的组建
-2. 通过**BeanFactoryPostProcessor**接口 可以动态的修改BeanDefinition的内容，比如数据库配置文件的占位符`${jdbc.url}` 、注解的使用。经过这一步骤之后才形成了完整的BeanDefinition。
+1. 首先，通过**BeanDefinitionReader** 读取指定的配置文件生成bean的定义信息（BeanDefinition）放到BeanDefinitionMap中，当所有的bean定义信息都生成之后完成BeanFactory的创建。BeanFactory是容器的入口，等同于容器。
+2. 通过**BeanFactoryPostProcessor**接口的实现类 可以动态的修改BeanDefinition的内容，比如数据库配置文件的占位符`${jdbc.url}` 、`注解`的使用。经过这一步骤之后才形成了完整的BeanDefinition。
 3. 创建bean对象，初始化等操作
 
 
@@ -2386,7 +2386,7 @@ Spring bean的生命周期
 
 3. 根据实现的aware接口调用相关的aware方法，**对应的容器对象属性完成赋值** 
 
-   - ==aware接口是为了使某些自定义对象可以方便的获取到容器对象。== 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口，可以根据这些接口进行扩展
+   - ==aware接口是为了使某些自定义对象可以方便的获取到容器对象==。 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口，可以根据这些接口进行扩展
 
 4. 可以调用BeanPostProcessor的Before方法
 
@@ -2403,6 +2403,15 @@ Spring bean的生命周期
 > BeanPostProcessor：是一个接口，可用于bean对象初始化前后进行逻辑增强。
 
 
+
+BeanFactory和FactoryBean区别
+---
+
+BeanFactory：是IOC容器的核心接口，在它的实现类中装载着整体的bean对象。
+
+FactoryBean: 是一个bean对象，它可以生产或者修饰bean对象。例如给对象创建代理对象。
+
+- `factoryBean.getObject(id)` 根据对象id从BeanFactory中获取对象。
 
 
 
@@ -2500,17 +2509,6 @@ spring事务是基于数据库事务和AOP机制的
 1. spring首先会对使用了@Transational 注解的类生成一个代理对象
 2. 当代理对象调用方式的时候，会判断方法上是否加了@Transational注解。
 3. 如果加了则利用**事务管理器对象**去连接数据库，然后根据指定的事务传播行为进行相关的操作，比如关闭自动提交，接着执行目标方法，如果没有出现异常则进行提交，否则进行回滚。
-
-
-
-BeanFactory和FactoryBean区别
----
-
-BeanFactory：是IOC容器的核心接口，在它的实现类中装载着整体的bean对象。
-
-FactoryBean: 是一个bean对象，它可以生产或者修饰bean对象。例如给对象创建代理对象。
-
-- `factoryBean.getObject(id)` 根据对象id从BeanFactory中获取对象。
 
 
 
