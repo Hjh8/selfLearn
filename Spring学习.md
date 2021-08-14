@@ -202,8 +202,8 @@ DI的语法分类：
 
 ```xml
 <bean id="对象名" class="类的全限定名">
-	<property name="属性名" value="属性值">
-    <property name="属性名" value="属性值">
+	<property name="属性名" value="属性值" />
+	<property name="属性名" value="属性值" />
 </bean>
 ```
 
@@ -213,7 +213,7 @@ DI的语法分类：
 
 配置文件
 
-```java
+```xml
 <bean id="myStudent" class="org.example.Student">
     <property name="name" value="codeKiang" />
     <property name="age" value="18" />
@@ -305,8 +305,6 @@ public class School {
     </bean>
 </beans>
 ```
-
-
 
 ***
 
@@ -714,8 +712,6 @@ public class Student {
 例子：
 
 ```java
-package ba04;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -737,8 +733,6 @@ public class School {
 ```
 
 ```java
-package ba04;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
