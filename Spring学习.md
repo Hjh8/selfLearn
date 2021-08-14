@@ -2568,8 +2568,8 @@ public class TestService2 {
 spring内部有三级缓存：
 
 - **singletonObjects**：一级缓存，是一个ConcurrentHashMap。用于保存实例化完成，且属性完成赋值的bean实例
-- **earlySingletonObjects**：二级缓存，是一个HashMap。用于保存实例化完成但还没有初始化的bean实例
-- **singletonFactories**：三级缓存，是一个HashMap。用于保存 bean创建工厂（ObjectFactory），以便于后面扩展，例如创建代理对象。
+- **earlySingletonObjects**：二级缓存，是一个ConcurrentHashMap。用于保存实例化完成但还没有初始化的bean实例
+- **singletonFactories**：三级缓存，是一个HashMap。用于保存 bean创建工厂（lambda表达式），以便于后面扩展，例如创建代理对象。
 
 首先，在getBean(A)的时候会先从一级缓冲中获取A的实例，如果存在A实例直接返回。否则会去二级缓存中找，找不到则去三级缓存中找。都找不到则创建实例，实例化的时候会**提前暴露**A对象，即把 A的创建工厂 添加到三级缓存。
 
