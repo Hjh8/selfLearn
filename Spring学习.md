@@ -2370,7 +2370,7 @@ IOC（Inversion of Control）：控制反转，是一个思想，将对象的创
 ![img](Spring学习.assets/20547106-f2930c91e4c04a7d.webp)
 
 1. 首先，通过**BeanDefinitionReader** 读取指定的配置文件生成bean的定义信息（BeanDefinition）放到BeanDefinitionMap中，当所有的bean定义信息都生成之后完成BeanFactory的创建。BeanFactory是容器的入口，等同于容器。
-2. 通过**BeanFactoryPostProcessor**接口的实现类 可以动态的修改BeanDefinition的内容，比如数据库配置文件的占位符`${jdbc.url}` 、`注解`的使用。经过这一步骤之后才形成了完整的BeanDefinition。
+2. 通过**BeanFactoryPostProcessor**接口的实现类 可以动态的修改BeanDefinition的内容，比如数据库配置文件的占位符`${jdbc.url}` 、`注解`的使用。经过这一步骤之后才形成了**完整BeanDefinition**
 3. 创建bean对象，初始化等操作
 
 
@@ -2378,21 +2378,23 @@ IOC（Inversion of Control）：控制反转，是一个思想，将对象的创
 Spring bean的生命周期
 ---
 
-1. 确定构造器，利用反射实例化对象
+> bean的创建操作是在createBean()方法中创建
+
+1. 利用反射创建对象
 
 2. 调用populateBean方法，根据xml文件或注解（@Autowired）对属性进行赋值
 
-   - 此时除了容器对象属性，其他属性都赋了值（bean中可能包含容器对象属性）
+   - 此时除了容器对象属性，其他属性都完成赋值（bean中可能包含容器对象属性）
 
 3. 根据实现的aware接口调用相关的aware方法，**对应的容器对象属性完成赋值** 
 
    - ==aware接口是为了使某些自定义对象可以方便的获取到容器对象==。 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口，可以根据这些接口进行扩展
 
-4. 可以调用BeanPostProcessor的Before方法
+4. 可以调用BeanPostProcessor的BeforeInitial方法
 
-5. 调用初始化方法
+5. 调用init方法
 
-6. 可以调用BeanPostProcessor的after方法，代理对象在此生成。
+6. 可以调用BeanPostProcessor的AfterInitial方法，**AOP代理对象**在此生成。
 
 7. 此时拥有完整对象，可以使用
 
