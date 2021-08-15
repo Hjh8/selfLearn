@@ -886,8 +886,8 @@ tips：`?`结尾的都是可选参数。也就是说 **返回值类型** 、**�
 切面的执行时间**advice**的五个注解：
 
 1. @Before
-2. @AfterReturning
 3. @Around
+3. @AfterReturning
 4. @AfterThrowing：异常后执行的切面方法，相当于catch里面的代码。
 5. @After：无论如何都会执行的切面方法，相当于finally里面的代码。
 
@@ -2365,7 +2365,7 @@ spring本身是一个框架，同时也提供了对其他框架的整合方案�
 IOC的加载过程
 ---
 
-IOC（Inversion of Control）：控制反转，是一个思想，将对象的创建、初始化和销毁等操作都交给代码外的容器实现，让容器帮我们管理bean对象整个生命周期，而不需要程序员自己手动实现。DI依赖注入就是IOC的具体实现。
+IOC（Inversion of Control）：控制反转，是一个思想，将对象的创建、初始化和销毁等操作都交给代码外的容器实现，让容器帮我们管理bean对象整个生命周期，而不需要程序员自己手动的管理。DI依赖注入就是IOC的具体实现。
 
 ![img](Spring学习.assets/20547106-f2930c91e4c04a7d.webp)
 
@@ -2394,11 +2394,11 @@ Spring bean的生命周期
 
    - ==aware接口是为了使某些自定义对象可以方便的获取到容器对象==。 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口，可以根据这些接口进行扩展
 
-4. 可以调用BeanPostProcessor的BeforeInitial方法
+4. 调用BeanPostProcessor的BeforeInitial方法
 
 5. 调用init方法
 
-6. 可以调用BeanPostProcessor的AfterInitial方法，**AOP代理对象**在此生成。
+6. 调用BeanPostProcessor的AfterInitial方法，**AOP代理对象**在此生成。
 
 7. 此时拥有完整对象，可以使用
 
@@ -2413,25 +2413,23 @@ Spring bean的生命周期
 BeanFactory和FactoryBean区别
 ---
 
-BeanFactory：是IOC容器的核心接口，在它的实现类中装载着整体的bean对象。
+BeanFactory：是IOC容器的核心接口，在它的实现类中装载着整体的bean对象，具有完整的固定的创建bean的流程。
 
-FactoryBean: 是一个bean对象，它可以生产或者修饰bean对象。例如给对象创建代理对象。
-
-- `factoryBean.getObject(id)` 根据对象id从BeanFactory中获取对象。
+FactoryBean: 是一个bean对象，它可以生产或者修饰bean对象，方式不固定，可自定义。例如给对象创建代理对象。
 
 
 
 对AOP的理解
 ---
 
-aop称为面向切面编程，可以将交叉业务代码跟主业务代码分离开，降低代码耦合，其底层的实现是动态代理：JDK或cjlib方式，如果代理的对象实现了某个接口则一般使用jdk方式创建，否则使用cjlib生成一个子类作为代理。
+aop称为面向切面编程，可以将交叉业务代码跟主业务代码分离开，降低代码耦合。因为aop其实是ioc的一个扩展功能，所以会在**BeanPostProcessor的after**方法中实现。其实现的原理是**动态代理**：JDK或cjlib方式，如果代理的对象实现了某个接口则会优先使用jdk方式创建，否则使用cjlib生成一个子类作为代理。
 
 面向切面编程：
 
 1. 要以**切面**为核心，分析项目中哪些功能可以用切面的形式去实现它
 2. 要合理的安排切面执行的**时间Advice**（在目标方法的前还是后）以及切面执行的**位置Pointcut**（在哪个类哪个方法中）
 
-spring会将一个方法中给的所有的通知经过拓扑排序后加入到chain对象中，chain对象是一个List，第一个元素固定是**ExposeInvocationInterceptor**，第二个元素开始才是通知对象。只有递归完所有的通知才会执行实际方法。
+spring会将一个方法中给的所有的通知经过拓扑排序后加入到chain对象（拦截器链）中，chain对象是一个List，第一个元素固定是**ExposeInvocationInterceptor**，第二个元素开始才是通知对象。只有递归完所有的通知才会执行实际方法。
 
 ![image-20210613175255505](Spring学习.assets/image-20210613175255505.png)
 
@@ -2453,19 +2451,18 @@ Spring bean的作用域
 BeanFactory和ApplicationContext的区别
 ---
 
-ApplicationContext是BeanFactory的子接口，对其进行了许多扩展。
+**ApplicationContext是BeanFactory的子接口**，对其进行了许多扩展。
 
 区别：
 
-1. BeanFactory通过懒加载的方式注入bean，ApplicationContext是在容器启动时就加载了全部的bean，所以可以在容器启动时就发现存在的配置问题。
-2. BeanFactory 和 ApplicationContext都支持 BeanPostProcessor、BeanFactoryPostProcessor的使用，但两者之间的区别是：BeanFactory需要手动注册，而Applicationcontext则是自动注册。
+1. **BeanFactory**通过**懒加载**的方式注入bean，**ApplicationContext**是在容器启动时就**加载了全部**的bean，所以可以在容器启动时就发现存在的配置问题。
+2. BeanFactory 和 ApplicationContext都支持 BeanPostProcessor、BeanFactoryPostProcessor的使用，但两者之间的区别是：BeanFactory需要**手动注册**，而Applicationcontext则是**自动注册**。
 
 ApplicationContext扩展的功能：
 
 1. 继承MessageSource，支持国际化
 2. 统一的资源文件访问方式
 3. 同时加载多个配置文件
-4. 载入多个（有继承关系）上下文，使得每一个上下文都专注于一个特定的层次，比如应用的Web层。
 
 
 
@@ -2514,7 +2511,7 @@ spring事务是基于数据库事务和AOP机制的
 
 1. spring首先会对使用了@Transational 注解的类生成一个代理对象
 2. 当代理对象调用方式的时候，会判断方法上是否加了@Transational注解。
-3. 如果加了则利用**事务管理器对象**去连接数据库，然后根据指定的事务传播行为进行相关的操作，比如关闭自动提交，接着执行目标方法，如果没有出现异常则进行提交，否则进行回滚。
+3. 如果加了则利用**事务管理器对象**去连接数据库，然后根据指定的事务传播行为进行相关的操作，比如关闭自动提交，接着执行目标方法，如果没有出现异常则进行提交（afterReturning），否则进行回滚（afterThrowing）。
 
 
 
@@ -2601,7 +2598,7 @@ B对象初始化完成之后放入一级缓存中，并且删除二级缓存中�
 
 > 为什么不直接把代理对象放入二级缓存？
 >
-> 这样就必须在实例化阶段就得执行BeanPosseccor的after方法 创建代理对象。如果有三级缓存，则需要初始化的时候才会调用BeanPosseccor的after方法。相当于是延迟初始化。
+> 这样就必须在实例化阶段就得执行BeanPosseccor的after方法创建代理对象。如果有三级缓存，则需要初始化的时候才会调用BeanPosseccor的after方法。相当于是延迟初始化。
 
 
 
