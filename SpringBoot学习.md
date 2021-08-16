@@ -350,7 +350,13 @@ com
 
 ### springboot启动流程
 
-![image-20210816124216260](SpringBoot学习.assets/image-20210816124216260.png)
+![image-20210816130721014](SpringBoot学习.assets/image-20210816130721014.png)
+
+
+
+### tomcat启动流程
+
+
 
 
 
@@ -363,6 +369,8 @@ springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import�
 springboot会将所有用到的自动配置类输出到一个总的配置文件中。
 
 > 因为springboot的自动配置是spring的扩展功能，所以会在spring的BeanFactoryPostProcessor中实现。
+
+
 
 
 
