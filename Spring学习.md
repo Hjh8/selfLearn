@@ -2371,9 +2371,17 @@ IOC（Inversion of Control）：控制反转，是一个思想，将对象的创
 2. 通过**BeanFactoryPostProcessor**接口的实现类 可以动态的修改BeanDefinition的内容，比如数据库配置文件的占位符`${jdbc.url}` 、`类上注解`的解析。经过这一步骤之后才形成了**完整BeanDefinition**
 3. 创建bean对象，初始化等操作，此时==完成BeanFactory的初始化==。
 
-对应的源码方法示意图如下：
+对应的源码方法示意图如下：（死亡**十二**方法）
 
 ![image-20210814175950401](Spring学习.assets/image-20210814175950401.png)
+
+默认加载配置文件的路径：
+
+```java
+protected String[] getDefaultConfigLocations() {
+    return this.getNamespace() != null ? new String[]{"/WEB-INF/" + this.getNamespace() + ".xml"} : new String[]{"/WEB-INF/applicationContext.xml"};
+}
+```
 
 
 

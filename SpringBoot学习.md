@@ -306,16 +306,6 @@ com
 
 
 
-#### 自动配置
-
-springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。
-
-springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器Selector，这个选择器会扫描 `WETA-INF/spring.factorites`，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
-
-springboot会将所有用到的自动配置类输出到一个总的配置文件中。
-
-
-
 #### 热部署
 
 在之前开发SSM项目时，只要你修改了代码，就需要重新手动重启服务器才可以看见改动的效果，很影响开发效率。在SpringBoot中提供了开发者工具`spring-boot-devtools`，可以让开发人员实现具有热部署功能的服务器.
@@ -355,6 +345,24 @@ springboot会将所有用到的自动配置类输出到一个总的配置文件�
 >
 > 1. 开发者工具包括一个嵌入式live load服务器，该服务器可用于在更改资源时触发浏览器刷新，即资源改变时浏览器会自动刷新。
 > 2. 静态资源放在resources目录下的static目录下。
+
+
+
+### springboot启动流程
+
+![image-20210816124216260](SpringBoot学习.assets/image-20210816124216260.png)
+
+
+
+### 自动配置流程
+
+springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。
+
+springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器Selector，这个选择器会扫描 `WETA-INF/spring.factorites`，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
+
+springboot会将所有用到的自动配置类输出到一个总的配置文件中。
+
+> 因为springboot的自动配置是spring的扩展功能，所以会在spring的BeanFactoryPostProcessor中实现。
 
 
 
