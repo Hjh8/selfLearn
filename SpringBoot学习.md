@@ -144,7 +144,7 @@ starter相当于一个**jar包，里面设置了一些默认的配置信息**，
 
 #### 自定义starter
 
-除了一些组织提供的starter，我们也可以自定义starter来封装一些需要经常**复用的自定义的配置类**。
+除了一些官方提供的starter，我们也可以自定义starter来封装一些需要经常**复用的自定义的配置类**。
 
 自定义starter有几个步骤：
 
@@ -155,7 +155,7 @@ starter相当于一个**jar包，里面设置了一些默认的配置信息**，
    2. 定义实体类，用于映射配置信息（跟用户交互），提供setter和getter方法
    3. 定义service类 操作实体类。
    4. 定义一个 配置类，用于注册bean对象（实体类以及service）
-   5. 在`WEB-INF/spring.factories` 下指定 配置类 的路径
+   5. 在`META-INF/spring.factories` 下指定 配置类 的路径
 
 > 其实第二个模块才是真正的自定义starter，第一个模块只是负责引入自定义starter，方便管理
 
@@ -552,7 +552,7 @@ acme:
 
 #### @EnableConfigurationProperties
 
-`@EnableConfigurationProperties` 注解是使 `@ConfigurationProperties` 注解的类生效，即将指定类注入IOC容器中。等同于 `@ConfigurationProperties`  + `@Component` 。
+`@EnableConfigurationProperties` 注解是使 `@ConfigurationProperties` 注解的类生效，即将指定类注入IOC容器中。等同于 `@Component` 。
 
 语法：`@EnableConfigurationProperties(类名.class)` 
 
