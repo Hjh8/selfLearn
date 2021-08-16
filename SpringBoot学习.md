@@ -358,13 +358,11 @@ com
 
 springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。
 
-springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器类`AutoConfigurationImportSelector` ，这个选择器会扫描所有在 `WETA-INF 下的 spring.factorites` ，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
+springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器类`AutoConfigurationImportSelector` ，这个选择器会扫描所有在 `META-INF 下的 spring.factorites` ，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
 
 > 因为springboot的自动配置是spring的扩展功能，所以会在spring的BeanFactoryPostProcessor中实现。
 >
 > springboot会将所有用到的自动配置类输出到一个总的配置文件中。
-
-
 
 
 
@@ -431,8 +429,6 @@ env:
     age: 22
 ```
 
-
-
 **小补充：yml也支持spEL表达式**。
 
 ```yml
@@ -440,8 +436,6 @@ acme:
  remote-address: 192.168.0.110
  host: ${acme.remote-address}:8080  # 192.168.0.110:8080
 ```
-
-
 
 
 
@@ -545,8 +539,6 @@ acme:
 > 2. 所有具有**ConfigurationProperties**注解的类都会生成一个json文件，用于存放配置
 >
 >    ![image-20201207200627356](SpringBoot学习.assets/image-20201207200627356.png)
-
-
 
 
 
@@ -883,14 +875,12 @@ yml:
 | ----------------------------- | ---------------------------------------------- |
 | @ConditionalOnJava            | 系统的java版本是否符合要求                     |
 | @ConditionalOnBean            | 容器中存在指定Bean                             |
-| @ConditionalOnMissingBean     | 容器中bu1存在指定Bean                          |
+| @ConditionalOnMissingBean     | 容器中不存在指定Bean                           |
 | @ConditionalOnExpression      | 满足spEL表达式                                 |
 | @ConditionalOnProperty        | 指定的属性是否有指定的值                       |
 | @ConditionalOnResource        | 类路径下是否有资源文件                         |
 | @ConditionalOnWebapplication  | 当前是否为web环境                              |
 | @ConditionalOnSingleCandidate | 容器中只存在一个指定的bean，或这个bean是首选的 |
-
-
 
 
 
