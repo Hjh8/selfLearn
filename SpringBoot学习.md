@@ -354,17 +354,17 @@ com
 
 
 
-### tomcat启动流程
-
-
-
 
 
 ### 自动配置流程
 
 springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。
 
-springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器Selector，这个选择器会扫描 `WETA-INF/spring.factorites`，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
+springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器Selector，这个选择器会
+
+主类所在的包
+
+扫描 `WETA-INF/spring.factorites`，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
 
 springboot会将所有用到的自动配置类输出到一个总的配置文件中。
 
