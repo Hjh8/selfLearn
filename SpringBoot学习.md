@@ -134,7 +134,7 @@ idea有一种方式可以快速的创建spring项目，自动添加依赖，一�
 
 #### starter
 
-starter相当于一个**jar包，里面设置了一些默认的配置信息**，需要使用时直接在maven中引入该starter即可，springboot会自动的将该配置文件中注册的bean放到IOC容器中。starter可以很好的提高复用性。
+starter相当于一个**jar包，里面设置了一些默认的配置信息**，需要使用时直接在maven中引入该starter即可，springboot会自动的将该配置类中注册的bean放到IOC容器中。starter可以很好的提高复用性。
 
 > starter等价于 jar包 + 配置文件 + 自动注册bean
 
@@ -350,9 +350,7 @@ com
 
 ### springboot启动流程
 
-![image-20210816130721014](SpringBoot学习.assets/image-20210816130721014.png)
-
-
+![image-20210816171134155](SpringBoot学习.assets/image-20210816171134155.png)
 
 
 
@@ -360,15 +358,11 @@ com
 
 springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。
 
-springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器Selector，这个选择器会
-
-主类所在的包
-
-扫描 `WETA-INF/spring.factorites`，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
-
-springboot会将所有用到的自动配置类输出到一个总的配置文件中。
+springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器类`AutoConfigurationImportSelector` ，这个选择器会扫描所有在 `WETA-INF 下的 spring.factorites` ，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
 
 > 因为springboot的自动配置是spring的扩展功能，所以会在spring的BeanFactoryPostProcessor中实现。
+>
+> springboot会将所有用到的自动配置类输出到一个总的配置文件中。
 
 
 
