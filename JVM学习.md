@@ -70,6 +70,30 @@ java内存结构：内存结构也叫**运行时数据区**。是JVM对内部存
 
 
 
+### 动态加载类的两种方式
+
+动态加载类有两种方式：**反射** 跟 **类加载器**。
+
+1. 反射：
+
+   ```java
+   Class student = Class.forName("com.load.Student");
+   student.newInstance();
+   ```
+
+2. 类加载器
+
+   ```java
+   Class student = ClassLoader.getSystemClassLoader().loadClass("com.load.Student");
+   student.newInstance()
+   ```
+
+> **new关键字实例化的方式** 和 **反射**的方式 使用的都是当前类加载器，即this.getClass.getClassLoader，只能在当前类路径或者导入的类路径下寻找类。而**ClassLoader** 方式可以从使用双亲委派机制寻找类。
+>
+> 利用反射动态加载类时，会对该类进行初始化。而类加载器加载类时不会对类进行初始化。
+
+
+
 ## 2. JVM 内存结构
 
 ### 程序计数器
