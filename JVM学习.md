@@ -42,8 +42,8 @@ java内存结构：内存结构也叫**运行时数据区**。是JVM对内部存
 
 一个类的加载过程为：加载 -> 链接（检验、准备、解析） -> 初始化
 
-1. 加载：使用类加载器查找并加载类的二进制文件
-   - BootstrapClassLoader：是 ExtClassLoader 的父类加载器，所谓父类加载器并不是直接的继承关系，而是在parent属性中指定。默认加载 `%JAVA_HOME%/lib` 目录下的 jar包和class文件
+1. 加载：使用类加载器查找并加载类的字节码文件
+   - BootstrapClassLoader：是 ExtClassLoader 的父类加载器，所谓父类加载器并不是直接的继承关系，而是在`ClassLoader parent`属性中指定。默认加载 `%JAVA_HOME%/lib` 目录下的 jar包和class文件
    - ExtClassLoader：是 AppClassLoader 的父类加载器，默认加载`%JAVA_HOME%/lib/ext` 下的jar包和java类
    - AppClassLoader：是自定义加载器的父类加载器，负责加载`classpath下的文件` 
 2. 检验：确保被加载的类的正确性
@@ -57,16 +57,79 @@ java内存结构：内存结构也叫**运行时数据区**。是JVM对内部存
 
 
 
+### 类加载器
+
+> 启动类加载器是用C++写的，在java中的表示为null。
+
+类加载器（ClassLoader）用来加载 Java 类到 Java 虚拟机中。基本上所有的类加载器都是 `java.lang.ClassLoader` 类的一个实例。
+
+java.lang.ClassLoader类的基本职责就是**根据指定的类名称**，找到或者生成其对应的字节码文件，然后从这些字节码文件中定义出一个 Java 类，即 java.lang.Class类的一个实例。除此之外，ClassLoader还负责加载 Java 应用所需的资源，如图像文件和配置文件等。
+
+为了完成加载类的这个职责，ClassLoader提供了一系列的方法：
+
+| 方法                                                 | 说明                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| getParent()                                          | 返回该类加载器的父类加载器                                   |
+| loadClass(String name)                               | 加载名称为name的类，返回的结果是java.lang.Class类的实例      |
+| findClass(String name)                               | 查找名称为name的类，返回的结果是java.lang.Class类的实例      |
+| findLoadedClass(String name)                         | 在已经被加载过的类中查找name类，返回的结果是java.lang.Class类的实例 |
+| defineClass(String name, byte[] b, int off, int len) | 把字节数组b中的内容转换成 Java 类，返回的结果是 java.lang.Class类的实例。这个方法被声明为final的 |
+| resolveClass(Class c)                                | 链接指定的 Java 类                                           |
+
+每一个类加载器，都拥有一个独立的**类名称空间**。对于任意一个类，都需要由加载它的类加载器和这个类本身一起才能确定唯一性，即**如果相同的class文件被不同的加载器所加载就属于不同的类**。
+
+> 比较两个类是否相等，只有在这两个类是由同一个类加载器加载的前提下才有意义。
+
+
+
 ### 双亲委派机制
 
-每个类加载器都有自己的缓存空间和加载路径，加载一个类的时候会从AppClassLoader 开始向上查找每个加载器的缓存，判断缓存中是否加载了该类，如果加载了则直接返回，若到了BootstrapClassLoader 都没有找到，则会查找 BootstrapClassLoader 的加载路径是否包含该类，如果包含则直接返回，否则继续往下查找，直到找到为止。这就是**双亲委派机制**。 向上找缓存，向下找加载路径。
+每个类加载器都有自己的缓存空间和加载路径，加载一个类的时候会从AppClassLoader 开始向上查找每个加载器的缓存，判断缓存中是否加载了该类（**findLoadedClass**），如果加载了则直接返回，若到了BootstrapClassLoader（**parent == null**）都没有找到，则会查找 BootstrapClassLoader 的加载路径是否包含该类（**findClass**），如果包含则直接返回，否则继续往下查找，直到找到为止。
 
-> 如果相同的class文件被不同的加载器所加载就属于不同的类。
+这就是**双亲委派机制**， 向上找缓存，向下找加载路径。
 
 好处：
 
 1. 避免了类的重复加载
 2. 保证了安全性
+
+***
+
+双亲委派机制的java实现：（每个类加载器都是以loadClass方法开始加载类）
+---
+
+```java
+protected Class<?> loadClass(String name, boolean resolve)
+    throws ClassNotFoundException
+{
+    synchronized (getClassLoadingLock(name)) {
+        // 1、检查请求的类是否已经被加载过了
+        Class c = findLoadedClass(name);
+        // 没有被加载过
+        if (c == null) {
+            try {
+                if (parent != null) {
+                    c = parent.loadClass(name, false);
+                } else {
+                    c = findBootstrapClassOrNull(name);
+                }
+            } catch (ClassNotFoundException e) {
+            }
+            // 在父类加载器无法加载的时候，再调用本身的findClass方法来进行类加载
+            if (c == null) {
+                c = findClass(name);
+            }
+        }
+        // 如果已经被加载过
+        if (resolve) {
+            resolveClass(c);
+        }
+        return c;
+    }
+}
+```
+
+> 综上，只要重写**loadClass**方法，在里面实现自己的加载逻辑，就可以破坏**双亲委派机制**。
 
 
 
@@ -90,7 +153,48 @@ java内存结构：内存结构也叫**运行时数据区**。是JVM对内部存
 
 > **new关键字实例化的方式** 和 **反射**的方式 使用的都是当前类加载器，即this.getClass.getClassLoader，只能在当前类路径或者导入的类路径下寻找类。而**ClassLoader** 方式可以从使用双亲委派机制寻找类。
 >
-> 利用反射动态加载类时，会对该类进行初始化。而类加载器加载类时不会对类进行初始化。
+> `Class.forName`的方式动态加载类时，会立即对该类进行初始化。而`loadClass`加载类时不会立即对类进行初始化。
+
+
+
+### 自定义类加载器
+
+> 继承ClassLoader，重新findClass方法，在该方法中读取字节码文件并使用defineClass构建java类即可。
+
+```java
+class MyClassLoader extends ClassLoader {
+    private String classPath;
+
+    public MyClassLoader(String classPath) {
+        this.classPath = classPath;
+    }
+
+    private byte[] loadByte(String name) throws Exception {
+        name = name.replaceAll("\\.", "/");
+        FileInputStream fis = new FileInputStream(classPath + "/" + name
+                + ".class");
+        int len = fis.available();
+        byte[] data = new byte[len];
+        fis.read(data);
+        fis.close();
+        return data;
+    }
+
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        try {
+            // 读取字节码文件
+            byte[] data = loadByte(name);
+            // 返回java类
+            return defineClass(name, data, 0, data.length);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ClassNotFoundException();
+        }
+    }
+}
+```
+
+
 
 
 
