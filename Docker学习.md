@@ -197,7 +197,166 @@ docker build -t nginx:v3 . # 点表示当前目录
 
 ### 基础结构
 
-Dockerfile 一般分为四部分：<u>基础镜像信息</u>、<u>维护者信息</u>、<u>镜像操作指令</u> 和 <u>容器启动时执行指令</u>。
+Dockerfile 一般分为四部分：<u>基础镜像信息</u>、<u>维护者信息</u>、<u>镜像操作指令</u> 和 <u>容器启动时执行指令</u>。且**基础镜像信息必须位于文件的第一行**。
+
+
+
+#### 基础镜像信息
+
+**FROM**：指定基础镜像，即构建的镜像是依赖于哪一个基础镜像的。<u>必须位于第一行</u>。
+
+格式：
+
+```dockerfile
+FROM <image>
+FROM <image>:<tag>
+FROM <image>@<digest>
+```
+
+tag或digest是可选的，如果不使用这两个值时，会使用latest版本的基础镜像
+
+示例：`FROM mysql:5.6` 
+
+
+
+#### 维护者信息
+
+**MAINTAINER**：声明维护者信息
+
+格式：
+
+```dockerfile
+MAINTAINER <name>
+```
+
+示例：`MAINTAINER Jasper Xu`
+
+
+
+#### 镜像操作指令
+
+**RUN**：构建镜像时执行的命令
+
+格式：
+
+```dockerfile
+RUN <命令行命令>
+或者
+RUN ["可执行文件", "param1", "param2"]
+```
+
+RUN指令创建的中间镜像会被缓存，并会在下次构建中使用。如果不想使用这些缓存镜像，可以在构建时指定`--no-cache`参数，如：`docker build --no-cache` 
+
+示例：`RUN yum install vim`、`RUN ["yum ", "install ", "vim"]`
+
+***
+
+**ADD**：将本地文件添加到容器中，tar类型文件会自动解压(网络压缩资源不会被解压)，并且可以访问网络资源
+
+> COPY：功能类似ADD，但是其只会进行文件拷贝
+
+格式：
+
+```
+ADD <src>... <dest>
+```
+
+示例：`ADD hom* /mydir/` 把 所有以"hom"开头的文件 添加到mydir下
+
+
+
+#### 容器启动时执行指令
+
+**CMD**：类似于 RUN 指令，用于运行程序。但二者运行的时间点不同：CMD用于指定在**容器启动时**所要执行的命令，而RUN用于**镜像构建时**所要执行的命令。
+
+格式：
+
+```dockerfile
+CMD ["param1","param2"]  #作为 ENTRYPOINT 的参数
+或
+CMD command param1 param2  # 执行shell内部命令
+```
+
+> 如果有多个CMD命令，则只有最后一个CMD命令才有效
+
+***
+
+**ENTRYPOINT**：配置容器，使其可执行化。可配合CMD使用。
+
+格式：
+
+```dockerfile
+ENTRYPOINT command param1 param2
+```
+
+示例：ENTRYPOINT ["top", "-b"]
+    CMD ["-c"]注：　　　ENTRYPOINT与CMD非常类似，不同的是通过docker run执行的命令不会覆盖ENTRYPOINT，而docker run命令中指定的任何参数，都会被当做参数再次传递给ENTRYPOINT。Dockerfile中只允许有一个ENTRYPOINT命令，多指定时会覆盖前面的设置，而只执行最后的ENTRYPOINT指令。
+
+
+
+
+
+**ENV**：设置环境变量
+
+```
+格式：
+    ENV <key> <value>  #<key>之后的所有内容均会被视为其<value>的组成部分，因此，一次只能设置一个变量
+    ENV <key>=<value> ...  #可以设置多个变量，每个变量为一个"<key>=<value>"的键值对，如果<key>中包含空格，可以使用\来进行转义，也可以通过""来进行标示；另外，反斜线也可以用于续行
+示例：
+    ENV myName John Doe
+    ENV myDog Rex The Dog
+    ENV myCat=fluffy
+```
+
+
+
+**EXPOSE：指定于外界交互的端口**
+
+
+
+```
+格式：
+    EXPOSE <port> [<port>...]
+示例：
+    EXPOSE 80 443
+    EXPOSE 8080    EXPOSE 11211/tcp 11211/udp注：　　EXPOSE并不会让容器的端口访问到主机。要使其可访问，需要在docker run运行容器时通过-p来发布这些端口，或通过-P参数来发布EXPOSE导出的所有端口
+```
+
+
+
+**VOLUME：用于指定持久化目录**
+
+
+
+```
+格式：
+    VOLUME ["/path/to/dir"]
+示例：
+    VOLUME ["/data"]
+    VOLUME ["/var/www", "/var/log/apache2", "/etc/apache2"注：　　一个卷可以存在于一个或多个容器的指定目录，该目录可以绕过联合文件系统，并具有以下功能：
+1 卷可以容器间共享和重用
+2 容器并不一定要和其它容器共享卷
+3 修改卷后会立即生效
+4 对卷的修改不会对镜像产生影响
+5 卷会一直存在，直到没有任何容器在使用它
+```
+
+[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
+
+**WORKDIR：工作目录，类似于cd命令**
+
+[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
+
+```
+格式：
+    WORKDIR /path/to/workdir
+示例：
+    WORKDIR /a  (这时工作目录为/a)
+    WORKDIR b  (这时工作目录为/a/b)
+    WORKDIR c  (这时工作目录为/a/b/c)注：　　通过WORKDIR设置工作目录后，Dockerfile中其后的命令RUN、CMD、ENTRYPOINT、ADD、COPY等命令都会在该目录下执行。在使用docker run运行容器时，可以通过-w参数覆盖构建时所设置的工作目录。
+```
+
+[![复制代码](Docker学习.assets/copycode.gif)](javascript:void(0);)
 
 
 
