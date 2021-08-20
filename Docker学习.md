@@ -165,8 +165,6 @@ docker run -d -p 8080:8080 --name tomcat -v /myDemo:/usr/local/tomcat/webapps to
 
 
 
-
-
 四、启动mysql
 ---
 
@@ -174,8 +172,42 @@ docker run -d -p 8080:8080 --name tomcat -v /myDemo:/usr/local/tomcat/webapps to
 
 
 
-五、DockerFile
+五、Dockerfile
 ---
+
+### Dockerfile 简介
+
+Dockerfile 是一个用来构建镜像的**文本文件**，文本内容包含了一条条构建镜像所需的**指令**。Docker通过读取`Dockerfile`中的指令自动生成映像。
+
+> Dockerfile 所在的目录称为上下文目录
+
+使用 `docker build -t image:tag 路径` 命令构建镜像，例如：
+
+```bash
+docker build -t nginx:v3 . # 点表示当前目录
+```
+
+**构建过程**：
+
+1. 对上下文目录中所有的内容进行打包然后发送给docker的server
+2. server对dockerfile中的指令一行行的解析，每一行指令都会在缓存中生成一个image层
+3. 每行的指令都在之前的image层上构建image层，直到最后一行指令执行完才是完整的image
+
+
+
+### 基础结构
+
+Dockerfile 一般分为四部分：<u>基础镜像信息</u>、<u>维护者信息</u>、<u>镜像操作指令</u> 和 <u>容器启动时执行指令</u>。
+
+
+
+
+
+
+
+
+
+
 
 
 
