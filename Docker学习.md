@@ -1,5 +1,4 @@
 Docker学习
-===
 
 一、docker介绍
 ---
@@ -177,7 +176,7 @@ docker run -d -p 8080:8080 --name tomcat -v /myDemo:/usr/local/tomcat/webapps to
 
 ### Dockerfile 简介
 
-Dockerfile 是一个用来构建镜像的**文本文件**，文本内容包含了一条条构建镜像所需的**指令**。Docker通过读取`Dockerfile`中的指令自动生成映像。
+Dockerfile 是一个用来构建镜像的**文本文件**，文本内容包含了一条条构建镜像所需的**指令**。Docker通过读取`Dockerfile`中的指令自动生成镜像。
 
 > Dockerfile 所在的目录称为上下文目录
 
@@ -189,15 +188,17 @@ docker build -t nginx:v3 . # 点表示当前目录
 
 **构建过程**：
 
-1. 对上下文目录中所有的内容进行打包然后发送给docker的server
+1. 对上下文目录中<u>所有的内容</u>进行打包然后发送给docker的server
 2. server对dockerfile中的指令一行行的解析，每一行指令都会在缓存中生成一个image层
 3. 每行的指令都在之前的image层上构建image层，直到最后一行指令执行完才是完整的image
+
+> 可在上下文目录中创建`.dockerignore` 文件，在文件中声明的文件 不会被docker打包
 
 
 
 ### 基础结构
 
-Dockerfile 一般分为四部分：<u>基础镜像信息</u>、<u>维护者信息</u>、<u>镜像操作指令</u> 和 <u>容器启动时执行指令</u>。且**基础镜像信息必须位于文件的第一行**。
+Dockerfile 一般分为四部分：<u>基础镜像信息</u>、<u>维护者信息</u>、<u>镜像操作指令</u> 和 <u>容器执行指令</u>。且**基础镜像信息必须位于文件的第一行**。
 
 
 
@@ -263,9 +264,21 @@ ADD <src>... <dest>
 
 示例：`ADD hom* /mydir/` 把 所有以"hom"开头的文件 添加到mydir下
 
+***
+
+**EXPOSE**：指定于外界交互的端口，只有暴露了端口，外界才可以绑定该端口
+
+格式：
+
+```dockerfile
+EXPOSE <port> [<port>...]
+```
+
+示例：`EXPOSE 80 443` 
 
 
-#### 容器启动时执行指令
+
+#### 容器执行指令
 
 **CMD**：类似于 RUN 指令，用于运行程序。但二者运行的时间点不同：CMD用于指定在**容器启动时**所要执行的命令，而RUN用于**镜像构建时**所要执行的命令。
 
@@ -281,7 +294,9 @@ CMD command param1 param2  # 执行shell内部命令
 
 ***
 
-**ENTRYPOINT**：配置容器，使其可执行化。可配合CMD使用。
+**ENTRYPOINT**：指定容器启动时执行的命令。
+
+> 可配合CMD使用，ENTRYPOINT命令作为容器启动后的第一个命令，而CMD指令作为第一个命令的默认参数。
 
 格式：
 
@@ -289,18 +304,21 @@ CMD command param1 param2  # 执行shell内部命令
 ENTRYPOINT command param1 param2
 ```
 
-示例：ENTRYPOINT ["top", "-b"]
-    CMD ["-c"]注：　　　ENTRYPOINT与CMD非常类似，不同的是通过docker run执行的命令不会覆盖ENTRYPOINT，而docker run命令中指定的任何参数，都会被当做参数再次传递给ENTRYPOINT。Dockerfile中只允许有一个ENTRYPOINT命令，多指定时会覆盖前面的设置，而只执行最后的ENTRYPOINT指令。
+示例：
 
+```dockerfile
+ENTRYPOINT ["top", "-b"]
+CMD ["-c"]
+```
 
-
-
+***
 
 **ENV**：设置环境变量
 
-```
 格式：
-    ENV <key> <value>  #<key>之后的所有内容均会被视为其<value>的组成部分，因此，一次只能设置一个变量
+
+```
+ENV <key> <value>  #<key>之后的所有内容均会被视为其<value>的组成部分，因此，一次只能设置一个变量
     ENV <key>=<value> ...  #可以设置多个变量，每个变量为一个"<key>=<value>"的键值对，如果<key>中包含空格，可以使用\来进行转义，也可以通过""来进行标示；另外，反斜线也可以用于续行
 示例：
     ENV myName John Doe
@@ -308,55 +326,34 @@ ENTRYPOINT command param1 param2
     ENV myCat=fluffy
 ```
 
+***
 
+**VOLUME**：指定可与主机挂载的目录
 
-**EXPOSE：指定于外界交互的端口**
-
-
-
-```
 格式：
-    EXPOSE <port> [<port>...]
-示例：
-    EXPOSE 80 443
-    EXPOSE 8080    EXPOSE 11211/tcp 11211/udp注：　　EXPOSE并不会让容器的端口访问到主机。要使其可访问，需要在docker run运行容器时通过-p来发布这些端口，或通过-P参数来发布EXPOSE导出的所有端口
+
+```dockerfile
+VOLUME ["/path"]
 ```
 
+***
 
+**WORKDIR**：容器启动后，终端默认所在的目录
 
-**VOLUME：用于指定持久化目录**
-
-
-
-```
 格式：
-    VOLUME ["/path/to/dir"]
+
+```dockerfile
+WORKDIR /path/to/workdir
+# 可以写多行（相对路径方式），如果写多行则每一行都以前面的路径为相对路径
+```
+
 示例：
-    VOLUME ["/data"]
-    VOLUME ["/var/www", "/var/log/apache2", "/etc/apache2"注：　　一个卷可以存在于一个或多个容器的指定目录，该目录可以绕过联合文件系统，并具有以下功能：
-1 卷可以容器间共享和重用
-2 容器并不一定要和其它容器共享卷
-3 修改卷后会立即生效
-4 对卷的修改不会对镜像产生影响
-5 卷会一直存在，直到没有任何容器在使用它
+
+```dockerfile
+WORKDIR /a  # 这时工作目录为 /a
+WORKDIR b  # 这时工作目录为 /a/b
+WORKDIR c  # 这时工作目录为 /a/b/c
 ```
-
-[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
-**WORKDIR：工作目录，类似于cd命令**
-
-[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
-```
-格式：
-    WORKDIR /path/to/workdir
-示例：
-    WORKDIR /a  (这时工作目录为/a)
-    WORKDIR b  (这时工作目录为/a/b)
-    WORKDIR c  (这时工作目录为/a/b/c)注：　　通过WORKDIR设置工作目录后，Dockerfile中其后的命令RUN、CMD、ENTRYPOINT、ADD、COPY等命令都会在该目录下执行。在使用docker run运行容器时，可以通过-w参数覆盖构建时所设置的工作目录。
-```
-
-[![复制代码](Docker学习.assets/copycode.gif)](javascript:void(0);)
 
 
 
