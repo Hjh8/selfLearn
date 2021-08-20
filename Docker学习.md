@@ -156,7 +156,7 @@ docker run -d -p 8080:8080 --name tomcat -v /myDemo:/usr/local/tomcat/webapps to
 
 
 
-镜像分层原理
+三、镜像分层原理
 ---
 
 一个镜像为什么这么大？因为一个镜像不仅包括某个软件要运行的代码，还包括其运行环境以及其他软件包依赖。
@@ -164,6 +164,18 @@ docker run -d -p 8080:8080 --name tomcat -v /myDemo:/usr/local/tomcat/webapps to
 正是因为镜像大，所以把镜像分成一层层的，一个镜像由若干个镜像组成，而这些小的镜像还可以去组合其他的镜像，依次达到复用的效果。
 
 
+
+
+
+四、启动mysql
+---
+
+`docker run -d -p 3308:3306 -e MYSQL_PASSWORD=密码 --name mysql mysql:8.0.17` 
+
+
+
+五、DockerFile
+---
 
 
 
