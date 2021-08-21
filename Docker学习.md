@@ -304,26 +304,11 @@ CMD command param1 param2  # 执行shell内部命令
 ENTRYPOINT command param1 param2
 ```
 
-示例：
+示例：默认查看当前路径下的所有文件
 
 ```dockerfile
-ENTRYPOINT ["top", "-b"]
-CMD ["-c"]
-```
-
-***
-
-**ENV**：设置环境变量
-
-格式：
-
-```
-ENV <key> <value>  #<key>之后的所有内容均会被视为其<value>的组成部分，因此，一次只能设置一个变量
-    ENV <key>=<value> ...  #可以设置多个变量，每个变量为一个"<key>=<value>"的键值对，如果<key>中包含空格，可以使用\来进行转义，也可以通过""来进行标示；另外，反斜线也可以用于续行
-示例：
-    ENV myName John Doe
-    ENV myDog Rex The Dog
-    ENV myCat=fluffy
+ENTRYPOINT ["ls", "-a"]
+CMD ["."]
 ```
 
 ***
@@ -353,6 +338,57 @@ WORKDIR /path/to/workdir
 WORKDIR /a  # 这时工作目录为 /a
 WORKDIR b  # 这时工作目录为 /a/b
 WORKDIR c  # 这时工作目录为 /a/b/c
+```
+
+***
+
+**ENV**：设置环境变量
+
+格式：
+
+```dockerfile
+ENV <key1> <value1> ... 
+```
+
+示例：
+
+```dockerfile
+ENV BASE_DIR /data
+WORKDIR $BASE_DIR  # 其他地方可以使用$获取环境变量值
+```
+
+
+
+### 综合案例
+
+```dockerfile
+# Base images 基础镜像
+FROM centos
+
+#MAINTAINER 维护者信息
+MAINTAINER codekiang 
+
+#ENV 设置环境变量
+ENV PATH /usr/local/nginx/sbin:$PATH
+
+#ADD  文件放在当前目录下，拷过去会自动解压
+ADD nginx-1.8.0.tar.gz /usr/local/  
+
+#RUN 执行命令 
+RUN yum install -y vim
+
+#WORKDIR 
+WORKDIR /usr/local/nginx-1.8.0 
+
+RUN ./configure --prefix=/usr/local/nginx --user=www --group=www --with-http_ssl_module --with-pcre && make && make install
+
+RUN echo "daemon off;" >> /etc/nginx.conf
+
+#EXPOSE 映射端口
+EXPOSE 80
+
+#CMD 运行以下命令
+CMD ["nginx"]
 ```
 
 
