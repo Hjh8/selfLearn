@@ -1,4 +1,5 @@
 Docker学习
+===
 
 一、docker介绍
 ---
@@ -323,7 +324,7 @@ VOLUME ["/path"]
 
 ***
 
-**WORKDIR**：容器启动后，终端默认所在的目录
+**WORKDIR**：容器启动后，终端默认所在的目录。<u>如果目录不存在会自动创建</u>。
 
 格式：
 
@@ -359,49 +360,46 @@ WORKDIR $BASE_DIR  # 其他地方可以使用$获取环境变量值
 
 
 
-### 综合案例
+### 综合案例-部署springboot项目
 
-```dockerfile
-# Base images 基础镜像
-FROM centos
+步骤：
 
-#MAINTAINER 维护者信息
-MAINTAINER codekiang 
+1. 打包开发好的springboot项目
 
-#ENV 设置环境变量
-ENV PATH /usr/local/nginx/sbin:$PATH
+2. 在服务器上创建dockerfile上下文
 
-#ADD  文件放在当前目录下，拷过去会自动解压
-ADD nginx-1.8.0.tar.gz /usr/local/  
+3. 创建dockerfile并编写，例如：
 
-#RUN 执行命令 
-RUN yum install -y vim
+   ```dockerfile
+   FROM openjdk:8-jre
+   WORKDIR /app
+   ADD 项目的jar包 /app
+   EXPOSE 访问项目的端口
+   ENTRYPOINT ["java", "-jar"]
+   CMD ["项目名.jar"]
+   ```
 
-#WORKDIR 
-WORKDIR /usr/local/nginx-1.8.0 
+4. 构建镜像：`docker build -t 镜像名:tag .` 
 
-RUN ./configure --prefix=/usr/local/nginx --user=www --group=www --with-http_ssl_module --with-pcre && make && make install
+5. 执行容器：`docker run -d -p 8081:8081 --name 镜像名:tag` 
 
-RUN echo "daemon off;" >> /etc/nginx.conf
+***
 
-#EXPOSE 映射端口
-EXPOSE 80
+> idea中可以安装 `Docker` 插件，用于辅助我们编写dockerfile文件。
 
-#CMD 运行以下命令
-CMD ["nginx"]
-```
+![image-20210821172616699](Docker学习.assets/image-20210821172616699.png)
 
+![image-20210821172657258](Docker学习.assets/image-20210821172657258.png)
 
 
 
+> 可以使用idea来连接远程服务器，可以**直接拖动**或点击**远程文件在idea中编写**。
 
+![image-20210821172927211](Docker学习.assets/image-20210821172927211.png)
 
+![image-20210821173027000](Docker学习.assets/image-20210821173027000.png)
 
-
-
-
-
-
+![image-20210821173056103](Docker学习.assets/image-20210821173056103.png)
 
 
 
