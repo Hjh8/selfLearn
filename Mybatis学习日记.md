@@ -1456,14 +1456,15 @@ Mybatis面试
 
 
 
-Mybatis的工作原理
+能否简单说下Mybatis加载的流程？
 ---
 
-1. 读取mybatis配置文件生成Configuration。
-2. 构造sqlSessionFactory，调用openSession()创建sqlSession对象，使用此对象来执行mapper中的方法，将要映射的信息（数据源、参数、标签参数等）封装成MappedStatement对象
-   - **mappedStatement**最后以id为键保存在了**Configuration**中的一个map变量**mappedStatements**中
-3. Executor执行器，将MappedStatement对象进行解析，生成需要执行的sql语句，同时负责缓存的维护。
-4. 使用StatementHandler执行sql语句，以及将结果集封装成实体类
+1. 加载配置文件：需要加载的配置文件包括全局配置文件(mybatis-config.xml)和 SQL(Mapper.xml) 映射文件，其中全局配置文件配置了Mybatis 的运行环境信息(数据源、事务等)，SQL映射文件中配置了与 SQL 执行相关的信息。
+2. 创建会话工厂：MyBatis通过读取配置文件的信息来构造出会话工厂(SqlSessionFactory)，即通过SqlSessionFactoryBuilder 构建 SqlSessionFactory。
+3. 创建会话：拥有了会话工厂，MyBatis就可以通过它来创建会话对象(SqlSession)。会话对象是一个接口，该接口中包含了对数据库操作的增删改查方法。
+4. 创建执行器：因为会话对象本身不能直接操作数据库，所以它使用了一个叫做数据库执行器(Executor)的接口来帮它执行操作。
+5. 封装SQL对象：执行器(Executor)将待处理的SQL信息封装到一个对象中(MappedStatement)，该对象包括SQL语句、输入参数映射信息(Java简单类型、HashMap或POJO)和输出结果映射信息(Java简单类型、HashMap 或 POJO)。
+6. 操作数据库：拥有了执行器和SQL信息封装对象就使用它们访问数据库了，最后再返回操作结果，结束流程。
 
 
 
