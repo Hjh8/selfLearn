@@ -10,19 +10,35 @@ java版本
 - 整数最值
   - 最大值：Integer.MAX_VALUE
   - 最小值：Integer.MIN_VALUE
+  
 - 数组赋值：Arrays.fill(arr, val);
+
 - 部分排序：Arrays.sort(array, 0, 4)
-- 字符转int：‘4’-48=4
+
 - 数组深拷贝：System.arraycopy(src, srcPos, dest, destPos, length)
+
 - 数组范围拷贝：dest = Arrays.copyOfRange(src, start, end)
 
+- 正负数的中值问题：
 
+  - 正数的中值公式：`(right + left) / 2` 
+  - 正/负数的中值公式：`left + (right - left) / 2` （所以以后最好用这个）
 
-> length属性是针对数组说的
->
-> length()方法是针对字符串String
->
-> size()方法是针对泛型集合说的
+  **整数或负数中值都是向着左边的**，比如5对于4来说是在右边，-5对于-4来说是在左边
+
+  例如：
+
+  ```java
+  (5 + 4)/2 = 4
+  (-4 + -5)/2 = -4  // -4在数轴上是右边
+  -5+(-4 - -5)/2 = -5
+  ```
+
+- 长度问题：
+
+  - `length`属性是针对**数组**的
+  - `length()`方法是针对**字符串**的
+  - `size()`方法是针对泛型**集合**的
 
 
 
@@ -130,6 +146,14 @@ Queue
 - 判空：isEmpty()
 - 清空：clear()
 - 是否包含：contains(Obj)
+
+
+
+PriorityQueue
+---
+
+- 构造方法：`PriorityQueue<Map.Entry<Integer, Integer>> queue = new PriorityQueue<>((e1, e2) -> e2.getValue() - e1.getValue());` 通常是需要对entry的value进行排序
+- 其他方法与Queue一样
 
 
 
@@ -345,34 +369,6 @@ public class QuickSort {
 
 
 
-堆排序
----
-
-```java
-public static void main(String[] args) {
-    int[] a = {7, 6, 7, 11, 5, 12, 3, 0, 1};
-    for(int i=0; i<a.length; i++){
-        int k = i;
-        // 构建小根堆，若要大根堆，换个符号即可
-        while (k > 0 && a[k] > a[k/2]){
-            swap(a, k, k/2);
-            k /= 2;
-        }
-    }
-    for (int i : a) {
-        System.out.print(i+" ");
-    }
-}
-
-public static void swap(int[] a, int i, int j) {
-    int t = a[i];
-    a[i] = a[j];
-    a[j] = t;
-}
-```
-
-
-
 普通树 非递归遍历
 ---
 
@@ -441,8 +437,6 @@ public List<Integer> postorderTraversal(TreeNode root) {
     return ans;
 }
 ```
-
-
 
 
 
