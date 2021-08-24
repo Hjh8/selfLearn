@@ -472,3 +472,102 @@ linux下安装：
 1. 在 `docker-compose.yml` 中使用 ==模板命令== 来定义构成应用程序的服务，这样它们可以在隔离环境中一起运行。
 2. 最后，执行 `docker-compose up` 命令来启动并运行整个应用程序。
 
+模板文件如下：
+
+```yml
+version: '0.1.1'  # 首先指定项目的版本
+
+services:  # 项目启动所需要的服务
+  tomcat:  # 服务名，区别于容器名
+    image: tomcat:8.0-jre8  # 服务所依赖的镜像
+    container_name: tomcat  # 容器名
+    ports:  # 绑定端口
+      - "8081:8080"
+    volumes:  # 数据卷
+      - /root/apps:/usr/local/tomcat/webapps  # 路径绑定
+      - demoapps:/usr/local/tomcat/webapps  # 别名绑定，需要先在下方创建
+    networks:  # 网桥，需要先在下方创建
+      - aa
+    cmd:  # 容器启动后执行的命令
+      ls .
+  
+  mysql: # 服务名，区别于容器名
+    image: mysql:8.0.17
+    container_name: mysql
+    ports: 
+      - "3308:3306"
+    networks:
+      - aa
+    environment:  # 容器运行时的环境参数
+      - MYSQL_ROOT_PASSWORD=mysql密码
+
+volumes:
+  demoapps:  # 创建数据卷
+    # 如果不指定为外部卷，则数据卷的名称为 项目名_demoapps 而不是 demoapps
+    external: true
+
+networks:
+  aa:  # 同上
+    external: true
+```
+
+其实模板命令就是docker run命令的参数。
+
+如果不通过 `docker-compose -p  name up`指定项目名的话，**默认使用当前所在目录为项目名**。
+
+***
+
+env_file：模板文件还有个模板指令为`env_file` ，其作用等同于environment，只不过environment是直接将参数写到yml中，而env_file是将参数写到一个`.env`文件中，然后在yml中指令`.env`文件的位置。
+
+```yml
+env_file:  # 通常env文件跟compose文件放在同个目录下
+      - ./bbb.env
+```
+
+bbb.env的内容为：
+
+```
+MYSQL_ROOT_PASSWORD=mysql密码
+```
+
+
+
+build：将dockerfile打包成镜像并启动。
+
+```yml
+version: "0.1.1"
+
+services:
+  demo:  # 服务名
+    build:  # 打包dockerfile
+      context: ./demo  # 指定dockerfile所在的目录
+      dockfile: dockfile  # dockfile
+    container_name: demo
+```
+
+
+
+depends_on：设置依赖关系。当项目启动的时候，以依赖性顺序启动服务
+
+在以下示例中，先启动 db 和 redis ，才会启动 web
+
+```yml
+version: "0.1.1"
+services:
+  web:
+    build: .
+    depends_on:  # 设置依赖关系
+      - db
+      - redis
+  redis:
+    image: redis
+  db:
+    image: postgres
+```
+
+
+
+### compose指令
+
+docker-compose 
+
