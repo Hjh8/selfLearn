@@ -151,7 +151,7 @@ protected Class<?> loadClass(String name, boolean resolve)
 
 > **new关键字实例化** 的方式和 **反射** 的方式 使用的都是当前类加载器，即this.getClass.getClassLoader，只能在当前类路径或者导入的类路径下寻找类。而**ClassLoader** 方式可以从使用双亲委派机制寻找类。
 >
-> `Class.forName`的方式动态加载类时，会立即对该类进行初始化。而`loadClass`加载类时不会立即对类进行初始化。
+> `Class.forName`的方式动态加载类时，会立即对该类进行初始化。而`ClassLoader`加载类时不会立即对类进行初始化。
 
 
 
@@ -504,14 +504,28 @@ public class Main {
 
 **可达性分析**：从GC Roots开始向下搜索，所走过的路径称为引用链。当一个对象到GC Roots没有任何引用链时，则说明此对象是可回收的。
 
-那么问题来了，GC Roots是什么？GC Roots就是那些一定不是垃圾的对象。
+那么问题来了，==GC Roots是什么==？GC Roots就是那些一定不是垃圾的对象。
 
 常见的**GC Roots**有：
 
-1. 虚拟机栈中引用的对象
+1. 栈中引用的对象
 2. 方法区中静态属性引用的对象
 3. 方法区中常量引用的对象
 4. JVM自动调用的方法中引用的对象
+
+问题又来了，==如何查找GC Roots==？
+
+HotSpot中 `OopMap` 的数据结构记录着GC Roots，即可以通过OopMap快速找到GC Roots。
+
+oop (ordinary object pointer) 普通对象指针，oopmap就是存放这些指针的map，OopMap 用于枚举 GC Roots，记录栈中引用数据类型的位置。**根节点枚举时会STW**。
+
+一个线程为一个栈，一个栈由多个栈桢组成，一个栈桢对应一个方法，一个方法有多个**安全点**。GC发生时，程序首先运行到最近的一个安全点停下来，然后更新自己的OopMap，记录栈上哪些位置代表着引用。枚举根节点时，递归遍历每个栈桢的OopMap，通过栈中记录的被引用的对象内存地址，即可找到这些对象（GC Roots）
+
+“安全点”主要在： 
+
+1. 循环的末尾 
+2. 方法临返回前 / 调用方法的call指令后 
+3. 可能抛异常的位置
 
 
 

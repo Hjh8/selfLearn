@@ -741,7 +741,7 @@ cpu通过时间片分配算法来循环执行任务，当前线程执行一个�
 线程之间通信方式
 ---
 
-- volatile
+- volatile跟Thread.yield
 - wait跟notify
 - LockSupport.park 跟 unpark
 - CountdownLatch、CyclicBarrier、Semaphore
