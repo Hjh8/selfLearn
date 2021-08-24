@@ -727,7 +727,7 @@ sleep跟wait区别
 为什么wait跟notify要依赖sync
 ---
 
-wait/notify是线程之间的通信，多线程存在竞争，如果不加锁的话，那么进行wait/notify操作的条件很可能会被修改，以至于不能进行正确的操作。所以我们需要强制wait/notify在synchronized中
+wait/notify是线程之间的通信，多线程存在竞争，如果不加锁的话，那么进行wait/notify操作的条件很可能会被修改，以至于不能进行正确的操作。所以我们需要强制wait/notify在synchronized中。而且wait/notify都依赖于synchronized的锁对象进行调度。
 
 
 
@@ -735,6 +735,16 @@ wait/notify是线程之间的通信，多线程存在竞争，如果不加锁的
 ---
 
 cpu通过时间片分配算法来循环执行任务，当前线程执行一个时间片后切换到下一个线程。但是，在切换前会保存上一个线程的状态，下次切换回此线程时可以重新回到保存的状态。这一过程就是上下文切换。
+
+
+
+线程之间通信方式
+---
+
+- volatile
+- wait跟notify
+- LockSupport.park 跟 unpark
+- CountdownLatch、CyclicBarrier、Semaphore
 
 
 

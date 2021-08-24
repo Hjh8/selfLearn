@@ -569,5 +569,16 @@ services:
 
 ### compose指令
 
-docker-compose 
+`docker-compose [参数] up `：启动服务
 
+- `-d`：后台运行
+- `-f name`：指定模板文件，默认为`docker-compose.yml` 
+- `-p name`：指定项目名称，默认为所在目录名
+
+`docker-compose ps ` 列出项目中所有的容器
+
+`docker-compose restart [service service]`：重启项目，指定service的话则重启指定服务。
+
+`docker-compose stop [service service]`：停止项目，指定service的话则停止指定服务。
+
+`docker-compose logs service`：查看服务日志
