@@ -431,7 +431,44 @@ Docker启动时，自动在主机上创建**虚拟网桥**docker0，并随机分
 
 
 
+七、Docker-compose
+---
+
+Compose 是用于定义和运行多个容器的工具。通过 Compose，可以**使用 YML 文件来项目所需要的所有服务**，配置好之后使用一个命令就可以从 YML 文件配置中创建并启动所有服务。
+
+【注意】yml文件的命名最好为 `docker-compose.yml` 
+
+在compose中有两个重要的概念：
+
+- **服务**：项目启动所需要的容器，在compose中称为服务。
+- **项目**：就是需要部署的项目，一个配置文件对应一个项目。
 
 
 
+### compose安装
+
+> window中自动带有compose
+
+linux下安装：
+
+1.  Github 上下载它的二进制包
+
+   `sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose` 如果要下载其他版本请替换掉1.24.1 
+
+2. 将可执行权限应用于二进制文件：`sudo chmod +x /usr/local/bin/docker-compose` 
+
+3. 创建软链接：`sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose` 
+
+4. 测试是否安装成功：`docker-compose --version` 
+
+
+
+### Docker-compose模板文件
+
+需要配置模板文件（YML）来配置项目要启动的所需容器。**一个模板文件对应一个项目**。
+
+使用步骤：
+
+1. 在 `docker-compose.yml` 中使用 ==模板命令== 来定义构成应用程序的服务，这样它们可以在隔离环境中一起运行。
+2. 最后，执行 `docker-compose up` 命令来启动并运行整个应用程序。
 
