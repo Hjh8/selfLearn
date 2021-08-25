@@ -39,6 +39,17 @@ java版本
   - `length`属性是针对**数组**的
   - `length()`方法是针对**字符串**的
   - `size()`方法是针对泛型**集合**的
+  
+- 多个case的输入情况
+
+  ```java
+  Scanner in = new Scanner(System.in); 
+  while (in.hasNextInt()) { // 注意while处理多个case  
+      int a = in.nextInt();
+      int b = in.nextInt();
+      System.out.println(a + b);
+  }
+  ```
 
 
 
