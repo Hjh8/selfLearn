@@ -1711,22 +1711,44 @@ void uniquePaths(int m, int n) {
 ```c++
 int lengthOfLongestSubstring(string s) {
     map<char, int> ma;
-    int l = 0, r, maxLen = 0;
+    int l = 0, r, ans = 0;
     for(r = 0; r<s.size(); r++){
         // 如果有重复字母就更新左边界，左边界永远取最右边的那个
         if(ma.count(s[r])){
             // 更新左边界
             l = max(ma[s[r]]+1, l);
         }
-        maxLen = max(maxLen, r-l+1);
+        ans = max(ans, r-l+1);
         // 更新map
         ma[s[r]] = r;
     }
-    return maxLen;
+    return ans;
 }
 ```
 
 [3. 无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/) 
+
+```java
+class Solution {
+    public int longestOnes(int[] A, int K) {
+        int N = A.length;  // 数组/字符串长度
+        int res = 0;  // 答案
+        int left = 0, right = 0;  // 双指针
+        int sums = 0;  // 统计子数组/子区间满足条件的个数
+        while (right < N) {
+            if (A[right] == 0) sums ++;
+            while (zeros > K) {
+                if (A[left++] == 0)  sums --;
+            }
+            res = Math.max(res, right - left + 1);
+            right ++;
+        }
+        return res;
+    }
+}
+```
+
+
 
 
 
