@@ -1735,13 +1735,15 @@ class Solution {
         int res = 0;  // 答案
         int left = 0, right = 0;  // 双指针
         int sums = 0;  // 统计子数组/子区间满足条件的个数
-        while (right < N) {
-            if (A[right] == 0) sums ++;
-            while (zeros > K) {
-                if (A[left++] == 0)  sums --;
+        while (right < N) {  // 指针移动的逻辑代码
+            if (A[right] == 0) sums++;
+            // 更新左指针
+            while (sums > K) {
+                if (A[left++] == 0)  sums--;
             }
+            // 更新答案
             res = Math.max(res, right - left + 1);
-            right ++;
+            right ++;  // 移动右指针
         }
         return res;
     }
