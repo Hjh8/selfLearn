@@ -675,6 +675,8 @@ Java中的线程池是通过Executor框架实现的。
 3. DisCardOldSetPolicy：将消息队列中的第一个任务替换为当前新进来的任务执行
 4. CallerRunsPolicy：直接调用execute来执行当前任务
 
+> **空闲的核心线程进入TIMED_WAITING或WAITING状态**。
+>
 > newFixedThreadPool 和 newSingleThreadExecutor 底层使用的阻塞队列为：LinkedBlockingQueue。
 >
 > newCachedThreadPool底层使用的阻塞队列为：SynchronousQueue
@@ -683,7 +685,7 @@ Java中的线程池是通过Executor框架实现的。
 
 ### 执行流程
 
-有任务来的时候，线程池会先判断当前线程是否达到核心线程数，若没达到则创建线程去执行，否则将任务放入工作队列中。当工作队列满的时候，会创建临时线程处理任务，当达到最大线程数且等待队列满的时候会启动拒绝策略。
+有任务来的时候，线程池会先判断当前线程是否达到核心线程数，若没达到则创建线程去执行（**即使其他线程空闲**），否则将任务放入工作队列中。当工作队列满的时候，会创建临时线程处理任务，当达到最大线程数且等待队列满的时候会启动拒绝策略。
 
 ![img](JUC学习.assets/1901136-20191226123950280-397890762.png)
 
