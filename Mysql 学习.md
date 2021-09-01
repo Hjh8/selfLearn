@@ -1031,15 +1031,20 @@ for select a.* from A a
 	for select 1 from B b where a.id=b.id
 ```
 
-exists语句会拿着A表的记录，去B表匹配，匹配成功就加入到结果集。exists并不会去缓存子查询的结果集，因为这个结果集并不重要，只需要返回真假即可。
+exists语句会拿着A表的记录去B表匹配，匹配成功就加入到结果集。exists并不会去缓存子查询的结果集，因为这个结果集并不重要，只需要返回真假即可。
 
 ***
 
 而`in()`语句只会执行一次，它查出B表中的所有id字段并且缓存起来，之后，拿着B表的记录去A表匹配，匹配成功则加入结果集。
 
+```sql
+select a.* from A a where a.id in (select id from B)
+等价于：
+for select id from B
+	select a.* from A a where a.id=b.id
+```
 
-
-结论
+根据小表驱动大表的原则，最外层表的数据越小，则效率越高。所以，有以下结论：
 
 1. in()适合B表比A表数据量小的情况
 
