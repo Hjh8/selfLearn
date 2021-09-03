@@ -1618,7 +1618,7 @@ int find(int x){
 
 //判断x y是否属于同一个集合
 bool judge(int x, int y){
-	x = find(x);
+    x = find(x);
     y = find(y);
     return x == y;
 }
