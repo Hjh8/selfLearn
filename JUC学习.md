@@ -456,7 +456,7 @@ Semaphore通过分配和回收令牌，使线程达到同步的效果。Semaphor
 public class TestCar {
     public static void main(String[] args) {
         // 停车场有10个停车位
-		Semaphore semaphore = new Semaphore(10);
+	Semaphore semaphore = new Semaphore(10);
         
         // 模拟100辆车进入停车场
         for(int i=0; i<100; i++){
@@ -557,7 +557,7 @@ class MyData{
 
 **锁降级目的是保证数据可见性**，如果当前的线程A在修改完数据后，没有获取读锁而是直接释放了写锁，那么假设此时另一个线程B获取了写锁并修改了数据，那么A线程无法感知到数据已被修改，则数据出现错误。如果遵循锁降级的步骤，线程A在释放写锁之前获取读锁，那么线程B在获取写锁时将被阻塞，直到线程A完成数据处理过程，释放读锁。
 
-> 锁降级只能是 写锁 中加 读锁，不能 读锁 中加 写锁。因为多个线程在读，突然其实一个线程加写锁的话，就会打算其他线程的读操作。
+> 锁降级只能是 写锁 中加 读锁，不能 读锁 中加 写锁。因为多个线程在读，突然其实一个线程加写锁的话，就会打断其他线程的读操作。
 
 
 
@@ -648,11 +648,17 @@ ThreadPool 线程池
 
 ### 常用线程池
 
-Java中的线程池是通过Executor框架实现的。
+Java中的线程池是通过Executors框架创建的
 
-- `Executors.newCachedThreadPool()`：可缓存线程池。该线程池的**线程数**可以根据任务数量**随时改变**，因为它的线程最大值是在初始化的时候设置为 Integer.MAX_VALUE 所以它容易造成堆内存溢出。
+- `Executors.newCachedThreadPool()`：可缓存线程池。该线程池的**线程数**可以根据任务数量**随时改变**，因为它的最大线程数默认是 Integer.MAX_VALUE 所以它容易造成堆内存溢出。
 - `Executors.newFixedThreadPool(n)`：定长线程池，可控制线程池的**最大线程数**，超出这个数的任务会在队列中等待。**在线程池空闲时，不会释放工作线程**，因为他们都是核心线程。
-- `Executors.newSingleThreadExecutor()`：单线程化的线程池，它只会用**一个工作线程**来执行任务，保证所有任务按照指定顺序(FIFO, 优先级)执行。速度慢。
+- `Executors.newSingleThreadExecutor()`：单线程化的线程池，它只会用**一个工作线程**来执行任务，保证所有任务按照指定顺序(FIFO, 优先级)执行。但是速度慢。
+
+阿里的开发文档里规定，不允许使用Executors的方式来创建线程池。这是为什么？
+
+因为`newCachedThreadPool`的最大线程数是Integer.MAX_VALUE，容易堆内存溢出。
+
+而`newFixedThreadPool`和`newSingleThreadExecutor`的任务队列是 **LinkedBlockingQueue**，任务数量没有最大限制，也容易堆内存溢出。
 
 
 
@@ -670,22 +676,18 @@ Java中的线程池是通过Executor框架实现的。
 
 **Handler**：拒绝策略。当线程池没有能力处理任务的时候，会启动拒绝策略。
 
-1. AbortPolicy：不执行新任务，直接抛出异常，提示线程池已满
+1. AbortPolicy：（默认）不执行新任务，直接抛出异常。
 2. DisCardPolicy：不执行新任务，也不抛出异常
-3. DisCardOldSetPolicy：将消息队列中的第一个任务替换为当前新进来的任务执行
-4. CallerRunsPolicy：直接调用execute来执行当前任务
+3. CallerRunsPolicy：直接调用execute来执行当前任务
+4. DisCardOldSetPolicy：将任务队列中的第一个任务替换为新任务
 
-> **空闲的核心线程进入TIMED_WAITING或WAITING状态**。
->
-> newFixedThreadPool 和 newSingleThreadExecutor 底层使用的阻塞队列为：LinkedBlockingQueue。
->
-> newCachedThreadPool底层使用的阻塞队列为：SynchronousQueue
+> **空闲的线程进入TIMED_WAITING或WAITING状态**。
 
 
 
 ### 执行流程
 
-有任务来的时候，线程池会先判断当前线程是否达到核心线程数，若没达到则创建线程去执行（**即使其他线程空闲**），否则将任务放入工作队列中。当工作队列满的时候，会创建临时线程处理任务，当达到最大线程数且等待队列满的时候会启动拒绝策略。
+有任务来的时候，线程池会先判断当前线程是否达到核心线程数，若没达到则创建核心线程去执行（**即使其他核心线程空闲**），否则将任务放入工作队列中。当工作队列满的时候，会创建临时线程处理任务，当达到最大线程数且等待队列满的时候会启动拒绝策略。
 
 ![img](JUC学习.assets/1901136-20191226123950280-397890762.png)
 
@@ -705,9 +707,7 @@ ExecutorService threadPool = new ThreadPoolExecutor(
     9, // max_pool_size
     2L, // keep_alive_time
     TimeUnit.SECONDS, // keep_alive_time
-    new LinkedBlockingQueue<Runnable>(), // work_queue
-    Executors.defaultThreadFactory(), // ThreadFactory
-    new ThreadPoolExecutor.CallerRunsPolicy() // Handler
+    new ArrayBlockingQueue<Runnable>(10), // work_queue
 );
 ```
 
@@ -729,7 +729,7 @@ sleep跟wait区别
 为什么wait跟notify要依赖sync
 ---
 
-wait/notify是线程之间的通信，多线程存在竞争，如果不加锁的话，那么进行wait/notify操作的条件很可能会被修改，以至于不能进行正确的操作。所以我们需要强制wait/notify在synchronized中。而且wait/notify都依赖于synchronized的锁对象进行调度。
+首先wait/notify都依赖于synchronized的锁对象进行调度。而且wait/notify是线程之间的通信，多线程存在竞争，如果不加锁的话，那么进行wait/notify操作的条件很可能会被修改，以至于不能进行正确的操作。所以我们需要强制wait/notify在synchronized中。
 
 
 
@@ -745,6 +745,7 @@ cpu通过时间片分配算法来循环执行任务，当前线程执行一个�
 
 - volatile跟Thread.yield
 - wait跟notify
+- Lock.newCondition的await跟signal
 - LockSupport.park 跟 unpark
 - CountdownLatch、CyclicBarrier、Semaphore
 
@@ -807,7 +808,7 @@ AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是j
 
 ### 加/解锁原理
 
-AQS是如何实现加锁解锁的呢？其内部维护了两个属性：state、Node。
+AQS是如何实现加锁解锁的？其内部维护了两个属性：state、Node。
 
 - state表示是否有线程加锁，0表示没有，非0表示有线程正在使用锁。
 - Node其实是双向链表的节点，包含了前后指针、Thread（使用锁的线程）。多个Node节点形成的双向链表，我们称之为等待队列。
@@ -853,13 +854,9 @@ park跟unPark的顺序则没有硬性要求，unpark可以在park之前，且执
 
 ### 公平和非公平锁的原理
 
-### 公平和非公平锁的原理
-
 这两者的实现是靠AQS的**阻塞队列**。使用公平锁的情况下，线程获取锁的时候会先判断获取到当前节点的下一个节点是不是自己，是的话才尝试加锁，不是的话就继续阻塞。
 
 而使用非公平锁时，直接就尝试加锁。
-
-
 
 
 
