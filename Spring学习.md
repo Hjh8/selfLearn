@@ -2443,6 +2443,36 @@ spring会将一个方法中所有的通知经过拓扑排序后加入到chain对
 
 
 
+AOP为什么不能拦截内部方法
+---
+
+何为内部方法？
+
+```java
+public class SomeServiceImpl implements SomeService {
+
+    @Override
+    public void doSome() {
+        System.out.println("喝奶茶了!");
+        // 调用内部方法
+        doInnerMethod();
+    }
+
+    @Override
+    public void doInnerMethod(){
+        System.out.println("内部方法不会被拦截");
+    }
+}
+```
+
+在上面代码中，如果只执行doSome，则只有doSome方法会被拦截，而doInnerMethod只是普通的调用。
+
+原因：
+
+代理对象只是负责增加逻辑，以及调用原始方法，当代理对象执行完逻辑调用目标方法时，实际还是原始对象调用目标方法，即doSome，所以doInnerMethod也是由原始对象调用，而不会被拦截器调用。
+
+
+
 Spring bean的作用域
 ---
 
