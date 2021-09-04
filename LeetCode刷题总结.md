@@ -540,6 +540,46 @@ public List<Integer> postorderTraversal(TreeNode root) {
 
 带权路径长度 = `(1+4)*4 + 6*3 + (7+8)*3` 
 
+
+
+公式题
+---
+
+### 约瑟夫环问题
+
+```java
+public static void main(String[] args) {
+    int L= 3; // 第几个就淘汰
+    int n, s = 0;
+    Scanner scanner = new Scanner(System.in);
+    n = scanner.nextInt();
+    for(int i=1; i<=n; i++){
+        s = (s+L) % i;
+    }
+    // 最后结果要加1
+    System.out.println(s+1);
+}
+```
+
+
+
+
+
+### n以内任意两个数最小公倍数和最大公约数差值的最大值
+
+```java
+public static void main(String[] args) {
+    Scanner sca = new Scanner(System.in);
+    // 数据量很大时，用long
+    long n=sca.nextLong();
+    System.out.print((n-1)*n-1);
+}
+```
+
+
+
+
+
 C/C++版本
 ===
 
