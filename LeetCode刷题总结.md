@@ -1517,7 +1517,7 @@ int main(){
 	}
 	printf("Output the MinHeap:\n");
 	for (int i = 1; i <= n; i++)
-        printf("%d\t", a[i]);
+       printf("%d\t", a[i]);
 	return 0;
 }
 ```
