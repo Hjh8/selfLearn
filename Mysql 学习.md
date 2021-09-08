@@ -132,12 +132,13 @@ Mysql学习
 
 对重复字段进行去重：`使用distinct关键字` 
 
-1. dinstinct只能放在所有字段的最前面，把select的字段看成一组再进行过滤。
+1. dinstinct只能放在所有字段的**最前面**，把select的字段看成一组再进行过滤。
 2. 可以跟分组函数一起使用。
 3. 当参与运算的字段为NULL时，计算的结果始终为NULL
 
 ```sql
-select dinstinct job from emp;
+select dinstinct job, addr from emp;    √
+select job, dinstinct addr from emp;    × dinstinct不在最前面
 ```
 
 > 补充：空处理函数
@@ -209,7 +210,7 @@ where 条件;
 select 字段名
 from 表名
 [where 条件]
-order by 要排序字段1,字段2，字段3... [asc|desc];   
+order by 要排序字段1,字段2,字段3... [asc|desc];   
 ```
 
 **asc：表示升序排序。desc表示降序排序。如不指定则默认升序排序**
@@ -231,14 +232,15 @@ order by 要排序字段1,字段2，字段3... [asc|desc];
 >
 > 分组函数都是对某一组数据进行操作
 
-| count | 计算数据条数 |
-| ----- | :----------- |
-| sum   | 求和         |
-| avg   | 求平均值     |
-| max   | 求最大值     |
-| min   | 求最小值     |
+| 函数名 | 作用         |
+| ------ | :----------- |
+| count  | 计算数据条数 |
+| sum    | 求和         |
+| avg    | 求平均值     |
+| max    | 求最大值     |
+| min    | 求最小值     |
 
-**分组函数的特点：**
+**分组函数的特点**：
 
 1. 自动忽略null
 2. 不可以出现在where后面
@@ -251,7 +253,7 @@ order by 要排序字段1,字段2，字段3... [asc|desc];
 
  **思考1：** count(*)和count(某个字段)的区别：
 
-```
+```sql
 count(*) 是统计记录总条数
 count(某个字段) 是统计这个字段不为null的数据总数
 ```
@@ -293,7 +295,7 @@ group by 要分组的字段
 - 找出最高工资大于2900的部门：
   - `select deptno from emp group by deptno having max(ewage)>2900;` 
   - `select deptno from emp where ewage>2900 group by deptno;`
-  - 以上两种都可以实现，但第二种性能更好，所以以后==可以用where的就不用having== 
+  - 以上两种都可以实现，但having方式是找出所有数据再进行筛选，而where是直接找出筛选后的数据，只需要一步操作。所以where性能更好，以后==可以用where的就不用having== 
 - 找出平均工资大于2000的部门:
   - `select deptno,avg(ewage) from emp group by deptno having avg(ewage)>2000;`
 
@@ -498,7 +500,7 @@ where ..(select)
 3.2 union
 ---
 
-union作用：**可以将两个不相干的表的查询结果集相加。** 前提是两个表的查询字段的个数要相同。
+union作用：**可以将两个不相干的表的查询结果集拼接。** 前提是两个表的查询字段的个数要相同。
 
 ```sql
 select ename from emp
@@ -538,7 +540,7 @@ length代表**长度**。
 。。。。。。
 ```
 
-**结论：设每页显示**Size**条数据，则第**N**页要显示的数据为：`limit (N-1)*Size,Size`**
+**结论**：设每页显示**Size**条数据，则第**N**页要显示的数据为：`limit (N-1)*Size,Size` 
 
 
 
@@ -743,7 +745,7 @@ A表的`a`字段参考B表的某个`唯一`字段，则`a字段`被称为`外键
 
 ```sql
 create table student(
-	sno int,
+    sno int,
     sname varchar(255),
     classno int,
     foreign key(classno) references t_class(cno)
@@ -841,7 +843,7 @@ mysql默认使用的存储引擎是`InnoDB`，默认字符集是`UTF8`。
 
 > 索引就相当于书目录，通过它可快速查找到数据。
 >
-> 添加索引是只给某个或某些字段添加索引。
+> 添加索引是给某个或某些字段添加索引。
 
 数据库查找数据有两种检索机制：
 
@@ -854,7 +856,7 @@ mysql默认使用的存储引擎是`InnoDB`，默认字符集是`UTF8`。
 
 删除索引：`drop index 索引名 on 表名;` 
 
-**tips：** 
+**tips**：
 
 1. 主键和unique约束的字段自动添加索引。
 2. 索引查找快的**最根本的原理**是**缩小了查找范围**。添加了索引的字段中的数据一旦修改，索引需要重新排序。所以不可一味的给字段添加索引
@@ -906,17 +908,17 @@ mysql默认使用的存储引擎是`InnoDB`，默认字符集是`UTF8`。
 
 - **now()**：获取当前日期时间。如 2021-07-29 11:40:45
 
-- 从日期中选择出月份数：month(date)
+- 从日期中选择出月份数：month(now())
 
-- 从日期中选择出周数：week(date)
+- 从日期中选择出周数：week(now())
 
-- 从日期中选择出年数：year(date)
+- 从日期中选择出年数：year(now())
 
-- 从时间中选择出小时数：hour(time)
+- 从时间中选择出小时数：hour(now())
 
-- 从时间中选择出分钟数：minute(time)
+- 从时间中选择出分钟数：minute(now())
 
-- 从时间中选择出今天是周几：weekday(date)
+- 从时间中选择出今天是周几：weekday(now())
 
   - 星期一为0，…，星期天为6
 
@@ -942,10 +944,21 @@ mysql默认使用的存储引擎是`InnoDB`，默认字符集是`UTF8`。
 
 浮点数float(M, D)、double(M, D)，定点数decimal(M, D)。
 
-- M：整数跟小数的总长度
-- D：小数长度
+- M：总精度，整数加小数部分，1 <= M <= 65, 默认M = 10
+- D：小数部分精度，0 <= D <= 30 且D <= M, 默认D = 0
 
-MD都可以省略，如果是decimal则M默认是10，D默认是0。如果是浮点数，则会根据插入的数据决定精度。decimal的精度较高，货币运算优先考虑。
+如果是浮点数，则会根据插入的数据决定精度。decimal的精度较高，货币运算优先考虑。
+
+> decimal的存储是将整数跟小数分开存储的。为了节省空间，MYSQL采用4字节来存储9位数位，即两位一个字节，最后三位共用一个字节。
+>
+> | 数位 | 字节 |
+> | ---- | ---- |
+> | 1-2  | 1    |
+> | 3-4  | 2    |
+> | 5-6  | 3    |
+> | 7-9  | 4    |
+>
+> 举个例子，decimal(18,9)的整数部分和小数部分各有9位，所以两边各需要4字节来存储。decimal(20,6)有14位整数，6位小数，整数部分先用4字节表示9位，余下5位仍然需要3字节，所以整数部分共7个字节，小数部分则需要3字节。
 
 
 
