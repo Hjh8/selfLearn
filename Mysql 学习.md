@@ -66,7 +66,8 @@ Mysql学习
 
 
 
-## 2.2 表
+2.2 表
+---
 
 表是数据库的基本组成单元，是一个结构化文件。其包括
 
@@ -129,23 +130,19 @@ Mysql学习
 
 - 在工资表中查询工资并乘以10 `select money*10 from wages;`
 
-对重复字段进行去重：`使用distinct关键字`
+对重复字段进行去重：`使用distinct关键字` 
+
+1. dinstinct只能放在所有字段的最前面，把select的字段看成一组再进行过滤。
+2. 可以跟分组函数一起使用。
+3. 当参与运算的字段为NULL时，计算的结果始终为NULL
 
 ```sql
 select dinstinct job from emp;
-
-tips:
-	1、dinstinct只能放在所有字段的最前面，把select的字段看成一组再进行过滤。
-	2、可以跟分组函数一起使用。
 ```
 
-**tips：当参与运算的字段为NULL时，计算的结果始终为NULL。**
-
-```
-补充：空处理函数
-ifnull(可能为null的数据，被当做什么处理) 
-如：ifnull(ewage,0) 表示当ewage为null时结果变成0
-```
+> 补充：空处理函数
+> ifnull(可能为null的数据，被当做什么处理) 
+> 如：ifnull(ewage, 0) 表示当ewage为null时结果变成0
 
 
 
