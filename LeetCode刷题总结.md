@@ -563,8 +563,6 @@ public static void main(String[] args) {
 
 
 
-
-
 ### n以内任意两个数最小公倍数和最大公约数差值的最大值
 
 ```java
