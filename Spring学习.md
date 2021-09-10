@@ -1219,7 +1219,7 @@ public class MyAspect {
         Object result = null;
         System.out.println("在执行doAround前打印时间："+new Date());
         // 执行目标方法
-        pjp.proceed(); // 等价于Method.invoke();
+        result = pjp.proceed(); // 等价于Method.invoke();
         System.out.println("在执行doAround后提交事务");
         return result;
     }
@@ -2437,7 +2437,7 @@ aop称为面向切面编程，可以将交叉业务代码跟主业务代码分�
 
 在一个方法只被**一个**aspect类拦截时，aspect类内部的 advice 将按照以下的顺序进行执行：
 
-![image-20210910122300030](Spring学习.assets/image-20210910122300030.png)
+![image-20210910124600362](Spring学习.assets/image-20210910124600362.png)
 
 在一个方法被**多个**aspect类拦截时，aspect类内部的 advice 将按照以下的顺序进行执行：
 
