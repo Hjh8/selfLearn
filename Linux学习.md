@@ -498,12 +498,18 @@ grep 有着过滤作用，只显示需要显示的内容，通常跟管道配合
 - -n：输出匹配内容的同时输出其所在行号
 - -i：忽略大小写
 - -c：统计个数
+- -o：只显示匹配PATTERN 部分
+- -v：不显示匹配PATTERN 部分，其他都显示
 
 例子：
 
-在 hello.txt 文件中，查找 yes 所在行，并且显示行号：
+- 在 hello.txt 文件中，查找 yes 所在行，并且显示行号：
 
-`cat /home/hello.txt | grep -n yes`  或者 `grep -n yes /home/hello.txt` 
+  `cat /home/hello.txt | grep -n yes`  或者 `grep -n yes /home/hello.txt` 
+
+- 在 hello.txt 文件中，查找包含hello单词的次数
+
+  
 
 
 
