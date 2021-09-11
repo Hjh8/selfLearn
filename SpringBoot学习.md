@@ -1518,8 +1518,6 @@ public class MyConfig {
 
 ## 9. Swagger
 
-
-
 第一步：加入相关依赖
 
 ```xml
@@ -1601,7 +1599,7 @@ public class SwaggerConfig {
                 .apiInfo(apiInfo())
                 .select()
                 // apis指定哪些地方要生成api文档，可以指定包、注解所在的类、注解所在的方法
-                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
+                .apis(RequestHandlerSelectors.withClassAnnotation(com.controller))
                 .paths(PathSelectors.any())
                 .build();
     }
