@@ -931,11 +931,14 @@ SpringMVC执行流程示意图：
 
 3. 处理器映射器根据请求找到处理该请求的处理器handler，并将其封装成**处理器执行链HandlerExecutionChain** 并返回给中央调度器。
 
+   - 通过map.get(URI)的方式得到handler
    - 处理器执行链 中保存着`处理器对象`跟`针对该对象的拦截器`。
 
 4. 中央调度器根据处理器执行链中的处理器，找到能够执行该处理器的**处理器适配器HandleAdaptor**。
 
 5. 处理器适配器调用处理器，执行controller中的某个方法。
+
+   - 因为controller的实现有三种，所以要使用适配器来执行
 
 6. 处理器将处理结果及要跳转的视图封装到一个对象**ModelAndView**中，并将其返回给适配器
 
@@ -953,7 +956,11 @@ SpringMVC执行流程示意图：
 
 11. 调度器响应浏览器
 
-
+> controller的类型有两种：<u>Controller类型</u> 跟 <u>BeanName类型</u>。
+>
+> - 使用**@Controller**注解的类是Controller类型；
+>
+> - 实现**Controller接口**或**HttpRequestHandler接口**的类为BeanName类型
 
 
 

@@ -512,21 +512,15 @@ grep 有着过滤作用，只显示需要显示的内容，通常跟管道配合
   `cat hello.java | grep -oc yes ` 
 
 
-> 面试题：使用Linux命令找出日志文件中访问量最大的top10 IP地址
+> 面试题：使用Linux命令找出日志文件中访问量最大的top10的IP地址
 >
-> `cat awkTest.log|awk -F " " '{print $3}'|uniq -c|sort -nr|awk -F " " '{print $2}'|head -10` 
+> `cat awkTest.log | awk -F " " '{print $3}' | uniq -c | sort -nr | awk -F " " '{print $2}' | head -10` 
 >
-> `awk -F " "`：以空格为分隔符
->
-> `'{print $3}'`：输出第三列
->
-> `uniq -c`：去重并统计。第一列是数量，第二列是原来的数据
->
-> `sort -nr`：排序，-n表示按数字排，-r表示逆序排
->
-> `awk -F " " '{print $2}'`：将uniq -c的结果以空格为分隔符，然后获取第二列
->
-> 
+> - `awk -F " "`：以空格为分隔符
+>- `'{print $3}'`：输出第三列
+> - `uniq -c`：去重并统计。第一列是数量，第二列是原来的数据
+>- `sort -nr`：排序，-n表示按数字排，-r表示逆序排
+> - `awk -F " " '{print $2}'`：将uniq -c的结果以空格为分隔符，然后获取第二列
 
 
 
