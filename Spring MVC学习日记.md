@@ -987,7 +987,6 @@ public interface HandlerMethodArgumentResolver {
                           ModelAndViewContainer mavContainer,
                           NativeWebRequest webRequest,
                           WebDataBinderFactory binderFactory) throws Exception;
-
 }
 ```
 
@@ -1006,10 +1005,9 @@ Object returnValue = invoke(args);
 
 解析请求参数之前，需要先获取方法参数，得到一个方法参数数组（MethodParameter[]），接着遍历这个数组，找到合适的**方法参数解析器**解析每个元素。
 
-如果是简单类型参数，则会MethodParameter 的类型和名称，将其封装到NameValueInfo对象中，然后将其放到缓存中下次可以直接获取。
----
+如果是简单类型参数，则会把 MethodParameter 的类型和名称封装到 NameValueInfo 对象中，然后将其放到缓存中下次可以直接获取。
 
-接着根据NameValueInfo对象中指定的参数名，使用 `request.getParameterValues(name);` 方法获取对应的请求参数，并根据NameValueInfo对象中指定的类型进行类型转换。
+接着根据NameValueInfo对象中指定的参数名，使用 `request.getParameterValues(name);` 方法获取对应同名的请求参数，并根据NameValueInfo对象中指定的类型进行类型转换。
 
 最后，通过反射执行HandleMethod中的method，方法参数为args。
 
@@ -1019,4 +1017,11 @@ Object returnValue = invoke(args);
 
 > 对象参数的解析由 ModelAttributeMethodProcessor 完成。
 
-首先利用反射创建方法参数类型的对象，然后遍历每个请求参数，使用setter方法给对象属性赋值。
+首先利用反射创建方法参数类型的对象，根据reqeust中的参数创建一个propertyValueList ，里面存放了一个或多个PropertyValue，每个PropertyValue 包含属性名跟属性值。
+
+![image-20210913151620375](Spring MVC学习日记.assets/image-20210913151620375.png)
+
+然后遍历propertyValueList，根据每个元素的name 使用setter方法给对象同名属性赋值。
+
+
+
