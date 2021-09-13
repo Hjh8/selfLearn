@@ -974,6 +974,36 @@ controller的类型有两种：<u>Controller类型</u> 跟 <u>BeanName类型</u>
 参数绑定过程
 ---
 
+方法参数解析器实现了 HandlerMethodArgumentResolver接口，主要方法如下：
+
+```java
+public interface HandlerMethodArgumentResolver {
+
+    // 该解析器是否支持parameter参数的解析
+    boolean supportsParameter(MethodParameter parameter);
+
+    // 将方法参数从给定请求(webRequest)解析为参数值并返回
+    Object resolveArgument(MethodParameter parameter,
+                          ModelAndViewContainer mavContainer,
+                          NativeWebRequest webRequest,
+                          WebDataBinderFactory binderFactory) throws Exception;
+
+}
+```
+
+
+
+首先，参数绑定发生在方法执行之前，由方法参数解析器去解析请求中的参数。
+
+```java
+// 从request中解析出HandlerMethod方法所需要的参数，并返回Object[]
+Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
+// 通过反射执行HandleMethod中的method，方法参数为args。并返回方法执行的返回值
+Object returnValue = invoke(args);
+```
+
+解析请求参数之前，需要先获取方法参数，得到一个方法参数数组，接着遍历这个数组，解析每个形参的类型和名称，将其封装到NameValueInfo对象中，接着根据NameValueInfo对象中指定的参数名，使用 `request.getParameterValues(name);` 方法获取对应的请求参数，并根据NameValueInfo对象中指定的类型进行类型转换。
+
 
 
 
