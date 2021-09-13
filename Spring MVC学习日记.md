@@ -916,8 +916,11 @@ public interface HandlerInterceptor {
 
 
 
-总结
+面试题
 ===
+
+执行流程
+---
 
 SpringMVC执行流程示意图：
 
@@ -956,15 +959,23 @@ SpringMVC执行流程示意图：
 
 11. 调度器响应浏览器
 
-> controller的类型有两种：<u>Controller类型</u> 跟 <u>BeanName类型</u>。
->
-> - 使用**@Controller**注解的类是Controller类型；
->
-> - 实现**Controller接口**或**HttpRequestHandler接口**的类为BeanName类型
+
+
+controller的类型
+---
+
+controller的类型有两种：<u>Controller类型</u> 跟 <u>BeanName类型</u>。
+
+- 使用**@Controller**注解的类是Controller类型；
+- 实现**Controller接口**或**HttpRequestHandler接口**的类为BeanName类型
+
+
+
+参数绑定过程
+---
 
 
 
 
 
-
-
+通过反射执行HandleMethod中的method，方法参数为args。
