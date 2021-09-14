@@ -932,16 +932,17 @@ SpringMVC执行流程示意图：
 
 2. 中央调度器直接将请求转给**处理器映射器HandleMapping**。
 
-3. 处理器映射器根据请求找到处理该请求的处理器handler，并将其封装成**处理器执行链HandlerExecutionChain** 并返回给中央调度器。
+   - handler等价于controller，封装了方法的定义信息，如方法名、参数类型、返回类型等信息
 
-   - 通过map.get(URI)的方式得到handler
+3. 处理器映射器通过`map.get(URI)`的方式得到处理该请求的处理器handler，并将其跟拦截器一起封装成**处理器执行链HandlerExecutionChain** 并返回给中央调度器。
+
    - 处理器执行链 中保存着`处理器对象`跟`针对该对象的拦截器`。
 
 4. 中央调度器根据处理器执行链中的处理器，找到能够执行该处理器的**处理器适配器HandleAdaptor**。
 
-5. 处理器适配器调用处理器，执行controller中的某个方法。
-
    - 因为controller的实现有三种，所以要使用适配器来执行
+
+5. 处理器适配器调用处理器，执行controller中的某个方法。
 
 6. 处理器将处理结果及要跳转的视图封装到一个对象**ModelAndView**中，并将其返回给适配器
 
@@ -951,7 +952,7 @@ SpringMVC执行流程示意图：
 
    View是一个接口，在框架中，是用View跟其实现类来表示视图的。
 
-   `mv.setViewName("show");` 等价于 `mv.setView(new InternalResourceView("/WEB-INF/view/show.jsp"));`
+   `mv.setViewName("show");` 等价于 `mv.setView(new InternalResourceView("/WEB-INF/view/show.jsp"));` 
 
 9. 视图解析器将封装好的**视图对象View**返回给调度器。
 
