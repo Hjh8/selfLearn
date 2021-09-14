@@ -1,4 +1,4 @@
-# 第一章：框架概述
+第一章：框架概述
 
 学习之前先来了解一下三层架构：
 
@@ -1482,6 +1482,27 @@ Mybatis面试
     <mapper class="dao.adminDao.EmployeeMapper"/>
 </mappers>
 ```
+
+
+
+mapper接口跟xml绑定的过程
+---
+
+1. 通过动态代理工厂创建mapper的代理对象；
+
+   ```java
+   protected T newInstance(MapperProxy<T> mapperProxy) {
+       return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
+     }
+   ```
+
+2. 代理对象执行接口方法时会判断该方法是否为Object的方法或者接口的默认方法，是的话直接执行。否则创建mapper方法的MapperMethod对象；
+
+   ```
+   MapperMethod中封装了方法的参数和返回类型、以及sql语句对应的方法名和sql类型
+   ```
+
+3. MapperMethod对象执行excute方法，根据commonType调用sqlsession对应的insert，update，delete和select方法执行mapper方法；
 
 
 
