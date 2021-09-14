@@ -681,7 +681,9 @@ Java中的线程池是通过Executors框架创建的
 3. CallerRunsPolicy：直接调用execute来执行当前任务
 4. DisCardOldSetPolicy：将任务队列中的第一个任务替换为新任务
 
-> **空闲的线程进入TIMED_WAITING或WAITING状态**。
+> 线程池中空闲线程的状态为 **TIMED_WAITING** 或 **WAITING状态**。因为阻塞队列会调用take()将线程挂起，而take()实际是调用LockSupport的park()。
+>
+> 如果线程池中有线程发生异常，则该线程会从池中移除，然后再根据参数创建一个新线程。
 
 
 
@@ -703,11 +705,11 @@ Java中的线程池是通过Executors框架创建的
 
 ```java
 ExecutorService threadPool = new ThreadPoolExecutor(
-    2, // core_pool_size
+    3, // core_pool_size
     9, // max_pool_size
     2L, // keep_alive_time
     TimeUnit.SECONDS, // keep_alive_time
-    new ArrayBlockingQueue<Runnable>(10), // work_queue
+    new ArrayBlockingQueue<Runnable>(10) // work_queue
 );
 ```
 
