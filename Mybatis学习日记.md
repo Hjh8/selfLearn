@@ -1459,12 +1459,12 @@ Mybatis面试
 能否简单说下Mybatis加载的流程？
 ---
 
-1. 加载配置文件：需要加载的配置文件包括全局配置文件(mybatis-config.xml)和 SQL(Mapper.xml) 映射文件，其中全局配置文件配置了Mybatis 的运行环境信息(数据源、事务等)，SQL映射文件中配置了与 SQL 执行相关的信息。
-2. 创建会话工厂：MyBatis通过读取配置文件的信息来构造出会话工厂(SqlSessionFactory)，即通过SqlSessionFactoryBuilder 构建 SqlSessionFactory。
-3. 创建会话：拥有了会话工厂，MyBatis就可以通过它来创建会话对象(SqlSession)。会话对象是一个接口，该接口中包含了对数据库操作的增删改查方法。
-4. 创建执行器：因为会话对象本身不能直接操作数据库，所以它使用了一个叫做数据库执行器(Executor)的接口来帮它执行操作。
-5. 封装SQL对象：执行器(Executor)将待处理的SQL信息封装到一个对象中(MappedStatement)，该对象包括SQL语句、输入参数映射信息(Java简单类型、HashMap或POJO)和输出结果映射信息(Java简单类型、HashMap 或 POJO)。
-6. 操作数据库：拥有了执行器和SQL信息封装对象就使用它们访问数据库了，最后再返回操作结果，结束流程。
+1. **加载配置文件和映射文件**：其中全局配置文件（mybatis-config.xml）配置了Mybatis 的运行环境信息(数据源、事务等)，SQL映射文件（Mapper.xml）中配置了与 SQL 执行相关的信息。
+2. **创建会话工厂**：MyBatis通过读取配置文件的信息来构造出会话工厂(SqlSessionFactory)，即通过SqlSessionFactoryBuilder 构建 SqlSessionFactory。
+3. **创建会话**：拥有了会话工厂，MyBatis就可以通过它来创建会话对象(SqlSession)。会话对象是一个接口，该接口中包含了对数据库操作的增删改查方法。
+4. **创建执行器**：因为会话对象本身不能直接操作数据库，所以它使用了一个叫做数据库执行器(Executor)的接口来帮它执行操作。
+5. **封装SQL对象**：执行器(Executor)将待处理的SQL信息封装到一个对象中(MappedStatement)，该对象包括SQL语句、输入参数映射信息和输出结果映射信息。
+6. **操作数据库**：拥有了执行器和SQL信息封装对象就使用它们访问数据库了，最后再返回操作结果，结束流程。
 
 
 
@@ -1488,21 +1488,24 @@ Mybatis面试
 mapper接口跟xml绑定的过程
 ---
 
-1. 通过动态代理工厂创建mapper的代理对象；
+1. 首先会将所有接口的动态代理工厂放到MapperRegistry中。在调用方法前会使用MapperRegistry.getMapper(接口的Class类型)的方式获取动态代理工厂
+
+2. 动态代理工厂利用jdk动态代理的方式创建mapper的代理对象；
 
    ```java
    protected T newInstance(MapperProxy<T> mapperProxy) {
        return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[] { mapperInterface }, mapperProxy);
-     }
+   }
    ```
 
-2. 代理对象执行接口方法时会判断该方法是否为Object的方法或者接口的默认方法，是的话直接执行。否则创建mapper方法的MapperMethod对象；
+3. 代理对象执行接口方法时会判断该方法是否为Object的方法或者接口的默认方法，是的话直接执行。否则创建mapper方法的MapperMethod对象；
 
-   ```
-   MapperMethod中封装了方法的参数和返回类型、以及sql语句对应的方法名和sql类型
-   ```
+   - MapperMethod中封装了**方法的参数和返回类型**、以及**sql语句对应的方法名和sql类型**
+   - sql语句对应的方法名为`接口全限定名.方法名`，所以要求xml中指定`namespace为接口全限定名，id为方法名` 
 
-3. MapperMethod对象执行excute方法，根据commonType调用sqlsession对应的insert，update，delete和select方法执行mapper方法；
+4. MapperMethod对象执行excute方法，根据commonType调用sqlsession对应的方法，将sql语句对应的方法名作为参数传递；
+
+5. sqlsession根据方法名找到对应的sql
 
 
 
