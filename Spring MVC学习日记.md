@@ -1000,7 +1000,7 @@ public interface HandlerMethodArgumentResolver {
 ```java
 // 从request中解析出HandlerMethod方法所需要的参数，并返回Object[]
 Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
-// 通过反射执行HandleMethod中的method，方法参数为args。并返回方法执行的返回值
+// 通过反射执行HandleMethod中的method，方法参数为args，并返回方法执行的返回值
 Object returnValue = invoke(args);
 ```
 
