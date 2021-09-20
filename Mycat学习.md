@@ -56,11 +56,11 @@ dataNode 标签定义了MyCat中的数据节点，也就是我们通常所说的
 ### dataHost标签
 
 dataHost定义了具体的数据库实例、读写分离配置和心跳语句。
----
 
 ```xml
 <dataHost name="localhost1" maxCon="1000" minCon="10" balance="0"
-		     writeType="0" dbType="mysql" dbDriver="native">
+		writeType="0" dbType="mysql" dbDriver="native" 
+              switchType="1"  slaveThreshold="100">
     <heartbeat>select user()</heartbeat>
     <!-- can have multi write hosts，主机（可多个） -->
     <writeHost host="hostM1" url="localhost:3306" user="root"
@@ -78,24 +78,36 @@ dataHost定义了具体的数据库实例、读写分离配置和心跳语句。
 - minCon：指定每个读写实例连接池的最小连接，即初始化连接池的大小。
 - balance：负载均衡类型，目前的取值有4种：
   - balance=“0”, 不开启读写分离机制，所有读操作都发送到当前可用的writeHost上。
-  - balance=“1”，所有读操作都随机的发送到readHost跟空闲的writeHost上。
+  - balance=“1”，所有读操作都随机的发送到readHost跟备用的writeHost上。
   - balance=“2”，所有读操作都随机的在writeHost、readhost上分发。
   - balance=“3”，所有的读操作随机的发送到readHost，writeHost完全不分担读操作。
-- writeType属性负载均衡类型，目前的取值有3种：
+- writeType：负载均衡类型，1.6以后被淘汰。
 
-1. writeType=“0”, 所有写操作都发送到可用的writeHost上。
-2. writeType=“1”，所有写操作都随机的发送到readHost。
-3. writeType=“2”，所有写操作都随机的在writeHost、readhost分上发。
-  dbType属性
-  指定后端连接的数据库类型，目前支持二进制的mysql协议，还有其他使用JDBC连接的数据库。例如：mongodb、oracle、
-  spark等。
-  dbDriver属性
-  指定连接后端数据库使用的Driver，目前可选的值有native和JDBC。使用native的话，因为这个值执行的是二进制的mysql协
-  议，所以可以使用mysql和maridb。其他类型的数据库则需要使用JDBC驱动来支持。
-  如果使用JDBC的话需要将符合JDBC 4标准的驱动JAR包放到MYCAT\lib目录下，并检查驱动JAR包中包括如下目录结构的文
-  件：META-INF\services\java.sql.Driver。在这个文件内写上具体的Driver类名，例如：com.mysql.jdbc.Driver。
+- dbType：指定后端连接的数据库类型，目前支持二进制的mysql协议，还有其他使用JDBC连接的数据库，例如：mongodb、oracle、spark等。
+- dbDriver：指定连接后端数据库使用的Driver，目前可选的值有**native**和**JDBC**。数据库类型为mysql的话使用native。其他类型的数据库则需要使用JDBC驱动来支持。
+- switchType：指定主服务器发生故障时的行为。
+  - -1，表示不自动切换
+  - 1，默认值，自动切换
+  - 2，基于mysql主从同步的状态决定是否切换
+  - 3，基于mysql集体的切换机制
 
 
+
+#### heartbeat标签
+
+指定和后端数据库进行心跳检查的语句，检测mysql数据库是否正常进行。
+
+- 当switchType为1时，mysql的心跳检查语句为：`select user()` 
+- 当switchType为2时，mysql的心跳检查语句为：`select slave status` 
+- 当switchType为3时，mysql的心跳检查语句为：`select status like“wsrep%”`  
+
+
+
+#### writeHost跟readHost标签
+
+这两个标签都指定后端数据库的相关配置给mycat，用于实例化后端连接池。唯一不同的是，writeHost指定写实例、readHost指定读实例，组着这些读写实例来满足系统的要求。
+
+在一个dataHost内可以定义多个writeHost和readHost。但是，**如果writeHost指定的后端数据库宕机，那么这个writeHost绑定的所有readHost都将不可用**。
 
 
 
