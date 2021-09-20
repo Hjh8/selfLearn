@@ -23,8 +23,41 @@ Mycat支持Mysql集群，可以作为**Proxy**操作数据库。支持mysql集�
 
 
 
-配置
+schema.xml
 ---
+
+### schema标签
+
+schema标签用来定义mycat实例中的逻辑库，mycat可以有多个逻辑库，每个逻辑库都有自己的相关配置。
+
+可以使用schema标签来划分这些不同的逻辑库：
+
+`<schema name="TESTDB" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn1,dn2,dn3" >` 
+
+- dataNode：该标签用于绑定逻辑库到某个具体的database上。如果定义了这个属性，则这个schema就可以用作读写分离和主从切换；但不能工作在分库分表模式下。
+- checkSQLschema：当该值为true时，例如我们执行语句 select * from TESTDB.company 。mycat会把语句修改为 select * from company 去掉TESTDB。
+- sqlMaxLimit：指定每次返回的记录数。当该值设置为某个数值时，每条执行的sql语句，如果没有加上limit语句，Mycat会自动加上对应的值。不写的话，默认返回所有的值。
+
+
+
+### dataNode标签
+
+dataNode 标签定义了MyCat中的数据节点，也就是我们通常所说的**数据分片**。一个**dataNode** 标签就是一个独立的数据分片。
+
+例如：`<dataNode name="dn1" dataHost="localhost1" database="db1" />` 所表述的意思为：使用名字为localhost1数据库实例上的db1物理数据库，组成一个数据分片，并使用名字dn1标识这个分片。
+
+- name：定义数据节点的名字（唯一），在schema会使用到。
+
+- dataHost：定义该分片属于哪个数据库实例的，属性值是引用dataHost标签上定义的name属性。
+- database：定义该分片属于哪个数据库实例上的具体库，因为这里使用两个纬度来定义分片，就是：实例+具体的库。因为每个库上建立的表和表结构是一样的。所以这样做就可以轻松的对表进行水平拆分。
+
+
+
+### dataHost标签
+
+
+
+
 
 
 
