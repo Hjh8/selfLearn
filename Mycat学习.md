@@ -23,6 +23,13 @@ Mycat支持Mysql集群，可以作为**Proxy**操作数据库。支持mysql集�
 
 
 
+server.xml
+---
+
+
+
+
+
 schema.xml
 ---
 
