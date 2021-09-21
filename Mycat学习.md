@@ -23,13 +23,6 @@ Mycat支持Mysql集群，可以作为**Proxy**操作数据库。支持mysql集�
 
 
 
-server.xml
----
-
-
-
-
-
 schema.xml
 ---
 
@@ -147,24 +140,63 @@ dataHost定义了具体的数据库实例、读写分离配置和心跳语句。
 
 
 
-rule.xml
----
-
-
-
-
-
 读写分离配置
 ---
 
-
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE mycat:schema SYSTEM "schema.dtd">
+<mycat:schema xmlns:mycat="http://io.mycat/">
+     <!-- 数据库配置，与server.xml中的数据库对应 -->
+     <schema name="db_test" checkSQLschema="false" sqlMaxLimit="100" dataNode="db_node"></schema>
+     <!-- 分片配置 -->
+     <dataNode name="db_node" dataHost="db_host" database="db_test" />
+     <!-- 物理数据库配置 -->
+     <dataHost name="db_host" maxCon="1000" minCon="10" balance="1"
+     		writeType="0" dbType="mysql" dbDriver="native" 
+                 switchType="1" slaveThreshold="100">
+         <heartbeat>select user()</heartbeat>
+         <writeHost host="hostM1" url="mysql_master:3306" 
+                    user="root" password="apple">
+             <readHost host="hostS2" url="mysql_slaver:3306" 
+                       user="root" password="apple" />
+         </writeHost>
+     </dataHost>
+</mycat:schema>
+```
 
 
 
 水平拆分配置
 ---
 
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE mycat:schema SYSTEM "schema.dtd">
+<mycat:schema xmlns:mycat="http://io.mycat/">
 
+	<schema name="TESTDB" checkSQLschema="false" sqlMaxLimit="100" >
+		<table name="users" dataNode="dn1,dn2,dn3" primaryKey="id" 
+               		  rule="mod-long"autoIncrement="true" />
+	</schema>
+    
+	<dataNode name="dn1" dataHost="localhost1" database="demo" />
+	<dataNode name="dn2" dataHost="localhost2" database="demo" />
+	<dataNode name="dn3" dataHost="localhost3" database="demo" />
+    
+	<dataHost name="localhost1" maxCon="1000" minCon="10" balance="1"
+			  writeType="0" dbType="mysql" dbDriver="native" 
+              	     switchType="1"  slaveThreshold="100">
+		<heartbeat>select user()</heartbeat>
+		<writeHost host="hostM1" url="localhost:3306" user="root"
+				   password="123456">
+			<readHost host="hostS1" url="localhost:3307" user="root"
+				   password="123456" />
+		</writeHost>
+	</dataHost>
+    
+</mycat:schema>
+```
 
 
 
