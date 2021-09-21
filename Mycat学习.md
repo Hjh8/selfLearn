@@ -40,6 +40,35 @@ schema标签用来定义mycat实例中的逻辑库，mycat可以有多个逻辑�
 
 
 
+#### table标签
+
+Table 标签定义了MyCat中的逻辑表，所有需要拆分的表都需要在这个标签中定义。
+
+`<table name="travelrecord,address" dataNode="dn1,dn2,dn3" primaryKey="ID" rule="auto-sharding-long" splitTableNames ="true"/>` 
+
+- name：定义mycat逻辑表的表名（唯一）。
+
+- dataNode：定义这个逻辑表所属的dataNode, 该属性的值需要和dataNode标签中name属性的值相互对应。
+
+  - 如果需要定义的dataNode过多可以使用`表名$n-m`减少配置：
+
+    ```xml
+    <table name="travelrecord" dataNode="multipleDn$0-99,multipleDn2$100-199" rule="auto-sharding-long" />
+    
+    <dataNode name="multipleDn" dataHost="localhost1" database="db$0-99" ></dataNode>
+    <dataNode name="multipleDn2" dataHost="localhost1" database=" db$100-199" ></dataNode>
+    ```
+
+- rule：指定逻辑表要使用的规则，即数据库分库分表时的规则，规则名字在`rule.xml`中定义，里面有许多规则算法。
+
+- primaryKey：该逻辑表对应真实表的主键。如果不指定主键，且分片的规则是使用非主键进行分片的，那么在使用主键查询的时候，就会发送查询语句到所有配置的dataNode上。如果指定主键，那么MyCat会缓存主键与具体dataNode的信息，那么再次使用该非主键进行查询的时候就不会进行广播式的查询，就会直接发送语句给具体的dataNode。
+
+- autoIncrement：指定这个表有无使用自增长主键。因为是通过mycat的逻辑表来操作数据库的表，所以需要在mycat中指定。如果数据插入时主键有值，则不会进行自增；没有值时才进行自增。
+
+- splitTableNames：启用table的name属性使用逗号分割配置多个表，即多个表使用这个配置
+
+
+
 ### dataNode标签
 
 dataNode 标签定义了MyCat中的数据节点，也就是我们通常所说的**数据分片**。一个**dataNode** 标签就是一个独立的数据分片。
@@ -87,7 +116,7 @@ dataHost定义了具体的数据库实例、读写分离配置和心跳语句。
 - dbDriver：指定连接后端数据库使用的Driver，目前可选的值有**native**和**JDBC**。数据库类型为mysql的话使用native。其他类型的数据库则需要使用JDBC驱动来支持。
 - switchType：指定主服务器发生故障时的行为。
   - -1，表示不自动切换
-  - 1，默认值，自动切换
+  - 1，自动切换（默认值）
   - 2，基于mysql主从同步的状态决定是否切换
   - 3，基于mysql集体的切换机制
 
@@ -111,7 +140,29 @@ dataHost定义了具体的数据库实例、读写分离配置和心跳语句。
 
 
 
+rule.xml
+---
 
+
+
+
+
+读写分离配置
+---
+
+
+
+
+
+水平拆分配置
+---
+
+
+
+
+
+垂直拆分配置
+---
 
 
 
