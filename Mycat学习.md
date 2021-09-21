@@ -164,5 +164,34 @@ rule.xml
 垂直拆分配置
 ---
 
+```xml
+<?xml version="1.0"?>
+<!DOCTYPE mycat:schema SYSTEM "schema.dtd">
+<mycat:schema xmlns:mycat="http://io.mycat/">
+
+	<schema name="TESTDB" checkSQLschema="false" sqlMaxLimit="100" >
+		<table name="users" dataNode="dn1" primaryKey="id" autoIncrement="true" />
+        <table name="orders" dataNode="dn2" primaryKey="id" autoIncrement="true" />
+        <table name="goods" dataNode="dn3" primaryKey="id" autoIncrement="true" />
+	</schema>
+    
+	<dataNode name="dn1" dataHost="localhost1" database="demo" />
+	<dataNode name="dn2" dataHost="localhost2" database="demo" />
+	<dataNode name="dn3" dataHost="localhost3" database="demo" />
+    
+	<dataHost name="localhost1" maxCon="1000" minCon="10" balance="1"
+			  writeType="0" dbType="mysql" dbDriver="native" 
+              	     switchType="1"  slaveThreshold="100">
+		<heartbeat>select user()</heartbeat>
+		<writeHost host="hostM1" url="localhost:3306" user="root"
+				   password="123456">
+			<readHost host="hostS1" url="localhost:3307" user="root"
+				   password="123456" />
+		</writeHost>
+	</dataHost>
+    
+</mycat:schema>
+```
+
 
 
