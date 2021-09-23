@@ -406,9 +406,9 @@ System.out.println("主线程:在所有任务运行完成后，进行结果汇�
 
 ### CyclicBarrier
 
-CyclicBarrier 的构造方法第一个参数是目标障碍数，每次执行 await方法 障碍数会加一，如果达到了目标障碍数，才会执行 cyclicBarrier.await()之后的语句。
+CyclicBarrier的构造方法第一个参数是目标障碍数，每次执行 await方法 障碍数会加一，如果达到了目标障碍数，才会执行 cyclicBarrier.await()之后的语句。
 
-CyclicBarrier 跟CountdownLatch不一样的是，**CountdownLatch是一次性的，而CycliBarrier是可以重复使用的**，只需调用一下`reset方法`。
+CyclicBarrier跟CountdownLatch不一样的是，**CountdownLatch是一次性的，而CycliBarrier是可以重复使用的**，只需调用一下`reset方法`。
 
 - ` CyclicBarrier(int parties, Runnable barrierAction)`：指定目标障碍数和到达目标障碍数时要做的事情
 -  `await()`：障碍数加一，线程等待。
@@ -825,7 +825,7 @@ AQS是如何实现加锁解锁的？其内部维护了两个属性：state、Nod
 
 1. 当一个线程使用lock()方法加锁的时候，会使用 <u>CAS操作将state从0变成1</u>。如果修改成功则将 节点中的Thread设置为自己。
 2. 如果修改失败说明当前有线程正在使用该锁，此时这个线程会 <u>判断这个锁是不是属于自己</u>，是的话允许加锁，然后state值加一；**这也是可重入锁的实现。** 
-3. 若不是属于自己，则该线程使用 <u>CAS操作进入到等待队列</u>中，然后调用 LockSupport.park(this) 进入阻塞
+3. 若不是属于自己，则该线程使用 <u>CAS操作进入到等待队列</u>中，然后调用 LockSupport.park(this) 等待
 4. 当锁对象释放之后，会重新尝试去获取。
 
 **解锁**实现步骤：
