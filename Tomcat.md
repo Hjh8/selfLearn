@@ -1,8 +1,6 @@
 Tomcat
 ===
 
-
-
 tomcat采用war包部署，是因为jar包的话比较难区别此jar包是应用还是应用依赖的jar包。
 
 Tomcat 的核心功能有两个，分别是负责接收/反馈请求的连接器Connector、负责处理请求的容器 Container。
@@ -21,6 +19,6 @@ tomcat采用线程池部署项目。
    <Context path="/WebProject" docBase="D:/WebProject" reloadable="true" />
    ```
 
-3. 进入根项目下的`conf\Catalina\localhost`目录下新建一个xml文件，文件名为项目名，在项目名中指定Context标签。
+3. 进入tomcat根项目下的`conf\Catalina\localhost`目录下新建一个xml文件，文件名为项目名，在项目名中指定Context标签。
 
    - 新建`WebProject.xml`，在里面指定`<Context docBase="D:/WebProject" reloadable="true" />` 
