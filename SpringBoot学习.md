@@ -1632,7 +1632,7 @@ Swagger中常用注解的解释：
 |   @ApiOperation    |                       说明该方法的作用                       |
 | @ApiImplicitParams |       用在方法上，说明一组参数的详细信息。它是一个数组       |
 | @ApiImplicitParam  |         用在@ApiImplicitParams中，详细说明参数信息。         |
-|                    | paramType：说明参数在那个地方。<br>header表示参数使用@RequestHeader接收<br/>query表示参数使用@RequestParam接收<br/>body表示参数使用@RequestBody接收 |
+|                    | paramType：说明参数在那个地方。<br>Path表示参数使用@PathVariable接收<br/>query表示参数使用@RequestParam接收<br/>body表示参数使用@RequestBody接收 |
 |                    |                         name：参数名                         |
 |                    |                      dataType：参数类型                      |
 |                    |                      value：参数的意思                       |
