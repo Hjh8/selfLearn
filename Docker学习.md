@@ -513,7 +513,7 @@ networks:
 
 其实模板命令就是docker run命令的参数。
 
-如果不通过 `docker-compose -p  name up`指定项目名的话，**默认使用当前所在目录为项目名**。
+如果不通过 `docker-compose -p  name up`指定项目名的话，**默认使用当前所在目录的名称为项目名**。
 
 ***
 

@@ -1,4 +1,5 @@
 第一章：框架概述
+===
 
 学习之前先来了解一下三层架构：
 
@@ -1234,7 +1235,7 @@ Mybatis系统中有两级缓存：`一级缓存`跟`二级缓存`。
    2. 将key和查询到的结果分别作为key,value对存储到Cache中；
    3. 将查询结果返回；
 
-什么时候一级缓存会生效？**当同个SqlSession执行同一条查询语句时**。
+什么时候一级缓存会生效？**当同个SqlSession执行同一个方法且参数相同时**。
 
 什么时候一级缓存会失效？
 
@@ -1500,12 +1501,13 @@ mapper接口跟xml绑定的过程
 
 3. 代理对象执行接口方法时会判断该方法是否为Object的方法或者接口的默认方法，是的话直接执行。否则创建mapper方法的MapperMethod对象；
 
-   - MapperMethod中封装了**方法的参数和返回类型**、以及**sql语句对应的方法名和sql类型**
-   - sql语句对应的方法名为`接口全限定名.方法名`，所以要求xml中指定`namespace为接口全限定名，id为方法名` 
+   - MapperMethod中封装了**方法名、参数和返回类型**、以及**sql类型** 
+   - 这里方法名为`接口全限定名.方法名`，所以要求xml中指定`namespace为接口全限定名，id为方法名` 
+   - mapper接口跟xml就是通过方法名来连接的。
 
-4. MapperMethod对象执行excute方法，根据commonType调用sqlsession对应的方法，将sql语句对应的方法名作为参数传递；
+4. MapperMethod对象根据sql类型（commonType）调用sqlsession对应的方法（CRUD），将方法名和方法参数传递过去；
 
-5. sqlsession根据方法名找到对应的sql
+5. sqlsession根据方法名找到对应的MapperStatement，并交给执行器执行。
 
 
 
@@ -1515,7 +1517,7 @@ mybatis有哪些执行器，他们之间的区别
 执行器有三种：simple（默认）、reuse、batch
 
 - simpleExecutor：每执行一次sql开启一个statement对象，用完立刻关闭。
-- reuseExecutor：执行器内会缓存预编译通过的 sql，相同的sql使用同一个statement对象。对象用完后不关闭，而是放入map中。
+- reuseExecutor：执行器内会缓存预编译通过的 sql，相同的sql使用同一个statement对象，即不会重复编译。对象用完后不关闭，而是放入map中.
 - batchExecutor：将所有的sql添加到批处理中，统一执行。更新大量数据时有明显的速度提升，如果是查询则跟simpleExecutor没什么区别。
   - **批处理操作必须手动处理/提交事物** 
 
