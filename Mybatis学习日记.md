@@ -1457,6 +1457,49 @@ Mybatis面试
 
 
 
+会话 跟 执行器
+---
+
+在mybatis中，使用执行器来操作数据库，执行真正的sql语句的。所以执行器需要做的有： **获取连接**、**获取事务类型**以及**获取配置信息**，根据这些信息创建执行器，接着执行器执行sql。
+
+简单版的执行器执行过程如下：
+
+```java
+// transaction封装了连接信息、隔离级别、是否自动提交
+// configuration为配置类
+SimpleExecutor executor = SimpleExecutor(configuration, transaction);
+// MappedStatement封装了sql信息
+MappedStatement ms = configuration.getMappedStatement("com.test.UserMapper.selectById");
+// rowBounds封装分页信息
+// resultHandler结果处理器
+// boundSql真正执行的sql
+executor.doQuery(ms, parameter, rowBounds, resultHandler, boundSql)
+```
+
+为了高效，mybatis还采用了缓存的技术，将结果缓存在执行器中。而上面代码加点判断缓存的逻辑就更接近mybatis的实现了。
+
+又因为需要使用多个执行器，每个执行器都需要获取连接、存放缓存数据等操作。所以可以加一层抽象类，将相同操作提取出来，因而形成了**BaseExecutor**。
+
+> 执行器包括三个：SimpleExecutor、ReuseExecutor、BatchExecutor。**BaseExecutor**是他们的父类，这种设计模式为**模板方法**。
+
+会话跟执行器是一对一的关系，执行器内部会经过复杂的操作后才执行sql，而会话是对执行器内部的封装，会话只需要调用方法执行即可，无需关心执行器内部的具体逻辑，这属于**外观模式。**
+
+
+
+mybatis有哪些执行器，他们之间的区别
+---
+
+执行器有三种：simple（默认）、reuse、batch
+
+- simpleExecutor：每执行一次sql开启一个statement对象，用完立刻关闭。
+- reuseExecutor：执行器内会缓存**预编译**通过的 sql，相同的sql使用同一个statement对象，即不会重复编译。对象用完后不关闭，而是放入map中.
+- batchExecutor：将所有的sql添加到批处理中，统一执行。更新大量数据时有明显的速度提升，如果是查询则跟simpleExecutor没什么区别。
+  - **批处理操作必须手动处理/提交事物** 
+
+如何指定执行器？settings标签中指定ExecutorType的方式或者openSession(ExecutorType et) 的方式。
+
+
+
 能否简单说下Mybatis加载的流程？
 ---
 
@@ -1508,20 +1551,6 @@ mapper接口跟xml绑定的过程
 4. MapperMethod对象根据sql类型（commonType）调用sqlsession对应的方法（CRUD），将方法名和方法参数传递过去；
 
 5. sqlsession根据方法名找到对应的MapperStatement，并交给执行器执行。
-
-
-
-mybatis有哪些执行器，他们之间的区别
----
-
-执行器有三种：simple（默认）、reuse、batch
-
-- simpleExecutor：每执行一次sql开启一个statement对象，用完立刻关闭。
-- reuseExecutor：执行器内会缓存预编译通过的 sql，相同的sql使用同一个statement对象，即不会重复编译。对象用完后不关闭，而是放入map中.
-- batchExecutor：将所有的sql添加到批处理中，统一执行。更新大量数据时有明显的速度提升，如果是查询则跟simpleExecutor没什么区别。
-  - **批处理操作必须手动处理/提交事物** 
-
-如何指定执行器？settings标签中指定ExecutorType的方式或者openSession(ExecutorType et) 的方式。
 
 
 
