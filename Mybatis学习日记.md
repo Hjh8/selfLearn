@@ -1460,7 +1460,7 @@ Mybatis面试
 会话 跟 执行器
 ---
 
-在mybatis中，使用执行器来操作数据库，执行真正的sql语句的。所以执行器需要做的有： **获取连接**、**获取事务类型**以及**获取配置信息**，根据这些信息创建执行器，接着执行器执行sql。
+在mybatis中，是使用执行器来操作数据库，执行真正的sql语句。所以执行器需要做的有： **获取连接**、**获取事务类型**以及**获取配置信息**，根据这些信息创建执行器，接着执行器执行sql。
 
 简单版的执行器执行过程如下：
 
@@ -1480,13 +1480,13 @@ executor.doQuery(ms, parameter, rowBounds, resultHandler, boundSql)
 
 又因为需要使用多个执行器，每个执行器都需要获取连接、存放缓存数据等操作。所以可以加一层抽象类，将相同操作提取出来，因而形成了**BaseExecutor**。
 
-> 执行器包括三个：SimpleExecutor、ReuseExecutor、BatchExecutor。**BaseExecutor**是他们的父类，这种设计模式为**模板方法**。
+> 执行器包括三个：SimpleExecutor、ReuseExecutor、BatchExecutor。**BaseExecutor**是他们的父类，父类中实现了相同的步骤，需要扩展的地方扩给子类实现，这种设计模式为**模板方法**。
 
 会话跟执行器是一对一的关系，执行器内部会经过复杂的操作后才执行sql，而会话是对执行器内部的封装，会话只需要调用方法执行即可，无需关心执行器内部的具体逻辑，这属于**外观模式。**
 
 
 
-mybatis有哪些执行器，他们之间的区别
+mybatis有哪些执行器
 ---
 
 执行器有三种：simple（默认）、reuse、batch
@@ -1496,7 +1496,14 @@ mybatis有哪些执行器，他们之间的区别
 - batchExecutor：将所有的sql添加到批处理中，统一执行。更新大量数据时有明显的速度提升，如果是查询则跟simpleExecutor没什么区别。
   - **批处理操作必须手动处理/提交事物** 
 
-如何指定执行器？settings标签中指定ExecutorType的方式或者openSession(ExecutorType et) 的方式。
+> 如何指定执行器？settings标签中指定ExecutorType的方式或者openSession(ExecutorType et) 的方式。
+
+
+
+二级缓存 CachingExecutor
+---
+
+
 
 
 
