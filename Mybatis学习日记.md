@@ -1540,6 +1540,22 @@ return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundS
 
 
 
+Spring整合MyBatis时一级缓存失效问题
+---
+
+spring结合mybatis后，一级缓存作用：
+
+- 在未开启事务的情况之下，每次查询spring都会关闭旧的sqlSession而创建新的sqlSession,因此此时的一级缓存是不起作用的
+- 在开启事务的情况之下，spring使用ThreadLocal获取当前资源绑定同一个sqlSession，因此此时一级缓存是有效的。
+
+一级缓存失效原因：mybatis和spring结合使用的时候，将原本的DefaultSqlSession替换成了SqlSessionTemplate，并且在SqlSessionTemplate将sqlSession替换成了sqlSessionProxy代理对象，当我们执行sqlSession的方法的时会调用到SqlSessionInterceptor的invoke()方法， 在invoke()方法的fianlly中调用了SqlSessionUtils.closeSqlSession()方法将SqlSession关闭了，所以一级缓存就会失效了。
+
+也就是说，spring对mybatis的SqlSession的使用是由SqlSessionTemplate控制的，在SqlSessionTemplate类中执行SQL语句的SqlSession都是通过sqlSessionProxy来代理执行的，sqlSessionProxy的生成是在构造函数中赋值。
+
+
+
+
+
 能否简单说下Mybatis加载的流程？
 ---
 
