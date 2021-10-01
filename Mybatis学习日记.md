@@ -1503,7 +1503,9 @@ mybatis有哪些执行器
 二级缓存 CachingExecutor
 ---
 
+因为一级缓存是同个session即同个执行器才生效的，如果要namespace下的session都同享缓存怎么办呢？这时可以再加入一层，即CachingExecutor，里面存放二级缓存，并且包含一个BaseExecutor类型的成员变量叫做delegate，这种设计模式叫**装饰者模式**。
 
+首先判断二级缓存中是否存在该数据，不存在才利用delegate调用实际的方法查询，达到session同享缓存的目的。
 
 
 
