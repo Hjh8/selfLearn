@@ -1550,7 +1550,9 @@ spring结合mybatis后，一级缓存作用：
 
 一级缓存失效原因：mybatis和spring结合使用的时候，将原本的DefaultSqlSession替换成了**SqlSessionTemplate**，并且在SqlSessionTemplate将sqlSession替换成了**sqlSessionProxy**代理对象，当代理对象执行方法时会被**SqlSessionInterceptor**拦截执行invoke()方法，在invoke方法里获取sqlSession以及一些事务的操作。
 
-在invoke方法里，首先会getSqlSession。getSqlSession中如果有事务，则会根据事务从ThreadLocal中获取sqlSession，否则创建新的SqlSession。
+在invoke方法里，首先会getSqlSession。getSqlSession中如果有事务，则会根据从ThreadLocal中获取 “创建SqlSession相关的资源”(由该资源创建同一个SqlSession)，否则创建新的SqlSession。
+
+![image-20211001211603252](Mybatis学习日记.assets/image-20211001211603252.png)
 
 
 
