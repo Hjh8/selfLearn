@@ -1484,6 +1484,8 @@ executor.doQuery(ms, parameter, rowBounds, resultHandler, boundSql)
 
 会话跟执行器是一对一的关系，执行器内部会经过复杂的操作后才执行sql，而会话是对执行器内部的封装，会话只需要调用方法执行即可，无需关心执行器内部的具体逻辑，这属于**外观模式。**
 
+> SqlSessionFactory的作用就是创建sqlsession
+
 
 
 mybatis有哪些执行器
@@ -1506,6 +1508,35 @@ mybatis有哪些执行器
 因为一级缓存是同个session即同个执行器才生效的，如果要namespace下的session都同享缓存怎么办呢？这时可以再加入一层，即CachingExecutor，里面存放二级缓存，并且包含一个BaseExecutor类型的成员变量叫做delegate，这种设计模式叫**装饰者模式**。
 
 首先判断二级缓存中是否存在该数据，不存在才利用delegate调用实际的方法查询，达到session同享缓存的目的。
+
+```java
+if (cache != null) {
+    // 如果设置了清空缓存，则清空二级缓存
+    flushCacheIfRequired(ms);
+    // 允许使用缓存并且resultHandler为null（一级缓存也有这个判断）
+    if (ms.isUseCache() && resultHandler == null) {
+        // 尝试在缓存中获取数据
+        List<E> list = (List<E>) tcm.getObject(cache, key);
+        // 获取为null则利用执行器去操作数据库
+        if (list == null) {
+            list = delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+            // 将结果放入二级缓存
+            tcm.putObject(cache, key, list);
+        }
+        // 有数据直接返回
+        return list;
+    }
+}
+// 不存在缓存，直接。利用执行器去操作数据库
+return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+```
+
+
+
+会话、缓存、执行器之间的关系
+---
+
+![image-20211001111254240](Mybatis学习日记.assets/image-20211001111254240.png)
 
 
 
