@@ -910,7 +910,7 @@ public interface HandlerInterceptor {
 > 这两个使用的设计模式都是 **责任链模式**。
 
 1. 过滤器实现Filter接口，拦截器实现HandlerInterceptor接口。
-3. 过滤器侧重于数据过滤。拦截器用来验证请求的。
+3. 过滤器侧重于数据过滤；拦截器用来验证请求的。
 4. 过滤器在拦截器之前执行。
 5. 过滤器是tomcat创建的对象，拦截器是框架创建的对象。
 
@@ -969,6 +969,11 @@ controller的类型有两种：<u>Controller类型</u> 跟 <u>BeanName类型</u>
 
 - 使用**@Controller**注解的类是Controller类型；
 - 实现**Controller接口**或**HttpRequestHandler接口**的类为BeanName类型
+
+> controller对象并不是线程安全的，有几种解决方法：
+>
+> 1. 在Controller中使用ThreadLocal变量
+> 2. 在spring配置文件Controller中声明 scope="prototype"，每次都创建新的controller
 
 
 
