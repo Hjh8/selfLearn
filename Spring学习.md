@@ -1127,13 +1127,13 @@ public Student doSubmit2() {
 切面类
 
 ```java
-    @AfterReturning(value = "execution(* *..ba02.*.doSubmit2(..))", returning = "res")
-    public void myAfterReturning2(Student res){
-        System.out.println(new Date() + "进行了事务提交");
-        res.setId("20202323");
-        res.setName("hang");
-        System.out.println("myAfterReturning2中的返回值是："+res);
-    }
+@AfterReturning(value = "execution(* *..ba02.*.doSubmit2(..))", returning = "res")
+public void myAfterReturning2(Student res){
+    System.out.println(new Date() + "进行了事务提交");
+    res.setId("20202323");
+    res.setName("hang");
+    System.out.println("myAfterReturning2中的返回值是："+res);
+}
 ```
 
 ![image-20200923210959660](Spring学习.assets/image-20200923210959660.png)
