@@ -2483,7 +2483,7 @@ public class SomeServiceImpl implements SomeService {
 
 原因：
 
-代理对象只是负责增加逻辑，以及调用原始方法，当代理对象执行完逻辑调用目标方法时，实际还是原始对象调用目标方法，即doSome，所以doInnerMethod也是由原始对象调用，而不会被拦截器调用。
+代理对象只是负责增加逻辑以及调用原始方法，当代理对象执行完逻辑调用目标方法时，实际还是原始对象调用目标方法，所以doInnerMethod也是由原始对象调用，而不会被拦截器调用。
 
 
 
