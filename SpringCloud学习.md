@@ -303,8 +303,6 @@ eureka.instance.lease-expiration-duration-in-seconds=90
 
 
 
-
-
 四、客户端负载均衡Ribbon
 ===
 
