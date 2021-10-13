@@ -1533,6 +1533,8 @@ return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundS
 
 
 
+
+
 会话、缓存、执行器之间的关系
 ---
 
@@ -1553,6 +1555,8 @@ spring结合mybatis后，一级缓存作用：
 在invoke方法里，首先会getSqlSession。getSqlSession中如果有事务，则会根据从ThreadLocal中获取 “创建SqlSession相关的资源”(由该资源创建同一个SqlSession)，否则创建新的SqlSession。
 
 ![image-20211001211603252](Mybatis学习日记.assets/image-20211001211603252.png)
+
+
 
 
 
