@@ -1531,12 +1531,18 @@ if (cache != null) {
 return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
 ```
 
+> 会话提交后，数据才会放到二级缓存中，这是为了保证线程同步。
+
 
 
 二级缓存源码分析
 ---
 
-首先二级缓存是线程共享的，每个namespace都有自己的二级缓存空间。
+首先二级缓存是线程共享的，每个namespace都有自己的二级缓存空间。接着还要统计命中率，内存满了还要有淘汰机制等操作。那么在mybatis中是如何实现的呢？
+
+mybatis采用了装饰者+责任链模式，让责任链上的每个节点都负责自己的功能，如线程同步，统计命中率。这样一条链下来，既可以实现所需要的功能，还方便扩展。
+
+
 
 
 
