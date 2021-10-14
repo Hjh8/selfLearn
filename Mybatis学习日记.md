@@ -1533,6 +1533,13 @@ return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundS
 
 
 
+二级缓存源码分析
+---
+
+首先二级缓存是线程共享的，每个namespace都有自己的二级缓存空间。
+
+
+
 
 
 会话、缓存、执行器之间的关系
