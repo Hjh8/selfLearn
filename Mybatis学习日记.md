@@ -1507,6 +1507,8 @@ mybatis有哪些执行器
 
 因为一级缓存是同个session即同个执行器才生效的，如果要namespace下的session都同享缓存怎么办呢？这时可以再加入一层，即CachingExecutor，里面存放二级缓存，并且包含一个BaseExecutor类型的成员变量叫做delegate，这种设计模式叫**装饰者模式**。
 
+> 会话提交后，数据才会放到二级缓存中，这是为了**保证线程同步**。
+
 CachingExecutor首先判断二级缓存中是否存在该数据，不存在才利用delegate调用实际的方法，达到session同享缓存的目的。
 
 ```java
@@ -1531,8 +1533,6 @@ if (cache != null) {
 return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
 ```
 
-> 会话提交后，数据才会放到二级缓存中，这是为了保证线程同步。
-
 
 
 二级缓存源码分析
@@ -1540,11 +1540,13 @@ return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundS
 
 首先二级缓存是线程共享的，每个namespace都有自己的二级缓存空间。接着还要统计命中率，内存满了还要有淘汰机制等操作。那么在mybatis中是如何实现的呢？
 
-mybatis采用了装饰者+责任链模式，让责任链上的每个节点都负责自己的功能，如线程同步，统计命中率。这样一条链下来，既可以实现所需要的功能，还方便扩展。
+mybatis采用了**装饰者+责任链**模式，让责任链上的每个节点都负责自己的功能，如线程同步，统计命中率。这样一条链下来，既可以实现所需要的功能，还方便扩展。
+
+![image-20211015100301852](Mybatis学习日记.assets/image-20211015100301852.png)
 
 
 
-
+![image-20211015100548046](Mybatis学习日记.assets/image-20211015100548046.png)
 
 
 
