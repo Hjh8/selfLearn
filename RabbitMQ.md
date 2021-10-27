@@ -404,6 +404,65 @@ P 表示为生产者、 X 表示交换机、C1C2 表示为消费者，红色表�
 
 一个交换机需要与一个或多个队列通过 `routingKey` 进行**绑定**。即交换机可以通过`routingKey` 获取到队列。
 
+生产者：
+
+```java
+public class ProducerFanout {
+
+    private static final String EXCHANGE_NAME = "fanout_exchange";
+
+    public static void main(String[] args) throws IOException, TimeoutException {
+        /** 1.创建新的连接 */
+        Connection connection = MQUtils.getConnection();
+        /** 2.创建通道 */
+        Channel channel = connection.createChannel();
+        /** 3.声明交换机：参数1交互机名称 参数2 交换机类型 */
+        channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+        /** 4.发送消息 */
+        for (int i = 0; i < 10; i++) {
+            String message = "用户注册消息：" + i;
+            // 发送消息
+            channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes("utf-8"));
+        }
+        channel.close();
+        connection.close();
+    }
+}
+```
+
+消费者1：
+
+```java
+public class ConsumerEmailFanout {
+
+    private static final String QUEUE_NAME = "consumer_email";
+    private static final String EXCHANGE_NAME = "fanout_exchange";
+
+    public static void main(String[] args) throws Exception {
+        /* 1.创建新的连接 */
+        Connection connection = MQUtils.getConnection();
+        /* 2.创建通道 */
+        Channel channel = connection.createChannel();
+        /* 3.消费者关联队列 */
+        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+        /* 4.队列与交换机绑定 参数1队列 参数2交换机 参数3routingKey */
+        channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "");
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String msg = new String(delivery.getBody(), "UTF-8");
+            System.out.println("数据接收成功：" + msg);
+        };
+        /* 5.消费者监听队列消息 */
+        channel.basicConsume(QUEUE_NAME, true, deliverCallback);
+    }
+}
+```
+
+消费者2也是如此，一旦生产者发送消息，这两个消费者都可以对该消息进行消费。
+
+【注意】**先运行两个消费者，再运行生产者**。如果没有提前将队列绑定到交换机，那么直接运行生产者的话，消息是不会发到任何队列里的。
+
+> 代码补充， **channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "");** 中第三个参数置为空时，可以接收到生产者所有的消息（生产者 routingKey 参数为空时），一旦指定具体值时，只有往该具体值绑定的队列中发送消息时才可以接收到。
+
 
 
 
