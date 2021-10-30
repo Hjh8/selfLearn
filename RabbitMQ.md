@@ -172,7 +172,7 @@ MQ案例
 六大模式
 ---
 
-### 模式1-helloworld
+### 模式1-Helloworld
 
 上一小结的案例就是HelloWorld模式。此时为匿名发送，不指定交换机，则直接发送到队列中。
 
@@ -184,6 +184,8 @@ MQ案例
 ### 模式2-Work Queues
 
 工作队列(又称任务队列)就是多个消费者版本的helloworld模式，消息**轮询**的发送给这些消费者，避免长时间等待资源密集型任务的完成。==多个消费者之间是竞争关系==。
+
+![工作队列](RabbitMQ.assets/20181221114036231.png)
 
 
 
@@ -469,11 +471,41 @@ public class ConsumerEmailFanout {
 
 
 
-### 模式4-routing
+### 模式4-Routing
 
-routing路由模式，
+routing路由模式，采用的交换机是direct，交换机会根据routingKey将消息发送给对应的消费者。当所有routingKey都一样时，此时变成发布订阅模式。
+
+![路由模式](RabbitMQ.assets/20181221114420299.png)
 
 
+
+### 模式5-Topic
+
+采用模糊匹配routingKey的方式来实现一对多或一对一的关系，即只要符合routingKey的队列都会收到消息。
+
+topic 交换机的消息的 routingKey 不能随意写，必须满足一定的要求，它**必须是一个单词列表，以点号分隔开**。这些单词可以是任意单词，比如说："abb.usd.nyse", "nyse.vmw", "quick.orange.rabbit".这种类型的。当然这个单词列表最多不能超过 255 个字节
+
+每有两个通配符：
+
+- `*`：匹配一个单词
+- `#`：匹配任意个单词
+
+![topic模式](RabbitMQ.assets/20181221114208408.png)
+
+上图是一个队列绑定关系图，我们来看看他们之间数据接收情况是怎么样的
+
+- quick.orange.rabbit 被队列 Q1 Q2 接收到
+- lazy.orange.elephant 被队列 Q1 Q2 接收到
+- quick.orange.fox 被队列 Q1 接收到
+- lazy.brown.fox 被队列 Q2 接收到
+- lazy.pink.rabbit 虽然满足两个绑定但只被队列 Q2 接收一次
+- quick.brown.fox 不匹配任何绑定不会被任何队列接收到会被丢弃
+- quick.orange.male.rabbit 不匹配任何绑定会被丢弃（因为是四个单词）
+- lazy.orange.male.rabbit 是四个单词但匹配 Q2
+
+> 当一个队列绑定键是`#`，那么这个队列将接收所有数据，就有点像 **fanout**
+>
+> 如果队列绑定键当中没有`#`和`*`出现，那么该队列绑定类型就是 **direct**
 
 
 
