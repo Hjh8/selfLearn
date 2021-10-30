@@ -469,5 +469,11 @@ public class ConsumerEmailFanout {
 
 
 
+### 模式4-routing
+
+routing路由模式，
+
+
+
 
 
