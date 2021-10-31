@@ -516,8 +516,8 @@ topic 交换机的消息的 routingKey 不能随意写，必须满足一定的�
 **消息变成死信有以下几种情况**：
 
 - 消息TTL过期
-- 消息被拒绝(basic.reject / basic.nack)，并且requeue = false
 - 队列达到最大长度
+- 消息被拒绝(basic.reject / basic.nack)，并且requeue = false
 
 ![image-20211031155722644](RabbitMQ.assets/image-20211031155722644.png)
 
@@ -580,7 +580,7 @@ public class Consumer01 {
         // 正常队列设置死信 routing-key 参数 key 是固定值
         params.put("x-dead-letter-routing-key", "dead");
 
-        // 声明正常队列
+        // 声明正常队列，注意：需要指定参数
         String normalQueue = "normal-queue";
         channel.queueDeclare(normalQueue, false, false, false, params);
         channel.queueBind(normalQueue, NORMAL_EXCHANGE, "normal");
@@ -595,9 +595,24 @@ public class Consumer01 {
 }
 ```
 
+> 如果需要消费者中设置ttl：`params.put("x-message-ttl", 过期时间);` 
 
 
 
+### 队列达到最大长度
+
+需要在消费者中设置参数 `params.put("x-max-length", 长度);` 
+
+
+
+### 消息被拒
+
+需要在消费者的回调函数中进行拒绝：
+
+```java
+// requeue 设置为 false 代表拒绝重新入队 该队列如果配置了死信交换机将发送到死信队列中
+channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
+```
 
 
 
