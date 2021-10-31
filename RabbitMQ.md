@@ -509,3 +509,95 @@ topic 交换机的消息的 routingKey 不能随意写，必须满足一定的�
 
 
 
+## 死信队列
+
+死信，顾名思义就是无法被消费的消息，一般来说，生产者将消息投递到 broker 或者 queue 里，消费者从 queue 取出消息进行消费，但某些时候由于特定的原因导致queue中的某些消息无法被消费，这样的消息就是死信，如果配置了死信队列，那么该消息将会被丢进死信队列中，如果没有配置，则该消息将会被丢弃。有了死信队列就可以保证消息数据不丢失。
+
+**消息变成死信有以下几种情况**：
+
+- 消息TTL过期
+- 消息被拒绝(basic.reject / basic.nack)，并且requeue = false
+- 队列达到最大长度
+
+![image-20211031155722644](RabbitMQ.assets/image-20211031155722644.png)
+
+需要在普通队列中设置死信队列一些信息，当满足条件时该队列中的消息就会进入死信队列。
+
+
+
+### TTL 过期
+
+ttl过期可以在生产者中设置也可以在消费者中设置，两者设置方式不同，不过在生产者是针对每个消息设置ttl，更加灵活，每个消息的ttl都可以不同；而如果消费者是针对所有消息设置ttl。
+
+生产者代码：
+
+```java
+public class Producer {
+    private static final String NORMAL_EXCHANGE = "normal_exchange";
+    
+    public static void main(String[] args) throws Exception {
+        try (Channel channel = RabbitMqUtils.getChannel()) {
+            // 直接交换机
+            channel.exchangeDeclare(NORMAL_EXCHANGE, BuiltinExchangeType.DIRECT);
+            // 设置消息的 TTL 时间
+            AMQP.BasicProperties properties = new 
+                AMQP.BasicProperties().builder().expiration("10000").build();
+            
+            for (int i = 1; i <11 ; i++) {
+                String message="info"+i;
+                channel.basicPublish(NORMAL_EXCHANGE, "zhangsan", properties,  message.getBytes());
+                System.out.println("生产者发送消息:"+message);
+            }
+        }
+    }
+}
+```
+
+消费者代码：
+
+```java
+public class Consumer01 {
+    //普通交换机名称
+    private static final String NORMAL_EXCHANGE = "normal_exchange";
+    //死信交换机名称
+    private static final String DEAD_EXCHANGE = "dead_exchange";
+    
+    public static void main(String[] args) throws Exception {
+        Channel channel = RabbitUtils.getChannel();
+        // 声明死信和普通交换机 类型为 direct
+        channel.exchangeDeclare(DEAD_EXCHANGE, BuiltinExchangeType.DIRECT);
+        channel.exchangeDeclare(NORMAL_EXCHANGE, BuiltinExchangeType.DIRECT);
+        
+        // 声明死信队列
+        String deadQueue = "dead-queue";
+        channel.queueDeclare(deadQueue, false, false, false, null);
+        channel.queueBind(deadQueue, DEAD_EXCHANGE, "dead");
+        
+        // 正常队列绑定死信队列信息
+        Map<String, Object> params = new HashMap<>();
+        // 正常队列设置死信交换机 参数 key 是固定值
+        params.put("x-dead-letter-exchange", DEAD_EXCHANGE);
+        // 正常队列设置死信 routing-key 参数 key 是固定值
+        params.put("x-dead-letter-routing-key", "dead");
+
+        // 声明正常队列
+        String normalQueue = "normal-queue";
+        channel.queueDeclare(normalQueue, false, false, false, params);
+        channel.queueBind(normalQueue, NORMAL_EXCHANGE, "normal");
+        
+        // 消费消息
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), "UTF-8");
+            System.out.println("Consumer01 接收到消息"+message);
+        };
+        channel.basicConsume(normalQueue, true, deliverCallback);
+    } 
+}
+```
+
+
+
+
+
+
+
