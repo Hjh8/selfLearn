@@ -527,7 +527,11 @@ topic 交换机的消息的 routingKey 不能随意写，必须满足一定的�
 
 ### TTL 过期
 
-ttl过期可以在生产者中设置也可以在消费者中设置，两者设置方式不同，不过在生产者是针对每个消息设置ttl，更加灵活，每个消息的ttl都可以不同；而如果消费者是针对所有消息设置ttl。
+ttl过期可以在生产者中设置也可以在消费者中设置，两者设置方式不同：生产者是针对每个消息设置ttl，更加灵活，每个消息的ttl都可以不同；而消费者是针对一个队列中的所有消息设置ttl。
+
+> 死信队列有个**缺陷**就是如果前面的消息的ttl时间较长，而后面消息的ttl比较短，此时后面消息不会先出队被执行，而是会到等前面的消息被执行才出队。
+>
+> 比如死信队列中的第一个消息ttl为3秒，第二个消息的ttl为1秒，那么第二个消息会在3秒后被处理。
 
 生产者代码：
 
@@ -577,7 +581,7 @@ public class Consumer01 {
         Map<String, Object> params = new HashMap<>();
         // 正常队列设置死信交换机 参数 key 是固定值
         params.put("x-dead-letter-exchange", DEAD_EXCHANGE);
-        // 正常队列设置死信 routing-key 参数 key 是固定值
+        // 正常队列设置死信 routing-key 
         params.put("x-dead-letter-routing-key", "dead");
 
         // 声明正常队列，注意：需要指定参数
@@ -613,6 +617,144 @@ public class Consumer01 {
 // requeue 设置为 false 代表拒绝重新入队 该队列如果配置了死信交换机将发送到死信队列中
 channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
 ```
+
+
+
+## 整合Springboot
+
+1. 创建Springboot项目
+
+2. 添加RabbitMQ依赖
+
+   ```xml
+   <!--RabbitMQ 依赖-->
+   <dependency>
+     <groupId>org.springframework.boot</groupId>
+     <artifactId>spring-boot-starter-amqp</artifactId>
+   </dependency>
+   ```
+
+3. 在application.properties文件当中引入RabbitMQ基本的配置信息
+
+   ```properties
+   #对于rabbitMQ的支持
+   spring.rabbitmq.host=127.0.0.1
+   spring.rabbitmq.port=5672
+   spring.rabbitmq.username=guest
+   spring.rabbitmq.password=guest
+   ```
+
+4. 编写RabbitConfig类，在这里进行队列、交换机的声明、队列与交换机的绑定
+
+   ```java
+   @Configuration
+   public class RabbitConfig {
+    
+       public static final String EXCHANGE_A = "EXCHANGE_A";
+       public static final String QUEUE_A = "QUEUE_A";
+       public static final String ROUTINGKEY_A = "routingKey_A";
+       
+       public static final String EXCHANGE_D = "EXCHANGE_D";
+       public static final String QUEUE_D = "QUEUE_D";
+       public static final String ROUTINGKEY_D = "routingKey_D";
+    
+       // 声明 aExchange 为直接交换机
+       @Bean
+       public DirectExchange aExchange(){
+           return new DirectExchange(EXCHANGE_A);
+       }
+       
+       // 声明队列 并设置参数
+       @Bean("queueA")
+       public Queue queueA(){
+           Map<String, Object> args = new HashMap<>(3);
+           // 声明当前队列绑定的死信交换机
+           args.put("x-dead-letter-exchange", Y_DEAD_LETTER_EXCHANGE);
+           // 声明当前队列的死信路由 key
+           args.put("x-dead-letter-routing-key", "YD");
+           // 声明队列的 TTL
+           args.put("x-message-ttl", 3000);
+           return QueueBuilder.durable(QUEUE_A).withArguments(args).build();
+       }
+       
+       // 队列与交换机进行绑定
+       @Bean
+       public Binding queueaBindingX(@Qualifier("queueA") Queue queueA,
+                                     @Qualifier("aExchange") DirectExchange aExchange){
+           return BindingBuilder.bind(queueA).to(aExchange).with(ROUTINGKEY_A);
+       }
+       
+       // 声明死信交换机
+       @Bean(
+       public DirectExchange dExchange(){
+           return new DirectExchange(EXCHANGE_D);
+       }
+           
+       // 声明死信队列
+       @Bean
+       public Queue queueD(){
+           return new Queue(QUEUE_D);
+       }
+       
+        // 队列与交换机进行绑定
+       @Bean
+       public Binding deadLetterBindingQAD(@Qualifier("queueD") Queue queueD,
+                                           @Qualifier("dExchange") DirectExchange dExchange){
+           return BindingBuilder.bind(queueD).to(dExchange).with(ROUTINGKEY_D);
+       }
+   }
+   ```
+
+5. 生产者代码：
+
+   ```java
+   @RequestMapping("mq")
+   @RestController
+   public class SendMsgController {
+       @Autowired
+       private RabbitTemplate rabbitTemplate;
+       
+       @GetMapping("sendMsg/{message}")
+       public void sendMsg(@PathVariable String message){
+           rabbitTemplate.convertAndSend("EXCHANGE_A", "routingKey_A",  message);
+       }
+   }
+   ```
+
+6. 消费者代码：
+
+   ```java
+   @Component
+   public class QueueConsumer {
+       
+       @RabbitListener(queues = "QUEUE_A")
+       public void receives(Message message, Channel channel) throws IOException {
+           String msg = new String(message.getBody());
+           System.out.println("消息是：" + msg);
+       } 
+   }
+   ```
+
+在配置文件中直接设置的ttl是针对一个队列中的所有消息，即QUEUE_A中所有消息的ttl都一样。如果需要针对每个消息进行设置ttl，则需要在生产者代码中进行设置：
+
+```java
+@GetMapping("sendExpirationMsg/{message}/{ttlTime}")
+public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
+    // 生产者中设置ttl
+    rabbitTemplate.convertAndSend("EXCHANGE_A", "routingKey_A",  message, e ->{
+        e.getMessageProperties().setExpiration(ttlTime);
+        return e;
+    });
+}
+```
+
+
+
+
+
+
+
+
 
 
 
