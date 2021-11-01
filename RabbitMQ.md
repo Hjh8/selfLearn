@@ -620,33 +620,6 @@ channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
 
 
 
-延迟队列
---------
-
-**延时队列**，首先，它是一种队列，队列意味着内部的元素是**有序**的，元素从一端进入，从另一端取出。
-
-其次，**延时队列** 最重要的特性就体现在它的**延时**属性上，跟普通的队列不一样的是，**普通队列中的元素总是希望被早点取出处理，而延时队列中的元素则是希望在指定时间被取出和处理**，所以延时队列中的元素都是带时间属性的，通常来说是需要被处理的消息或者任务。
-
-简单来说，延时队列就是用来存放需要在指定时间被处理的元素的队列。
-
-***
-
-那么什么时候需要用延时队列呢？考虑一下以下场景：
-
-1. 订单在十分钟之内未支付则自动取消。
-2. 新创建的店铺，如果在十天内都没有上传过商品，则自动发送消息提醒。
-3. 账单在一周内未支付，则自动结算。
-4. 用户发起退款，如果三天内没有得到处理则通知相关运营人员。
-5. 预定会议后，需要在预定的时间点前十分钟通知各个与会人员参加会议。
-
-这些任务都有个特点就是只有达到指定的时间才会进行处理。这与定时任务不同，定时任务是一直轮询数据，每秒查一次，取出需要被处理的数据，然后处理。显然这在大量任务的时候是不可取的。
-
-***
-
-延迟队列利用的就是消息的ttl，一旦时间达到ttl就进入死信队列，此时这个死信队列就是延迟队列了。
-
-
-
 整合Springboot
 --------------
 
@@ -780,9 +753,59 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
 
 
 
+延迟队列
+--------
 
+**延时队列**，首先，它是一种队列，队列意味着内部的元素是**有序**的，元素从一端进入，从另一端取出。
 
+其次，**延时队列** 最重要的特性就体现在它的**延时**属性上，跟普通的队列不一样的是，**普通队列中的元素总是希望被早点取出处理，而延时队列中的元素则是希望在指定时间被取出和处理**，所以延时队列中的元素都是带时间属性的，通常来说是需要被处理的消息或者任务。
 
+简单来说，延时队列就是用来存放需要在指定时间被处理的元素的队列。
 
+***
 
+那么什么时候需要用延时队列呢？考虑一下以下场景：
 
+1. 订单在十分钟之内未支付则自动取消。
+2. 新创建的店铺，如果在十天内都没有上传过商品，则自动发送消息提醒。
+3. 账单在一周内未支付，则自动结算。
+4. 用户发起退款，如果三天内没有得到处理则通知相关运营人员。
+5. 预定会议后，需要在预定的时间点前十分钟通知各个与会人员参加会议。
+
+这些任务都有个特点就是只有达到指定的时间才会进行处理。这与定时任务不同，定时任务是一直轮询数据，每秒查一次，取出需要被处理的数据，然后处理。显然这在大量任务的时候是不可取的。
+
+***
+
+延迟队列利用的就是消息的ttl，一旦时间达到ttl就进入死信队列，此时这个死信队列就是延迟队列了。
+
+之前也说到，死信队列有个**缺陷**，因此延迟队列也有这个缺陷，那要如何解决呢？此时必须借助插件。
+
+1. 安装一个插件即可：https://www.rabbitmq.com/community-plugins.html ，下载rabbitmq_delayed_message_exchange插件，然后解压放置到RabbitMQ的插件目录。
+
+2. 接下来，进入RabbitMQ的安装目录下的sbin目录，执行下面命令让该插件生效，然后重启RabbitMQ。
+
+   `rabbitmq-plugins enable rabbitmq_delayed_message_exchange` 
+
+3. 在项目中声明插件的交换机
+
+   ```java
+   @Bean
+   public Queue immediateQueue() {
+       return new Queue(DELAYED_QUEUE);
+   }
+   
+   @Bean
+   public CustomExchange customExchange() {
+       Map<String, Object> args = new HashMap<>();
+       args.put("x-delayed-type", "direct");
+       return new CustomExchange(DELAYED_EXCHANGE, "x-delayed-message", true, false, args);
+   }
+   
+   @Bean
+   public Binding bindingNotify(@Qualifier("immediateQueue") Queue queue,
+                                @Qualifier("customExchange") CustomExchange customExchange) {
+       return BindingBuilder.bind(queue).to(customExchange).with(DELAYED_ROUTING_KEY).noargs();
+   }
+   ```
+
+   
