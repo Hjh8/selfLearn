@@ -862,22 +862,50 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
        /**
         * 交换机不管是否收到消息都会执行一个回调方法
         * CorrelationData 消息相关数据
-        * ack
-        * 交换机是否收到消息
+        * ack 交换机是否收到消息
+        * cause 未收到消息的原因
         */
        @Override
        public void confirm(CorrelationData correlationData, boolean ack, String cause) {
            String id = correlationData != null? correlationData.getId(): "";
            if(ack){
-               log.info("交换机已经收到 id 为:{}的消息",id);
+               log.info("交换机已经收到 id 为:{}的消息", id);
            }else{
-               log.info("交换机还未收到 id 为:{}消息,由于原因:{}",id,cause);
+               log.info("交换机还未收到 id 为:{}消息,由于原因:{}", id, cause);
            }
        } 
    }
    ```
 
-   
+3. 在生产者中进行绑定
+
+   ```java
+   @RestController
+   @RequestMapping("/confirm")
+   public class Producer {
+       public static final String EXCHANGE_NAME = "confirm.exchange";
+       
+       @Autowired
+       private RabbitTemplate rabbitTemplate;
+       
+       @Autowired
+       private MyCallBack myCallBack;
+       
+       // 依赖注入 rabbitTemplate 之后再设置它的回调对象
+       @PostConstruct
+       public void init(){
+           rabbitTemplate.setConfirmCallback(myCallBack);
+       }
+       
+       @GetMapping("sendMessage/{message}")
+       public void sendMessage(@PathVariable String message){
+           // 指定消息 id 为 1
+           CorrelationData correlationData=new CorrelationData("1");
+           String routingKey="key";
+           rabbitTemplate.convertAndSend(EXCHANGE_NAME, routingKey, message, correlationData);
+       } 
+   }
+   ```
 
 
 
@@ -886,16 +914,42 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
 回退机制整合springboot
 ----------------------
 
+1. 编写回调接口
 
+   ```java
+   @Component
+   @Slf4j
+   public class MyCallBack implements RabbitTemplate.ReturnCallback {
+       // 当消息无法路由的时候的回调方法
+       @Override
+       public void returnedMessage(Message message, int replyCode, 
+                                   String replyText, String  exchange, String routingKey) {
+           log.error(" 消 息 {}, 被交换机 {} 退回，退回原因 :{}, 路 由 key:{}",new 
+                     String(message.getBody()),exchange,replyText,routingKey);
+    } 
+   }
+   ```
+   
+2. 在生产者中进行绑定
 
-
+   ```java
+   @PostConstruct
+   private void init() {
+       rabbitTemplate.setReturnCallback(myCallBack);
+       rabbitTemplate.setMandatory(true);
+   }
+   ```
 
 
 
 幂等性
 ------
 
+所谓的幂等性其实就是**保证同一条消息不会重复或者重复消费了也不会对系统数据造成异常**。
 
+如何避免消息的重复消费问题？
+
+- `全局唯一ID + Redis`：生产者在发送消息时，为每条消息设置一个全局唯一的messageId，消费者拿到消息后，使用setnx命令，将messageId作为key放到redis中：setnx(messageId,1)，若返回1，说明之前没有消费过，正常消费；若返回0，说明这条消息之前已消费过，抛弃。
 
 
 
