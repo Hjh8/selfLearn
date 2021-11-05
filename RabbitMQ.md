@@ -216,8 +216,8 @@ MQ案例
 - **自动应答**：消息发送后被认为已经处理完成，立即删除该消息。可能会造成消息的丢失。
 - **手动应答**：当消息处理完成需要手动通知MQ删除该消息。
   - Channel.basicAck(String tag, boolean multiple)：用于肯定确认，RabbitMQ 已知道该消息并且成功的处理消息，可以将其丢弃了。
-  - Channel.basicNack(String tag, boolean multiple)：用于否定确认。
-  - Channel.basicReject(String tag)：用于否定确认，不处理该消息了直接拒绝，可以将其丢弃了。
+  - Channel.basicNack(long deliveryTag, boolean multiple, boolean requeue)：用于否定确认，`requeue`表示是否重新将其入队
+  - Channel.basicReject(String tag, boolean multiple)：用于否定确认，不处理该消息了直接拒绝，可以将其丢弃了。
 
 multiple表示是否进行**批量应答**。批量应答指的是，当收到后面的tag应答的时候默认表示其前面所有消息都以处理完成，此时也可能出现消息丢失。比如发送了5 6 7 8，四个消息，当收到消息8的应答时，默认5 6 7也收到应答，此时会将5 6 7 8都进行删除。
 
@@ -269,7 +269,7 @@ public class consumer {
 
 ### 消息确认机制 - 发布者确认
 
-消费者确认解决的问题是确认消息是否被消费者"成功消费"。它有个前提条件，那就是生产者发布的消息已经"成功"发送出去了。因此还需要一个机制来告诉生产者，你发送的消息真的"成功"发送了。
+消费者确认解决的问题是确认消息是否被消费者"成功消费"。它有个前提条件，那就是生产者发布的消息已经"成功"发送到交换机了。因此还需要一个机制来告诉生产者，你发送的消息到达交换机了。
 
 在标准的AMQP 0-9-1，保证消息不会丢失的唯一方法是使用事务：在通道上开启事务,发布消息,提交事务。但是事务是非常重量级的，它使得RabbitMQ的吞吐量降低250倍。为了解决这个问题，RabbitMQ 引入了 **发布者确认(Publisher Confirms) 机制**，它是模仿AMQP协议中的消费者消息确认机制.
 
@@ -365,6 +365,40 @@ for (int i = 0; i < MESSAGE_COUNT; i++) {
 > 如何处理异步未确认消息?
 >
 > 最好的解决的解决方案就是把未确认的消息放到一个基于内存的能被发布线程访问的map，比如说用 ConcurrentSkipListMap, 利用这个map记录所有发出去的消息，然后在成功回调方法里remove成功发送的消息，剩下的就是未成功发送的。
+
+
+
+### 回退机制
+
+回退机制(Return Listener) 用于处理一些不可路由的消息!
+
+> 发布者确认是针对交换机存在的场景，如果交换机或队列不存在，那么**MQ默认会丢弃该消息**。
+
+在某些情况下，如果我们在发送消息的时候，当前的 exchange 不存在或者指定的路由 key 路由不到，这个时候如果我们需要监听这种不可达的消息，就要使用 `Return Listener ` 
+
+在基础API中有一个关键的配置项 `Mandatory`：如果为 `true`，则监听器会接收到路由不可达的消息，然后进行后续处理，如果为 `false`，那么 broker 端自动删除该消息！**默认是false**。
+
+```java
+// 将Mandatory 设置为 true
+channel.basicPublish(exchangeName, errRoutingKey, true, null, msg.getBytes());
+// 添加一个 return 监听
+channel.addReturnListener(new ReturnListener() {
+    public void handleReturn(int replyCode, String replyText, String exchange, String routingKey, AMQP.BasicProperties properties, byte[] body) throws IOException {
+        System.out.println("return relyCode: " + replyCode);
+        System.out.println("return replyText: " + replyText);
+        System.out.println("return exchange: " + exchange);
+        System.out.println("return routingKey: " + routingKey);
+        System.out.println("return properties: " + properties);
+        System.out.println("return body: " + new String(body));
+    }
+});
+```
+
+
+
+
+
+
 
 
 
@@ -809,6 +843,41 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
    ```
 
 
+
+发布确认整合springboot
+----------------------
+
+
+
+
+
+
+
+回退机制整合springboot
+----------------------
+
+
+
+
+
+
+
+幂等性
+------
+
+
+
+
+
+优先级队列
+----------
+
+
+
+
+
+惰性队列
+--------
 
 
 
