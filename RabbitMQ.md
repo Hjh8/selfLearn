@@ -847,7 +847,37 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
 发布确认整合springboot
 ----------------------
 
+1. 在配置文件中指定发布确认的类型：
 
+   ```properties
+   # none表示禁止，correlated表示异步，simple表示单个确认
+   spring.rabbitmq.publisher-confirm-type=correlated
+   ```
+
+2. 编写回调接口
+
+   ```java
+   @Component
+   public class MyCallBack implements RabbitTemplate.ConfirmCallback {
+       /**
+        * 交换机不管是否收到消息都会执行一个回调方法
+        * CorrelationData 消息相关数据
+        * ack
+        * 交换机是否收到消息
+        */
+       @Override
+       public void confirm(CorrelationData correlationData, boolean ack, String cause) {
+           String id = correlationData != null? correlationData.getId(): "";
+           if(ack){
+               log.info("交换机已经收到 id 为:{}的消息",id);
+           }else{
+               log.info("交换机还未收到 id 为:{}消息,由于原因:{}",id,cause);
+           }
+       } 
+   }
+   ```
+
+   
 
 
 
