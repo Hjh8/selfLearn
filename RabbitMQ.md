@@ -953,17 +953,19 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
 
 
 
-优先级队列
+优先队列
 ----------
 
+优先队列就是按照消息的优先级来进行消费。官网默认的优先级是0-255，越大的优先级越高。
 
+指定优先级：
 
+```java
+AMQP.BasicProperties properties = new AMQP.BasicProperties().builder().priority(5).build();
+channel.basicPublish("", QUEUE_NAME, properties, msg.getBytes());
+```
 
-
-惰性队列
---------
-
-
+我们也可以限制优先级的最大值：`params.put("x-max-priority", 10);` 此时优先级最大为10；
 
 
 
