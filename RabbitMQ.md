@@ -39,6 +39,42 @@ MQ的选择：
 
 
 
+RabbitMQWeb管理界面及授权操作
+-----------------------------
+
+安装完RabbitMQ之后，可以安装Web端的客户端软件来进行操作MQ。默认情况下，rabbitmq没有安装web端的客户端软件，需要安装才可以生效.
+
+```bash
+# 打开RabbitMQWeb管理界面插件
+rabbitmq-plugins enable rabbitmq_management
+```
+
+然后我们打开浏览器，访问`服务器公网ip:15672`（注意打开阿里云安全组以及防火墙的15672端口），就可以看到管理界面
+
+![image-20210306193911485](RabbitMQ.assets/ce41d148c9d646e99c67f508d18a1306.jpg)
+
+`rabbitmq`有一个默认的账号密码`guest`，但该情况仅限于本机localhost进行访问，所以需要添加一个远程登录的用户：
+
+```bash
+# 添加用户
+rabbitmqctl add_user 用户名 密码
+
+# 设置用户角色,分配操作权限
+rabbitmqctl set_user_tags 用户名 角色
+
+# 为用户添加资源权限(授予访问虚拟机根节点的所有权限)
+rabbitmqctl set_permissions -p / 用户名 ".*" ".*" ".*"
+```
+
+**角色有四种**：
+
+- `administrator`：可以登录控制台、查看所有信息、并对rabbitmq进行管理
+- `monToring`：监控者；登录控制台，查看所有信息
+- `policymaker`：策略制定者；登录控制台指定策略
+- `managment`：普通管理员；登录控制
+
+
+
 四大核心概念
 ---
 
