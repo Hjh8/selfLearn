@@ -282,7 +282,7 @@ public class consumer {
         // 消息消费的时候如何处理消息
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message= new String(delivery.getBody());
-            System.out.println("接收到消息:"+message);
+            System.out.println("接收到消息："+message);
             /**
              * 1.消息标记 tag
              * 2.是否批量应答
@@ -430,12 +430,6 @@ channel.addReturnListener(new ReturnListener() {
     }
 });
 ```
-
-
-
-
-
-
 
 
 
