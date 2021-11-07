@@ -59,8 +59,9 @@ rabbitmq-plugins enable rabbitmq_management
 # 添加用户
 rabbitmqctl add_user 用户名 密码
 
-# 设置用户角色,分配操作权限
-rabbitmqctl set_user_tags 用户名 角色
+# 设置用户角色,分配操作权限 
+# rabbitmqctl set_user_tags 用户名 角色
+rabbitmqctl set_user_tags  root administrator
 
 # 为用户添加资源权限(授予访问虚拟机根节点的所有权限)
 rabbitmqctl set_permissions -p / 用户名 ".*" ".*" ".*"
@@ -117,7 +118,7 @@ MQ案例
            // 定义工厂
            ConnectionFactory factory = new ConnectionFactory();
            // 设置服务地址，协议，端口以及连接的账号密码
-           factory.setHost("127.0.0.1");
+           factory.setHost(IP);
            factory.setPort(5672);
            factory.setUsername(账号);
            factory.setPort(密码);
@@ -392,7 +393,7 @@ ConfirmCallback nackCallback = (sequenceNumber, multiple) -> {
 // 添加异步的监听器
 channel.addConfirmListener(ackCallback, nackCallback);
 
-for (int i = 0; i < MESSAGE_COUNT; i++) {
+for (int i = 0; i < 10; i++) {
     String message = "消息" + i;
     channel.basicPublish("", queueName, null, message.getBytes());
 }
