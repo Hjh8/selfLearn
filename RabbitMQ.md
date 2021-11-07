@@ -253,7 +253,7 @@ MQ案例
 - **自动应答**：消息发送后被认为已经处理完成，立即删除该消息。可能会造成消息的丢失。
 - **手动应答**：当消息处理完成需要手动通知MQ删除该消息。
   - Channel.basicAck(String tag, boolean multiple)：用于肯定确认，RabbitMQ 已知道该消息并且成功的处理消息，可以将其丢弃了。
-  - Channel.basicNack(long deliveryTag, boolean multiple, boolean requeue)：用于否定确认，`requeue`表示是否重新将其入队
+  - Channel.basicNack(long deliveryTag, boolean multiple, boolean requeue)：用于否定确认，`requeue`表示是否重新将其入队，放回**队列头**。
   - Channel.basicReject(String tag, boolean multiple)：用于否定确认，不处理该消息了直接拒绝，可以将其丢弃了。
 
 multiple表示是否进行**批量应答**。批量应答指的是，当收到后面的tag应答的时候默认表示其前面所有消息都以处理完成，此时也可能出现消息丢失。比如发送了5 6 7 8，四个消息，当收到消息8的应答时，默认5 6 7也收到应答，此时会将5 6 7 8都进行删除。
