@@ -183,6 +183,8 @@ MQ案例
        public static void main(String[] args) throws Exception{
            Connection connection = MQUtils.getConnection();
            Channel channel = connection.createChannel();
+           // 声明队列
+           channel.queueDeclare(QUEUE_NAME, false, false, false, null);
            /*
                消费信息：
                  参数1：消费哪个队列
@@ -399,9 +401,11 @@ for (int i = 0; i < 10; i++) {
 }
 ```
 
-> 如何处理异步未确认消息?
->
-> 最好的解决的解决方案就是把未确认的消息放到一个基于内存的能被发布线程访问的map，比如说用 ConcurrentSkipListMap, 利用这个map记录所有发出去的消息，然后在成功回调方法里remove成功发送的消息，剩下的就是未成功发送的。
+> 代码是异步执行的，消息确认有可能是批量确认的，是否批量确认在于返回的 multiple 的参数，此参数为 bool 值，如果 true 表示批量执行了 deliveryTag 这个值以前的所有消息，如果为 false 的话表示单条确认。
+
+如何处理异步未确认消息?
+
+- 最好的解决的解决方案就是把未确认的消息放到一个基于内存的能被发布线程访问的map，比如说用 ConcurrentSkipListMap, 利用这个map记录所有发出去的消息，然后在成功回调方法里remove成功发送的消息，剩下的就是未成功发送的。
 
 
 
