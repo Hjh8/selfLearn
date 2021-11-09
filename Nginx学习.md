@@ -18,6 +18,12 @@ Nginx的配置文件
 
 > 配置文件的默认路径：`/usr/local/nginx/conf/nginx.conf`
 
+- 全局块：配置服务器整体运行的配置指令，比如` worker_processes 1;` 处理并发的数量
+- events块：影响Nginx服务器与用户的网络连接,`worker_connections 1024;` 支持的最大连接数为1024
+- http块
+  - http全局块
+  - server块
+
 
 
 
