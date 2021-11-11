@@ -211,7 +211,7 @@ server {
             proxy_pass http://192.168.17.129:9001/edu
         }
        location ~ /vod/ {
-            proxy_pass http://192.168.17.129:9001/edu
+            proxy_pass http://192.168.17.129:9001/vod
         }
 }
 ```
@@ -221,7 +221,53 @@ server {
 负载均衡配置
 ------------
 
+负载均衡的分配**策略**：
 
+- **轮询**（默认）： 每个请求按时间顺序逐一分配到不同的后端服务器，如果后端服务器down掉，能自动剔除。
+- **weight**：指定轮询几率，weight和访问比率成正比，用于后端服务器性能不均的情况。
+- **ip_hash**：每个请求按访问ip的hash结果分配，这样每个访客固定访问一个后端服务器，可以解决session的问题。
+- **fair**（第三方）：按后端服务器的响应时间来分配请求，响应时间短的优先分配。
+
+***
+
+.配置步骤如下：
+
+- 在http块中添加upstream
+
+  ```java
+  upstream 节点名{
+      server IP地址1;
+      server IP地址2 weight=n;  # weight表示权重
+      [ip_hash | fair | url_hash]  # 指定负载均衡算法，不指定则使用轮询算法
+  }
+  ```
+
+- 在location块中指定负载均衡的节点
+
+  ```java
+  location uri {
+      proxy_class 节点名;
+  }
+  ```
+
+
+
+
+
+动静分离
+--------
+
+通过location指定不同的后缀名实现不同的请求转发。另外可以通过expires 参数设置静态资源在浏览器缓存中的过期时间。
+
+配置如下：
+
+```java
+ location  ~ .*\.(css|gif|ico|jpg|js|png|ttf|woff)$ {  
+     root    /home/static;  
+ }
+```
+
+> 为了保证文件能正确执行，**nginx既需要文件的读权限,又需要文件所有父目录的可执行权限**。
 
 
 
