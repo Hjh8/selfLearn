@@ -1721,6 +1721,8 @@ springboot整合mybatis-plus步骤：
 
 ![image-20210107165547477](SpringBoot学习.assets/image-20210107165547477.png)
 
+> 全局生效：`mybatis-plus.global-config.db-config.id-type = auto` 
+
 
 
 #### ASSIGN_ID（雪花算法）
