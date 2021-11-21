@@ -2151,7 +2151,13 @@ wrapper包括了QueryWrapper跟UpdateWrapper。执行**查询**操作就用Query
 
     例: `eq("id",1).or().eq("name","老王")`--->`id = 1 or name = '老王'` 
 
-13. exists、notExists
+13. and：默认就是and进行拼接。一般用于优先级，比如查询“名字带有n” 并且“年龄等于18或id大于30”，`like("n").and(i -> i.le("age", 18).or().gt("id", 30))` 
+
+14. exists、notExists
+
+15. select：指定查询的字段。例：`select("id", "name")` 
+
+     
 
 
 
