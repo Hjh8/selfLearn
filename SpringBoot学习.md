@@ -1709,6 +1709,10 @@ springboot整合mybatis-plus步骤：
 
    ![image-20210106220954853](SpringBoot学习.assets/image-20210106220954853.png)
 
+> sql日志输出：
+>
+> 在配置文件中加上`mybatis-plus.configuration.log-impl = org.apache.ibatis.logging.stdout.StdOutImpl` 
+
 
 
 ### 主键生成策略
