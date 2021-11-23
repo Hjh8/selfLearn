@@ -1599,7 +1599,7 @@ public class SwaggerConfig {
                 .apiInfo(apiInfo())
                 .select()
                 // apis指定哪些地方要生成api文档，可以指定包、注解所在的类、注解所在的方法
-                .apis(RequestHandlerSelectors.withClassAnnotation(com.controller))
+                .apis(RequestHandlerSelectors.withClassAnnotation("com.controller"))
                 .paths(PathSelectors.any())
                 .build();
     }
@@ -1621,6 +1621,10 @@ public class SwaggerConfig {
 第四步：访问swagger.ui，地址为：`服务器Ip + 服务器端口 + /swagger-ui.html`。本人测试访问的地址为http://localhost:8443/swagger-ui.html
 
 ![image-20210106094416591](SpringBoot学习.assets/image-20210106094416591.png)
+
+> `org.springframework.context.ApplicationContextException: Failed to start bean 'documentationPluginsBootstrapper'; nested exception is java.lang.NullPointerException`
+>
+> 如果报了这个空指针异常，多添加一个**注解 @EnableWebMvc** 
 
 ***
 
