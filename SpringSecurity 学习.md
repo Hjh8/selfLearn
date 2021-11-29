@@ -75,6 +75,31 @@ SpringSecurity 特点：
 
 
 
+配置类解析
+----------
+
+```java
+@Override
+protected void configure(HttpSecurity http) throws Exception {
+    // 配置认证
+    http.formLogin()
+        .loginPage("/index") // 配置哪个 url 为登录页面
+        .loginProcessingUrl("/login") // 设置哪个是登录的 url。
+        .successForwardUrl("/success") // 登录成功之后跳转到哪个 url
+        .failureForwardUrl("/fail");// 登录失败之后跳转到哪个 url
+    	// .usernameParameter("myuser") // 指定登录的账号参数名
+           // .passwordParameter("pwd") // 指定登录的密码参数名
+    
+    http.authorizeRequests()
+        .antMatchers("/layui/**","/index") //表示配置请求路径
+        .permitAll() // 指定 URL 无需保护。
+        .anyRequest() // 其他请求
+        .authenticated(); //需要认证
+    // 关闭 csrf
+    http.csrf().disable();
+}
+```
+
 
 
 自定义登录逻辑
@@ -126,7 +151,7 @@ SpringSecurity 特点：
                throw new UsernameNotFoundException("用户名不存在！");
            }
            System.out.println(users);
-           // 设置用户权限
+           // 设置用户权限或角色，多个时可用 逗号 分割
            List<GrantedAuthority> auths =
                AuthorityUtils.commaSeparatedStringToAuthorityList("role");
            return new User(users.getUsername(), users.getPassword(), auths);
@@ -134,4 +159,43 @@ SpringSecurity 特点：
    }
    ```
 
-   
+
+> 在添加角色时，需要加上`ROLE_` 前缀，用于区别权限，比如`AuthorityUtils.commaSeparatedStringToAuthorityList("role, ROLE_admin");` 
+
+
+
+基于角色或权限进行访问控制
+--------------------------
+
+hasAuthority：判断当前的主体是否具有指定的权限
+
+hasAnyAuthority：判断当前的主体是否在提供的指定的权限(多个)中，如`hasAnyAuthority("admin, role")`，当用户有role权限时，也可以通过
+
+![image-20211129191730360](SpringSecurity 学习.assets/image-20211129191730360.png)
+
+hasRole：当前的主体是该角色就允许访问，否则出现 403页面。判断是不需要加`ROLE_`前缀，底层会自动帮我们加上。
+
+hasAnyRole：当前的主体若在指定角色(多个)中就允许访问，否则出现 403页面。
+
+![image-20211129192528157](SpringSecurity 学习.assets/image-20211129192528157.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
