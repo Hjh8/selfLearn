@@ -114,3 +114,209 @@ sudo systemctl start jenkins
 ![image-20211209113441359](jenkins自动化部署.assets/image-20211209113441359.png)
 
 ![image-20211209113537265](jenkins自动化部署.assets/image-20211209113537265.png)
+
+插件安装完成之后，在“系统配置”中配置ssh：
+
+![image-20211209121116388](jenkins自动化部署.assets/image-20211209121116388.png)
+
+
+
+
+
+jenkins+gitee远程部署springboot项目
+-----------------------------------
+
+> 由于github访问不稳定，经常会访问失败，所以这里使用gitee，操作步骤都类似。
+
+#### 安装Gitee插件
+
+系统管理->插件管理->可选插件->筛选`Gitee`->选中直接安装，安装成功之后重启jenkins服务
+
+
+
+#### 添加Gitee链接配置(系统管理->系统配置->Gitee配置)
+
+- 链接名：自己随意定
+- Gitee 域名 URL：`https://gitee.com`
+- 证书令牌：
+  - 点击添加
+  - 类型：Gitee API 令牌
+  - Gitee APIV5 私人令牌：登录码云情况下，在该浏览器上打开`https://gitee.com/profile/personal_access_tokens`，新增令牌
+
+![image-20211209121849311](jenkins自动化部署.assets/image-20211209121849311.png)
+
+![image-20211209122042095](jenkins自动化部署.assets/image-20211209122042095.png)
+
+
+
+#### 创建一个自由风格的任务
+
+![image-20211209122323829](jenkins自动化部署.assets/image-20211209122323829.png)
+
+![image-20211209122340161](jenkins自动化部署.assets/image-20211209122340161.png)
+
+![image-20211209122531995](jenkins自动化部署.assets/image-20211209122531995.png)
+
+再添加个字符参数接收回滚版本：
+
+![image-20211209122545392](jenkins自动化部署.assets/image-20211209122545392.png)
+
+
+
+#### 配置仓库
+
+![image-20211209122628720](jenkins自动化部署.assets/image-20211209122628720.png)
+
+![image-20211209122704464](jenkins自动化部署.assets/image-20211209122704464.png)
+
+
+
+#### 配置触发器
+
+![image-20211209123450128](jenkins自动化部署.assets/image-20211209123450128.png)
+
+![image-20211209123526009](jenkins自动化部署.assets/image-20211209123526009.png)
+
+
+
+#### 配置webhook
+
+![image-20211209123307557](jenkins自动化部署.assets/image-20211209123307557.png)
+
+![image-20211209123336877](jenkins自动化部署.assets/image-20211209123336877.png)
+
+![image-20211209123606364](jenkins自动化部署.assets/image-20211209123606364.png)
+
+
+
+#### 构建maven
+
+![image-20211209123702794](jenkins自动化部署.assets/image-20211209123702794.png)
+
+maven命令打包 `clean package -Dmaven.test.skip=true` 
+
+
+
+#### 构建后操作
+
+![image-20211209123825952](jenkins自动化部署.assets/image-20211209123825952.png)
+
+![image-20211209124405682](jenkins自动化部署.assets/image-20211209124405682.png)
+
+```bash
+#!/bin/sh -l
+cd /root/app/
+./app.sh stop /root/app/common/target/common-0.0.1-SNAPSHOT.jar common
+./app.sh start /root/app/common/target/common-0.0.1-SNAPSHOT.jar common
+```
+
+点击保存。
+
+接着在app目录下创建`app.sh`文件，内容如下：
+
+```bash
+#!/bin/sh -l
+#spring boot Jar包目录
+APP_NAME=$2
+LOG_NAME=$3
+PID=$(ps -ef | grep $APP_NAME| grep java| grep -v grep | awk '{print $2}')
+#PID=$(jps -l |grep $APP_NAME |awk '{print $1}')
+
+#使用说明，用来提示输入参数
+usage() {
+    echo "Usage: sh start.sh [start|stop|restart|status] [APP_NAME]"
+    exit 1
+}
+ 
+#检查程序是否在运行
+is_exist(){
+  #pid=$(ps -ef | grep $APP_NAME| grep -v grep | awk '{print $2}')
+  #如果不存在返回1，存在返回0     
+  if [ -z "${PID}" ]; then
+    return 1
+  else
+    return 0
+  fi
+}
+ 
+#启动方法
+start(){
+  is_exist
+  if [ $? -eq 0 ]; then
+    echo "${APP_NAME} is already running. pid=${PID}"
+  else
+        #这个dontKillMe 是一定要加的，不然jenkins会杀死这个进程，导致服务退出
+        BUILD_ID=dontKillMe
+        #将日志输出到out，可以自己命名，下面会输出“2021-10-19 23:17:07_log.out”样式的文件
+        current_date=`date "+%Y-%m-%d %H:%M:%S"`
+    nohup java -jar ${APP_NAME}  >logs/${LOG_NAME}_${current_date}.out 2>&1 &
+    if [ $? -eq 0 ]; then
+            echo "应用${APP_NAME} 启动成功！pid=$(jps -l |grep $APP_NAME |awk '{print $1}')"
+         echo "启动日志输出到:logs/${current_date}_log.out"
+      else
+        echo "${APP_NAME} 启动失败！"
+    fi
+  fi
+}
+ 
+#停止方法
+stop(){
+  is_exist
+  if [ $? -eq "0" ]; then
+   echo "应用${APP_NAME}停止服务!pid=${PID}!"
+    kill -9 ${PID}
+  else
+    echo "${APP_NAME} is not running"
+  fi  
+}
+ 
+#输出运行状态
+status(){
+  is_exist
+  if [ $? -eq "0" ]; then
+    echo "${APP_NAME} is running. Pid is ${PID}"
+  else
+    echo "${APP_NAME} is NOT running."
+  fi
+}
+ 
+#重启
+restart(){
+  stop
+  sleep 5
+  start
+}
+ 
+#根据输入参数，选择执行对应方法，不输入则执行使用说明
+case "$1" in
+  "start")
+    start
+    ;;
+  "stop")
+    stop
+    ;;
+  "status")
+    status
+    ;;
+  "restart")
+    restart
+    ;;
+  *)
+    usage
+    ;;
+esac
+```
+
+
+
+#### 开始构建
+
+![image-20211209124812210](jenkins自动化部署.assets/image-20211209124812210.png)
+
+
+
+jenkins+gitee远程部署vue
+------------------------
+
+
+
