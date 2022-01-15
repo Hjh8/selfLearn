@@ -167,6 +167,8 @@ jenkins+gitee远程部署springboot项目
 
 ![image-20211209122628720](jenkins自动化部署.assets/image-20211209122628720.png)
 
+![image-20220115164542807](jenkins自动化部署.assets/image-20220115164542807.png)
+
 ![image-20211209122704464](jenkins自动化部署.assets/image-20211209122704464.png)
 
 
@@ -318,5 +320,86 @@ esac
 jenkins+gitee远程部署vue
 ------------------------
 
+#### 安装node插件
+
+![image-20220115165659064](jenkins自动化部署.assets/image-20220115165659064.png)
+
+![image-20220115165714734](jenkins自动化部署.assets/image-20220115165714734.png)
 
 
+
+接着进入 "全局工具配置" > "添加node"
+
+![image-20220115165750998](jenkins自动化部署.assets/image-20220115165750998.png)
+
+
+
+#### 创建一个自由风格的任务
+
+![image-20220115164319604](jenkins自动化部署.assets/image-20220115164319604.png)
+
+
+
+#### 配置仓库
+
+![image-20220115164522218](jenkins自动化部署.assets/image-20220115164522218.png)
+
+![image-20220115164542807](jenkins自动化部署.assets/image-20220115164542807.png)
+
+![image-20211209122704464](jenkins自动化部署.assets/image-20211209122704464.png)
+
+
+
+#### 配置触发器
+
+![image-20220115164712544](jenkins自动化部署.assets/image-20220115164712544.png)
+
+![image-20220115164731520](jenkins自动化部署.assets/image-20220115164731520.png)
+
+
+
+#### 配置webhook
+
+![image-20220115164830011](jenkins自动化部署.assets/image-20220115164830011.png)
+
+![image-20220115164851981](jenkins自动化部署.assets/image-20220115164851981.png)
+
+![image-20220115164924362](jenkins自动化部署.assets/image-20220115164924362.png)
+
+
+
+#### 构建环境
+
+勾选上nodejs
+
+![image-20220115165059477](jenkins自动化部署.assets/image-20220115165059477.png)
+
+
+
+#### 构建>执行shell
+
+![image-20220115165227409](jenkins自动化部署.assets/image-20220115165227409.png)
+
+![image-20220115165212744](jenkins自动化部署.assets/image-20220115165212744.png)
+
+```shell
+rm -rf ./dist/*
+npm install
+npm run build
+```
+
+
+
+#### 构建后操作
+
+![image-20211209123825952](jenkins自动化部署.assets/image-20211209123825952.png)
+
+![image-20220115165440963](jenkins自动化部署.assets/image-20220115165440963.png)
+
+到此配置就结束了，点击保存。
+
+
+
+#### 开始构建
+
+![image-20220115165549673](jenkins自动化部署.assets/image-20220115165549673.png)
