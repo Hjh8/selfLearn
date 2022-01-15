@@ -208,8 +208,8 @@ maven命令打包 `clean package -Dmaven.test.skip=true`
 ```bash
 #!/bin/sh -l
 cd /root/app/
-./app.sh stop /root/app/common/target/common-0.0.1-SNAPSHOT.jar common
-./app.sh start /root/app/common/target/common-0.0.1-SNAPSHOT.jar common
+./app.sh stop /root/app/target/common-0.0.1-SNAPSHOT.jar
+./app.sh start /root/app/target/common-0.0.1-SNAPSHOT.jar common
 ```
 
 点击保存。
