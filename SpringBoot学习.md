@@ -2127,7 +2127,7 @@ wrapper包括了QueryWrapper跟UpdateWrapper。执行**查询**操作就用Query
 
 6. in、notIn
 
-   `in("age",{1,2,3}) `---> `age in (1,2,3)`
+   `in("age",{1,2,3}) `---> `age in (1,2,3)` 
 
 7. inSql、notInSql  子查询
 
