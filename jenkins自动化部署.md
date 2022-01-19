@@ -203,111 +203,15 @@ maven命令打包 `clean package -Dmaven.test.skip=true`
 
 ![image-20211209123825952](jenkins自动化部署.assets/image-20211209123825952.png)
 
-![image-20211209124405682](jenkins自动化部署.assets/image-20211209124405682.png)
+![image-20220118225339861](jenkins自动化部署.assets/image-20220118225339861.png)
 
 ```bash
 #!/bin/sh -l
-cd /root/app/
-./app.sh stop /root/app/target/common-0.0.1-SNAPSHOT.jar
-./app.sh start /root/app/target/common-0.0.1-SNAPSHOT.jar common
+cd /home/app/target
+BUILD_ID=nohup java -jar applybackend-1.0-SNAPSHOT.jar
 ```
 
 点击保存。
-
-接着在app目录下创建`app.sh`文件，内容如下：
-
-```bash
-#!/bin/sh -l
-#spring boot Jar包目录
-APP_NAME=$2
-LOG_NAME=$3
-PID=$(ps -ef | grep $APP_NAME| grep java| grep -v grep | awk '{print $2}')
-#PID=$(jps -l |grep $APP_NAME |awk '{print $1}')
-
-#使用说明，用来提示输入参数
-usage() {
-    echo "Usage: sh start.sh [start|stop|restart|status] [APP_NAME]"
-    exit 1
-}
- 
-#检查程序是否在运行
-is_exist(){
-  #pid=$(ps -ef | grep $APP_NAME| grep -v grep | awk '{print $2}')
-  #如果不存在返回1，存在返回0     
-  if [ -z "${PID}" ]; then
-    return 1
-  else
-    return 0
-  fi
-}
- 
-#启动方法
-start(){
-  is_exist
-  if [ $? -eq 0 ]; then
-    echo "${APP_NAME} is already running. pid=${PID}"
-  else
-        #这个dontKillMe 是一定要加的，不然jenkins会杀死这个进程，导致服务退出
-        BUILD_ID=dontKillMe
-        #将日志输出到out，可以自己命名，下面会输出“2021-10-19 23:17:07_log.out”样式的文件
-        current_date=`date "+%Y-%m-%d %H:%M:%S"`
-    nohup java -jar ${APP_NAME}  >logs/${LOG_NAME}_${current_date}.out 2>&1 &
-    if [ $? -eq 0 ]; then
-            echo "应用${APP_NAME} 启动成功！pid=$(jps -l |grep $APP_NAME |awk '{print $1}')"
-         echo "启动日志输出到:logs/${current_date}_log.out"
-      else
-        echo "${APP_NAME} 启动失败！"
-    fi
-  fi
-}
- 
-#停止方法
-stop(){
-  is_exist
-  if [ $? -eq "0" ]; then
-   echo "应用${APP_NAME}停止服务!pid=${PID}!"
-    kill -9 ${PID}
-  else
-    echo "${APP_NAME} is not running"
-  fi  
-}
- 
-#输出运行状态
-status(){
-  is_exist
-  if [ $? -eq "0" ]; then
-    echo "${APP_NAME} is running. Pid is ${PID}"
-  else
-    echo "${APP_NAME} is NOT running."
-  fi
-}
- 
-#重启
-restart(){
-  stop
-  sleep 5
-  start
-}
- 
-#根据输入参数，选择执行对应方法，不输入则执行使用说明
-case "$1" in
-  "start")
-    start
-    ;;
-  "stop")
-    stop
-    ;;
-  "status")
-    status
-    ;;
-  "restart")
-    restart
-    ;;
-  *)
-    usage
-    ;;
-esac
-```
 
 
 
