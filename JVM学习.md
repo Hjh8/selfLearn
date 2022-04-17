@@ -46,6 +46,8 @@ java内存结构：内存结构也叫**运行时数据区**。是JVM对内部存
 
 
 
+
+
 #### 加载
 
 类加载器根据类的全限定名称获取类的二进制字节流，将二进制字节流所代表的**静态存储结构**转化为方法区的**运行时数据结构**，最后在内存中生成一个代表此类的`java.lang.Class`对象，作为这个类在方法区的访问入口。
@@ -57,10 +59,6 @@ java内存结构：内存结构也叫**运行时数据区**。是JVM对内部存
 - 数组类的可访问性与它的元素类型的可访问性一致，如果元素类型不是引用类型，则数组类的访问性默认为public。
 
 
-
-- BootstrapClassLoader：是 ExtClassLoader 的父类加载器，所谓父类加载器并不是直接的继承关系，而是在`ClassLoader parent`属性中指定。默认加载 `%JAVA_HOME%/lib` 目录下的 jar包和class文件
-- ExtClassLoader：是 AppClassLoader 的父类加载器，默认加载`%JAVA_HOME%/lib/ext` 下的jar包和java类
-- AppClassLoader：是自定义加载器的父类加载器，负责加载`classpath下的文件` 
 
 #### 校验
 
@@ -94,6 +92,38 @@ java内存结构：内存结构也叫**运行时数据区**。是JVM对内部存
 
 > JVM必须确保一个类在初始化的过程中，只能允许一个线程对其执行初始化操作，其他线程都需要阻塞等待。
 
+对于初始化阶段，以下情况必须立即对类进行初始化（加载、校验等也需要在初始化前进行）：
+
+1. 使用new关键字实例化对象时。
+2. 读取或设置一个类的静态字段时（被final修饰的静态字段除外）。
+3. 调用一个类的静态方法时。
+4. 使用reflect包的方法对一个类进行反射调用的时候。
+5. 初始化类时，如果其父类没有初始化过，则需要先对其父类进行初始化。但接口除外，只有真正用到父接口的时候（如引用接口中定义的常量）才会初始化父接口。
+6. 当虚拟机启动时，会初始化主类。
+7. 一个接口包含default方法，此接口的实现类进行初始化时，该接口需要在其之前初始化。
+
+以上情况称为对某个类型的进行**主动引用**。除此之外，当调用某个类型的所有方法和属性都不会触发其初始化时，称为**被动引用**。
+
+1. 通过子类引用父类的静态字段，不会导致子类初始化。
+
+   ```java
+   public static void main(String[] args){
+       // a是在SubClass的父类中定义的静态字段
+       System.out.println(SubClass.a);
+   }
+   ```
+
+2. 通过数组定义类引用类，不会触发此类的初始化。
+
+   ```java
+   public static void main(String[] args){
+       // a是在SubClass的父类中定义的静态字段
+       SubClass[] ss = new SubClass[10];
+   }
+   ```
+
+3. 在编译阶段，常量会从 定义常量的类中 存入到 调用类的常量池，本质上没有直接引用到定义常量的类，因此不会触发定义常量的类的初始化。
+
 
 
 ### 类加载器
@@ -102,7 +132,17 @@ java内存结构：内存结构也叫**运行时数据区**。是JVM对内部存
 
 类加载器（ClassLoader）用来加载 Java 类到 Java 虚拟机中。基本上所有的类加载器都是 `java.lang.ClassLoader` 类的一个实例。
 
-java.lang.ClassLoader类的基本职责就是**根据指定的类名称**，找到或者生成其对应的字节码文件，然后从这些字节码文件中定义出一个 Java 类，即 java.lang.Class类的一个实例。除此之外，ClassLoader还负责加载 Java 应用所需的资源，如图像文件和配置文件等。
+java.lang.ClassLoader类的基本职责就是**根据类的全限定名称**，找到或者生成其对应的字节码文件，然后从这些字节码文件中定义出一个 Java 类，即该类的Class对象。除此之外，ClassLoader还负责加载 Java 应用所需的资源，如图像文件和配置文件等。
+
+***
+
+在Java中包含着三层加载器：
+
+- 启动类加载器（BootstrapClassLoader）：是 ExtClassLoader 的父类加载器，所谓父类加载器并不是直接的继承关系，而是在`ClassLoader parent`属性中指定。默认加载 `%JAVA_HOME%/lib` 目录下的jar包。
+- 扩展类加载器（ExtensionClassLoader）：是 AppClassLoader 的父类加载器，默认加载`%JAVA_HOME%/lib/ext` 下所有的类库。
+- AppClassLoader：是自定义加载器的父类加载器，负责加载`classpath下的文件` 
+
+
 
 为了完成加载类的职责，ClassLoader提供了一系列的方法：
 
