@@ -138,11 +138,13 @@ java.lang.ClassLoader类的基本职责就是**根据类的全限定名称**，�
 
 在Java中包含着三层加载器：
 
-- 启动类加载器（BootstrapClassLoader）：是 ExtClassLoader 的父类加载器，所谓父类加载器并不是直接的继承关系，而是在`ClassLoader parent`属性中指定。默认加载 `%JAVA_HOME%/lib` 目录下的jar包。
+- 启动类加载器（BootstrapClassLoader）：是 ExtClassLoader 的父类加载器，所谓父类加载器并不是直接的继承关系，而是在`ClassLoader parent`属性中指定。默认加载 `%JAVA_HOME%/lib` 目录下的核心类库。
 - 扩展类加载器（ExtensionClassLoader）：是 AppClassLoader 的父类加载器，默认加载`%JAVA_HOME%/lib/ext` 下所有的类库。
 - AppClassLoader：是自定义加载器的父类加载器，负责加载`classpath下的文件` 
 
+> 类库指的就是java包中的类。
 
+***
 
 为了完成加载类的职责，ClassLoader提供了一系列的方法：
 
