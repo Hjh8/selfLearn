@@ -42,7 +42,7 @@ JUC就是 java.util.concurrent 工具包的简称。这是从JDK 1.5 开始出�
 
 需要注意的是，**可运行态中包含了 就绪、运行阻塞和运行态**。
 
-![image-20210716115528905](JUC学习.assets/image-20210716115528905.png)
+![image-20220510163002622](JUC学习.assets/image-20220510163002622.png)
 
 
 
@@ -792,6 +792,7 @@ Synchronized和Lock区别
 3. Synchronized可以锁代码块和方法；lock只能锁代码块
 4. Synchronized是不可中断的，其他线程会一直**阻塞**；而lock锁可以是不可中断(lock)，即其他线程会一直**等待**下去，也可以是可中断的(tryLock)。
 5. Synchronized是可重入锁、非公平；lock也是可重入锁，但是可以设置使用公平锁或者非公平锁。
+6. Synchronized只能绑定一个锁对象，而lock可以绑定多个Condition对象。
 
 > **不可中断**是指获取到锁之后其他线程会一直等待或阻塞下去。
 
