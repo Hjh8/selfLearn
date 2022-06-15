@@ -61,11 +61,20 @@ public void testJoinWithNull(){
 
 ### Splitter拆分器
 
-|      |      |      |
-| ---- | ---- | ---- |
-|      |      |      |
-|      |      |      |
-|      |      |      |
+| 方法                              | 描述                                                         |
+| --------------------------------- | ------------------------------------------------------------ |
+| **Splitter.on(char)**             | 按单个字符拆分                                               |
+| **Splitter.on(CharMatcher)**      | 按字符匹配器拆分                                             |
+| **Splitter.on(String)**           | 按字符串拆分                                                 |
+| **Splitter.on(Pattern)**          | 按正则表达式拆分                                             |
+| **Splitter.onPattern(String)**    | 按正则表达式拆分                                             |
+| **Splitter.fixedLength(int)**     | 按固定长度拆分；最后一段可能比给定长度短，但不会为空。       |
+| **omitEmptyStrings()**            | 从结果中自动忽略空字符串                                     |
+| **trimResults()**                 | 移除结果字符串的前导空白和尾部空白                           |
+| **trimResults(CharMatcher)**      | 给定匹配器，移除结果字符串的前导匹配字符和尾部匹配字符       |
+| **limit(int)**                    | 限制拆分出的字符串数量                                       |
+| **withKeyValueSeparator(String)** | 得到 **MapSplitter**，拆分成Map的键、值。 注意，这个对被拆分字符串格式有严格要求，否则会抛出异常 |
+| **splitToList(String)**           | 对字符串拆分后形成List                                       |
 
 
 
