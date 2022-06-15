@@ -72,9 +72,33 @@ public void testJoinWithNull(){
 | **omitEmptyStrings()**            | 从结果中自动忽略空字符串                                     |
 | **trimResults()**                 | 移除结果字符串的前导空白和尾部空白                           |
 | **trimResults(CharMatcher)**      | 给定匹配器，移除结果字符串的前导匹配字符和尾部匹配字符       |
-| **limit(int)**                    | 限制拆分出的字符串数量                                       |
+| **limit(int)**                    | 限制拆分出的字符串的数量，即只会拆分成int个字符串            |
 | **withKeyValueSeparator(String)** | 得到 **MapSplitter**，拆分成Map的键、值。 注意，这个对被拆分字符串格式有严格要求，否则会抛出异常 |
 | **splitToList(String)**           | 对字符串拆分后形成List                                       |
+
+
+
+### Strings字符串处理
+
+| 方法                                                     | 描述                                                         |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| **nullToEmpty(String s)**                                | 如果s为null则转为空字符串                                    |
+| **emptyToNull(String s)**                                | 如果s为空字符串则转为null                                    |
+| **isNullOrEmpty(String string)**                         | 判断字符串为null或空字符串                                   |
+| **padStart(String string, int minLength, char padChar)** | 如果string的长度小于minLength，在string前添加padChar，直到字符串长度为minLeng |
+| **padEnd(String string, int minLength, char padChar)**   | 和padStart类似，不过是在尾部添加新字符串                     |
+| **repeat(String s, int count)**                          | 将s重复拼接count次                                           |
+| **commonPrefix(CharSequence a, CharSequence b)**         | 返回共同的前缀                                               |
+| **commonSuffix(CharSequence a, CharSequence b)**         | 返回共同的后缀                                               |
+| **lenientFormat(String template,Object… args)**          |                                                              |
+
+
+
+### CharMatcher字符匹配器
+
+
+
+
 
 
 
