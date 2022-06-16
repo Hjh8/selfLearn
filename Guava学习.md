@@ -149,13 +149,23 @@ Collections
 
 Lists是Guava Collections中提供的用于处理List实例的实用类，翻开源代码，我们看到，其内部使用了静态工厂方法代替构造器，提供了许多用于List子类构造和操作的静态方法：
 
-| 方法                          | 描述                                              |
-| ----------------------------- | ------------------------------------------------- |
-| **newArrayList()**            | 构造一个可变的、空的ArrayList实例                 |
-| **newArrayList(E… elements)** | 构造一个可变的包含传入元素elements的ArrayList实例 |
-|                               |                                                   |
-|                               |                                                   |
-|                               |                                                   |
-|                               |                                                   |
-|                               |                                                   |
+| 方法                                               | 描述                                              |
+| -------------------------------------------------- | ------------------------------------------------- |
+| **newArrayList()**                                 | 构造一个可变的、空的ArrayList实例                 |
+| **newArrayList(E… elements)**                      | 构造一个可变的包含传入元素elements的ArrayList实例 |
+| **newLinkedList()**                                | 构造一个空的LinkedList实例                        |
+| **newCopyOnWriteArrayList()**                      | 构造一个空的CopyOnWriteArrayList实例              |
+| **newArrayListWithCapacity(int initialArraySize)** | 构造一个分配 指定空间大小的ArrayList实例          |
+
+**Lists** 为List类型的对象提供了若干工具方法：
+
+| 方法                          | 描述                               |
+| ----------------------------- | ---------------------------------- |
+| **reverse(List list)**        | 返回一个传入List内元素倒序后的List |
+| **asList(E first, E[] rest)** | 返回一个不可变的List               |
+|                               |                                    |
+|                               |                                    |
+|                               |                                    |
+|                               |                                    |
+|                               |                                    |
 
