@@ -101,9 +101,20 @@ public void StringsTest(){
 
 
 
-
-
 Optional
 ----------
 
-Optional用于包含**非空对象**的**不可变**对象。 Optional对象，用于不存在值表示null。这个类有各种实用的方法，以方便代码来处理为可用或不可用，而不是检查null值
+Optional用于包含**非空对象**的**不可变**对象。 Optional对象，用不存在值表示null。这个类有各种实用的方法，以方便代码来处理为可用或不可用，而不是检查null值
+
+| 方法                         | 描述                                               |
+| ---------------------------- | -------------------------------------------------- |
+| **Optional.of(T)**           | 创建指定引用的Optional实例，若引用为null则快速失败 |
+| **Optional.absent()**        | 创建引用缺失的Optional实例                         |
+| **Optional.fromNullable(T)** | 创建指定引用的Optional实例，若引用为null则表示缺失 |
+
+
+
+
+
+
+
