@@ -159,13 +159,11 @@ Lists是Guava Collections中提供的用于处理List实例的实用类，翻开
 
 **Lists** 为List类型的对象提供了若干工具方法：
 
-| 方法                          | 描述                               |
-| ----------------------------- | ---------------------------------- |
-| **reverse(List list)**        | 返回一个传入List内元素倒序后的List |
-| **asList(E first, E[] rest)** | 返回一个不可变的List               |
-|                               |                                    |
-|                               |                                    |
-|                               |                                    |
-|                               |                                    |
-|                               |                                    |
+| 方法                               | 描述                                                         |
+| ---------------------------------- | ------------------------------------------------------------ |
+| **reverse(List list)**             | 返回一个传入List内元素倒序后的List                           |
+| **asList(E first, E[] rest)**      | 返回一个不可变的List                                         |
+| **partition(List list, int size)** | 形成二维List，每个维度的List长度为size                       |
+| **charactersOf(String string)**    | 将传进来的String分割为单个的字符，并存入到一个新的List对象中返回 |
+| **transform(list, function)**      | 返回一个经过function处理后的List                             |
 
