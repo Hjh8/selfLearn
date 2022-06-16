@@ -92,19 +92,18 @@ public void testJoinWithNull(){
 | **commonSuffix(CharSequence a, CharSequence b)**         | 返回共同的后缀                                               |
 | **lenientFormat(String template,Object… args)**          |                                                              |
 
-
-
-### CharMatcher字符匹配器
-
-
-
-
-
-
+```java
+@Test
+public void StringsTest(){
+    System.out.println(Strings.emptyToNull("pp"));
+}
+```
 
 
 
-Optional类
+
+
+Optional
 ----------
 
 Optional用于包含**非空对象**的**不可变**对象。 Optional对象，用于不存在值表示null。这个类有各种实用的方法，以方便代码来处理为可用或不可用，而不是检查null值
