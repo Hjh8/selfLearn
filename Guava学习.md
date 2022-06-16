@@ -104,17 +104,58 @@ public void StringsTest(){
 Optional
 ----------
 
-Optional用于包含**非空对象**的**不可变**对象。 Optional对象，用不存在值表示null。这个类有各种实用的方法，以方便代码来处理为可用或不可用，而不是检查null值
+Optional用于包含**非空对象**的**不可变**对象。 Optional对象，用不存在值表示null。这个类有各种实用的方法，以方便代码来处理为可用或不可用，而不是检查null值。
+
+创建Optional实例：
 
 | 方法                         | 描述                                               |
 | ---------------------------- | -------------------------------------------------- |
 | **Optional.of(T)**           | 创建指定引用的Optional实例，若引用为null则快速失败 |
-| **Optional.absent()**        | 创建引用缺失的Optional实例                         |
 | **Optional.fromNullable(T)** | 创建指定引用的Optional实例，若引用为null则表示缺失 |
+| **Optional.absent()**        | 创建引用缺失的Optional实例                         |
+
+Optional实例查询引用：
+
+| 方法                    | 描述                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| **boolean isPresent()** | 如果Optional包含非null的引用（引用存在），返回true           |
+| **T get()**             | 返回Optional所包含的引用，若引用缺失，则抛出异常             |
+| **T or(T)**             | 返回Optional所包含的引用，若引用缺失，返回指定的值           |
+| **T orNull()**          | 返回Optional所包含的引用，若引用缺失，返回null               |
+| **Set asSet()**         | 返回Optional所包含引用的单例不可变集。 如果引用存在，返回一个只有单一元素的集合，如果引用缺失，返回一个空集合。 |
+
+```java
+@Test
+public void OptionalTest(){
+    Integer a = null;
+    Optional<Integer> of = Optional.fromNullable(a);
+    System.out.println(of.or(0));
+}
+```
 
 
 
+Objects
+-------
+
+`Objects.equal(a, b)`：当一个对象中的字段可以为null时，实现 **Object.equals** 会很痛苦，因为不得不分别对它们进行null检查。使用 **Objects.equal** 帮助你执行null敏感的equals判断，从而避免抛出NullPointerException。
 
 
 
+Collections
+-----------
+
+### Lists
+
+Lists是Guava Collections中提供的用于处理List实例的实用类，翻开源代码，我们看到，其内部使用了静态工厂方法代替构造器，提供了许多用于List子类构造和操作的静态方法：
+
+| 方法                          | 描述                                              |
+| ----------------------------- | ------------------------------------------------- |
+| **newArrayList()**            | 构造一个可变的、空的ArrayList实例                 |
+| **newArrayList(E… elements)** | 构造一个可变的包含传入元素elements的ArrayList实例 |
+|                               |                                                   |
+|                               |                                                   |
+|                               |                                                   |
+|                               |                                                   |
+|                               |                                                   |
 
