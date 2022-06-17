@@ -167,3 +167,34 @@ Lists是Guava Collections中提供的用于处理List实例的实用类，翻开
 | **charactersOf(String string)**    | 将传进来的String分割为单个的字符，并存入到一个新的List对象中返回 |
 | **transform(list, function)**      | 返回一个经过function处理后的List                             |
 
+
+
+### Multiset
+
+Multiset 是 **guava** 包下一种新的集合，可以方便的统计集合中重复元素出现的次数。
+
+Multiset 有以下实现类：
+
+- HashMultiset:：元素存放于 HashMap
+- LinkedHashMap：即元素的排列顺序由第一次放入的顺序决定
+- TreeMultiset：元素被排序存放于TreeMap
+- ImmutableMultiset： 不可修改的 Mutiset
+
+场景：统计一份名单中每个名字出现的**次数**。
+
+```java
+List<String> nameList = Arrays.asList("张三", "李四", "王五", "乔二娃", "张三", "李四", "Tom");
+//创建一个 Multiset
+Multiset<String> nameMultiset = HashMultiset.create();
+
+nameMultiset.addAll(nameList);
+
+Integer count = nameMultiset.count("张三");//2
+```
+
+
+
+
+
+
+
