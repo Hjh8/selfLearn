@@ -11,9 +11,9 @@ NIO 学习
 
 IO不仅仅是对文件的操作，在网络编程中，如Socket通信就是典型的IO操作目标。
 
-- 输入流、输出流（InputStream/OutputStream）是用于读取或写入字节的，例如操作图片文件。
-- 而Reader/Writer则是用于操作字符，增加了字符编解码等功能，适用于类似从文件中读取或者写入文本信息。本质上计算机操作的都是字节，不管是网络通信还是文件读取，Reader/Writer相当于构建了应用逻辑和原始数据之间的桥梁。
-- BufferedOutputStream等带缓冲区的实现，可以避免频繁的磁盘读写，进而提高IO处理效率。这种设计利用了缓冲区，将批量数据进行一次操作，但在使用中千万别忘了flush。
+输入流、输出流（InputStream/OutputStream）是用于读取或写入字节的，例如操作图片文件。而Reader/Writer则是用于操作字符，增加了字符编解码等功能，适用于类似从文件中读取或者写入文本信息。本质上计算机操作的都是字节，不管是网络通信还是文件读取，Reader/Writer相当于构建了应用逻辑和原始数据之间的桥梁。
+
+BufferedOutputStream等缓冲区的实现，可以避免频繁的磁盘读写，进而提高IO处理效率。这种设计利用了缓冲区，可以将批量数据进行一次操作。
 
 
 
@@ -86,7 +86,7 @@ NIO 有三大核心部分：**Channel( 通道) ，Buffer( 缓冲区), Selector( 
 Buffer 中的重要概念： 
 
 * **容量 (capacity)** ：作为一个内存块，Buffer具有一定的固定大小，也称为"容量"，缓冲区容量不能为负，并且创建后不能更改。 
-* **限制 (limit)**：表示缓冲区中可以操作数据的大小（limit 后数据不能进行读写）。缓冲区的限制不能为负，并且不能大于其容量。 **写入模式下，限制等于buffer的容量。读取模式下，limit等于写入的数据量**。
+* **限制 (limit)**：表示缓冲区中可以操作数据的大小（limit 后数据不能进行读写）。缓冲区的限制不能为负，并且不能大于其容量。 **写入模式下，limit等于buffer的容量。读取模式下，limit等于写入的数据量**。
 * **位置 (position)**：下一个要读取或写入的数据的索引。缓冲区的位置不能为负，并且不能大于其限制 
 * **标记 (mark)与重置 (reset)**：标记是一个索引，通过 Buffer 中的 mark() 方法 指定 Buffer 中一个特定的 position，之后可以通过调用 reset() 方法恢复到这 个position.
 
@@ -210,24 +210,24 @@ ServerSocketChannel ssChannel = ServerSocketChannel.open();
 2. 切换非阻塞模式
 
 ```java
- ssChannel.configureBlocking(false);
+ssChannel.configureBlocking(false);
 ```
 
 3. 绑定连接
 
 ```java
- ssChannel.bind(new InetSocketAddress(9999));
+ssChannel.bind(new InetSocketAddress(9999));
 ```
 
 4. 获取选择器
 
-```
+```java
 Selector selector = Selector.open();
 ```
 
 5. 将通道注册到选择器上, 并且指定 “监听接收事件”
 
-```
+```java
 ssChannel.register(selector, SelectionKey.OP_ACCEPT);
 ```
 
