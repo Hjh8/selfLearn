@@ -252,8 +252,7 @@ class MyClassLoader extends ClassLoader {
 
     private byte[] loadByte(String name) throws Exception {
         name = name.replaceAll("\\.", "/");
-        FileInputStream fis = new FileInputStream(classPath + "/" + name
-                + ".class");
+        FileInputStream fis = new FileInputStream(classPath + "/" + name + ".class");
         int len = fis.available();
         byte[] data = new byte[len];
         fis.read(data);
