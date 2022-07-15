@@ -90,12 +90,14 @@ public void testJoinWithNull(){
 | **repeat(String s, int count)**                          | 将s重复拼接count次                                           |
 | **commonPrefix(CharSequence a, CharSequence b)**         | 返回共同的前缀                                               |
 | **commonSuffix(CharSequence a, CharSequence b)**         | 返回共同的后缀                                               |
-| **lenientFormat(String template,Object… args)**          |                                                              |
+| **lenientFormat(String template,Object… args)**          | 用args中的参数代替template中的%s，参数的个数与%s的个数要相同  |
 
 ```java
 @Test
 public void StringsTest(){
     System.out.println(Strings.emptyToNull("pp"));
+    String[] args = {"a","b","c"};
+    String result = Strings.lenientFormat("11%s22%s33%s", args); // 11a22b33c
 }
 ```
 
