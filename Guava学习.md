@@ -77,6 +77,20 @@ public void testJoinWithNull(){
 | **splitToList(String)**           | 对字符串拆分后形成List                                       |
 
 
+## Ints
+
+Ints用于补充Integer和Arrays中对int类型的操作。
+
+一些常用的静态方法如下：
+
+|             方法              |                      描述                       |
+| :---------------------------: | :---------------------------------------------: |
+|     compare(int a, int b)     | 比较a和b的大小。1表示a>b；0表示a=b；-1表示a<b； |
+| contains(int[] a, int target) |          判断数组a中是否包含target元素          |
+|       max(int... array)       |             返回数组array中的最大值             |
+|       min(int... array)       |             返回数组array中的最小值             |
+|      asList(int[] array)      | 将数组变成List，但是变成List后不可以进行add操作 |
+
 
 ### Strings字符串处理
 
