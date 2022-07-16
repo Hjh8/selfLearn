@@ -77,6 +77,7 @@ public void testJoinWithNull(){
 | **splitToList(String)**           | 对字符串拆分后形成List                                       |
 
 
+
 ## Ints
 
 Ints用于补充Integer和Arrays中对int类型的操作。
@@ -92,7 +93,8 @@ Ints用于补充Integer和Arrays中对int类型的操作。
 |      asList(int[] array)      | 将数组变成List，但是变成List后不可以进行add操作 |
 
 
-### Strings字符串处理
+
+## Strings
 
 | 方法                                                     | 描述                                                         |
 | -------------------------------------------------------- | ------------------------------------------------------------ |
@@ -145,6 +147,7 @@ Optional实例查询引用：
 public void OptionalTest(){
     Integer a = null;
     Optional<Integer> of = Optional.fromNullable(a);
+    // 如果是null则返回默认值
     System.out.println(of.or(0));
 }
 ```
@@ -155,6 +158,60 @@ Objects
 -------
 
 `Objects.equal(a, b)`：当一个对象中的字段可以为null时，实现 **Object.equals** 会很痛苦，因为不得不分别对它们进行null检查。使用 **Objects.equal** 帮助你执行null敏感的equals判断，从而避免抛出NullPointerException。
+
+`Objects.hashcode(Object... a)`：计算多个值的hashcode。
+
+
+
+## CharMatcher
+
+CharMatcher提供了多种对字符串处理的方法, 它的主要意图有:
+
+1. 找到匹配的字符
+2. 处理匹配的字符，例如 remove(), replace(), trim(), retain()等等。
+
+ 
+
+CharMatcher本身提供了很多CharMatcher实现类: 
+
+|          方法           |                             描述                             |
+| :---------------------: | :----------------------------------------------------------: |
+|   **anyOf(String s)**   |           返回能够匹配sequence中任一字符的Matcher            |
+|   **is(char match)**    |                  返回匹配指定字符的Matcher                   |
+|  **isNot(char match)**  |                 返回不匹配指定字符的Matcher                  |
+|    **whitespace()**     |                  返回匹配空格字符的Matcher                   |
+| **inRange(char, char)** | 表明你想匹配的一个字符范围，例如：CharMatcher.inRange('a', 'z') |
+
+对于处理匹配字符的常用方法：
+
+|                    方法                     |                    描述                    |
+| :-----------------------------------------: | :----------------------------------------: |
+|         **countIn(CharSequence c)**         |            字符序列c出现的次数             |
+|         **indexIn(CharSequence c)**         |         字符序列c第一次出现的下标          |
+|       **matchesAllOf(CharSequence)**        |            字符序列是否全部匹配            |
+|       **matchesAnyOf(CharSequence)**        |            字符序列是否任意匹配            |
+|       **matchesNoneOf(CharSequence)**       |             字符序列是否不匹配             |
+|    **collapseFrom(CharSequence, char)**     | 将一组连续匹配的字符串替换为一个指定的字符 |
+|        **removeFrom(CharSequence)**         |            将匹配的字符序列移除            |
+|        **retainFrom(CharSequence)**         |            将留下匹配的字符序列            |
+|         **trimFrom(CharSequence)**          |          去除开头和结尾匹配的部分          |
+| **replaceFrom(CharSequence, CharSequence)** |        将匹配的字符替换为给定的序列        |
+
+```java
+public void test(){
+    String s = "abc123";
+    CharMatcher any = CharMatcher.anyOf("abc");
+    String s1 = any.removeFrom(s); // 删除abc
+    System.out.println(s1); // 123
+}
+
+public void test(){
+    String s = "abc123";
+    CharMatcher any = CharMatcher.anyOf("abc").or(CharMatcher.is('2'));
+    String s1 = any.removeFrom(s);
+    System.out.println(s1); //13
+}
+```
 
 
 
@@ -181,7 +238,7 @@ Lists是Guava Collections中提供的用于处理List实例的实用类，翻开
 | **asList(E first, E[] rest)**      | 返回一个不可变的List                                         |
 | **partition(List list, int size)** | 形成二维List，每个维度的List长度为size                       |
 | **charactersOf(String string)**    | 将传进来的String分割为单个的字符，并存入到一个新的List对象中返回 |
-| **transform(list, function)**      | 返回一个经过function处理后的List                             |
+| **transform(list, function)**      | 返回一个经过function处理后的List，处理后的List不支持add操作  |
 
 
 
@@ -210,7 +267,5 @@ Integer count = nameMultiset.count("张三");//2
 
 
 
-
-
-
+## Function
 

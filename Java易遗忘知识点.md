@@ -1903,12 +1903,12 @@ public class test {
 
 这些接口都位于`java.util.function`包中
 
-|      接口      | 参数 | 返回值  | 未实现的方法 | 实例                             |
-| :------------: | :--: | :-----: | :----------: | -------------------------------- |
-| Predicate\<T>  |  T   | Boolean |  test\<T t>  | 接收一个参数<br />返回一个布尔值 |
-|  Consumer\<T>  |  T   |  void   | accept\<T t> | 接收一个参数，<br />无返回值     |
-| Function<T, R> |  T   |    R    | apply\<T t>  | 接收一个参数，<br />返回一个值   |
-|  Supplier\<T>  | None |    T    |  get\<T t>   | 无参数，<br />返回一个参值       |
+|      接口      | 参数 | 返回值  | 未实现的方法 | 实例                         |
+| :------------: | :--: | :-----: | :----------: | ---------------------------- |
+| Predicate\<T>  |  T   | Boolean |  test\<T t>  | 接收一个参数，返回一个布尔值 |
+|  Consumer\<T>  |  T   |  void   | accept\<T t> | 接收一个参数，无返回值       |
+| Function<T, R> |  T   |    R    | apply\<T t>  | 接收一个参数，返回一个值     |
+|  Supplier\<T>  | None |    T    |  get\<T t>   | 无参数，返回一个参值         |
 
 下面看看这些接口怎么使用。
 
