@@ -215,6 +215,42 @@ public void test(){
 
 
 
+## Ordering
+
+排序器 Ordering 是 Guava流畅风格比较器 Comparator 的实现，它可以用来为构建复杂的比较器，以完成集合排序的功能
+
+**创建排序器**
+
+| 方法             | 描述                                                 |
+| ---------------- | ---------------------------------------------------- |
+| natural()        | 对可排序类型做自然排序，如数字按大小，日期按先后排序 |
+| usingToString()  | 按对象的字符串形式做字典排序                         |
+| from(Comparator) | 把给定的 Comparator 转化为排序器                     |
+
+
+
+**衍生其它排序器** 
+
+| 方法                 | 描述                                                      |
+| -------------------- | --------------------------------------------------------- |
+| reverse()            | 获取语义相反的排序器                                      |
+| nullsFirst()         | 使用当前排序器，额外把 null 值排到最前面                  |
+| nullsLast()          | 使用当前排序器，额外把 null 值排到最后面                  |
+| compound(Comparator) | 合成另一个比较器，以处理当前排序器中的相等情况            |
+| onResultOf(Function) | 对集合中元素调用 Function，再按**返回值用当前排序器排序** |
+
+使用：sortedCopy(list)创建新list接收排序后的结果
+
+```java
+List<String> list = Lists.newArrayList("a", "b", "c");
+List<String> strings = Ordering.natural().reverse().sortedCopy(list);
+System.out.println(strings);
+```
+
+
+
+
+
 Collections
 -----------
 
@@ -242,16 +278,35 @@ Lists是Guava Collections中提供的用于处理List实例的实用类，翻开
 
 
 
+### Sets
+
+可以过滤元素，Set之间做 交并补 以及 笛卡尔积。
+
+![image-20220719140624120](Guava学习.assets/image-20220719140624120.png)
+
+
+
+### Maps
+
+![image-20220719140858946](Guava学习.assets/image-20220719140858946.png)
+
+```java
+Map<Integer, User> userMap = Maps.uniqueIndex(users, (u) -> {u.getId}); 
+```
+
+
+
+
+
 ### Multiset
 
 Multiset 是 **guava** 包下一种新的集合，可以方便的统计集合中重复元素出现的次数。
 
 Multiset 有以下实现类：
 
-- HashMultiset:：元素存放于 HashMap
-- LinkedHashMap：即元素的排列顺序由第一次放入的顺序决定
+- HashMultiset：元素存放于 HashMap
+- ListMultimap：元素存放于 List
 - TreeMultiset：元素被排序存放于TreeMap
-- ImmutableMultiset： 不可修改的 Mutiset
 
 场景：统计一份名单中每个名字出现的**次数**。
 
@@ -267,5 +322,166 @@ Integer count = nameMultiset.count("张三");//2
 
 
 
-## Function
+### ImmutableXXX
+
+ImmutableXXX比如：ImmutableList、ImmutableMultiset等，都是不可改变的，其返回的对象是原容器的一份拷贝。
+
+- 提供不可修改容器的功能：原容器的增/删元素不会影响ImmutableXXX。但**原容器对元素的内容的修改会影响ImmutableXXX**（因为是浅拷贝）
+- 对不可靠的客户代码库来说，它使用安全，可以在未受信任的类库中安全的使用这些对象
+- 线程安全：Immutable对象在多线程下安全，没有竞态条件
+- 不需要支持可变性，可以尽量节省空间和时间的开销。所有的不可变集合实现都比可变集合更加有效的利用内存
+- 可以被使用为一个常量，并且期望在未来也是保持不变的
+
+**tips**：这里所说的不可修改是指不可以修改容器指针的指向，并不是说不能修改元素的内容。
+
+> `Collections.unmodifiableXXX`也是不可改变的，它返回的是原来容器的**视图**。返回容器无法修改但对原有容器的修改，会影响返回容器的内容
+> **视图**：透过视图查看容器的内容，容器内容的变更也会通过视图展现出来。
+
+
+
+### BiMap
+
+JDK提供的Map只提供根据Key查找Value,无法通过Value查找Key
+有些场景，需要根据Value查找Key。例如：根据城市Code查询城市名称，同时还需要根据名称查询Code
+
+Guava提供BiMap，使得Key-Value均可以查询：
+
+- `BiMap.get()`：根据Key查询Value
+- `BiMap.inverse().get()`：先转换Key-Value顺序，再通过根据Value使用get查询Key
+
+**tips**：使用BiMap时，Key和Value必须都是唯一的，即所有的Value也必须互不相同。
+
+
+
+### RangeSet
+
+用于存放区间(Range)的容器，并提供诸如区间合并，区间分裂等功能。
+
+```java
+RangeSet<Integer> rangeSet = TreeRangeSet.create();
+// 添加闭区间[1, 10] --- 结果为[1, 10]
+rangeSet.add(Range.closed(1, 10));
+// 添加开区间(5, 6) --- 结果为[1, 10]，因为包含了
+rangeSet.add(Range.open(5, 6));
+// 添加开区间(11, 13] --- 结果为[1, 10], (11, 13]
+rangeSet.add(Range.openClosed(11, 13));
+System.out.println(rangeSet);
+```
+
+
+
+### RangeMap
+
+在RangeSet基础上实现Range=>Value的映射关系，但不提供区间合并的功能，但会进行区间拆分。
+
+```java
+RangeMap<Integer, String> rangeSet = TreeRangeMap.create();
+// [1..10]=aa
+rangeSet.put(Range.closed(1, 10), "aa");
+// [1..5)=aa, [5..6]=bb, (6..10]=aa
+rangeSet.put(Range.closedOpen(5, 6), "bb");
+System.out.println(rangeSet);
+```
+
+
+
+### AtomicLongMap
+
+AtomicLongMap可以对Map中的Value进行原子的更新，常用来进行统计，例如，监控系统可以使用AtomicLongMap记录各项监控数据等（每一个Key都是一个监控的名称，Value都是监控值）
+
+- `addAndGet()/getAndAdd()`：增加然后获取值/获取完值之后增加
+- `incrementAndGet()/decrementAndGet()/getAndIncrement()/getAndDecrement()`：依次对应`++i/--i/i++/i--` 
+- `removeAllZeroes()`：去除所有**值为零**的entry，非原子操作。
+- `sum()`：计算map中所有value的总和
+
+
+
+## Cache
+
+如果要设计一个cache的话需要考虑一下几个问题：
+
+- 存储的数据结构（一般使用hashmap）
+- 缓存容量大小（设置最大容量）
+- 缓存有效期（记录访问时间）
+- 容量不够时的清理策略（LRU/FIFO/LFU）
+- 缓存统计相关指标（命中率，命中次数，miss率等）
+
+---
+
+在guava中提供了缓存类，简化我们对于cache的使用：
+
+- 线程安全。内部实现类似于ConcurrentHashMap
+- 可以自动加载、定时更新缓存
+- 容量不够时LRU清理
+- 记录访问时间用于计算是否有效
+- Key/value支持多种引用类型
+- 统计缓存访问数据
+- 缓存被移除或失效时可以被“监听”
+
+```java
+public static void main(String[] args) throws ExecutionException {
+    LoadingCache<String, demoEntity> cache = CacheBuilder.newBuilder()
+            .maximumSize(1000)
+            .expireAfterAccess(20, TimeUnit.MINUTES) // 指定过期时间
+            .refreshAfterWrite(10, TimeUnit.MINUTES) // 刷新缓存时间间隔
+            .removalListener(notification -> { // 元素被移除时的回调函数
+                System.out.println(notification.getCause());
+            })
+            .build(new CacheLoader<String, demoEntity>() {
+                // miss时执行的方法
+                @Override
+                public demoEntity load(String key) {
+                    return fetchFromDB(key);
+                }
+            });
+    cache.get("1");
+}
+
+// 从数据库中获取数据
+static demoEntity fetchFromDB(Object key){
+    return new demoEntity(1, "a");
+}
+```
+
+
+
+即使guava提供的cache类功能很丰富，但它只是运行时的本地缓存，数据并没有持久化存放到文件或外部服务器。并且受机器内存限制，重启应用缓存数据会丢失。应用分布式部署会出现缓存数据不一致。
+
+
+
+## I/O
+
+ByteStreams：提供了处理**字节**流的工具方法。
+
+CharStreams：提供了处理**字符**流的工具方法。
+
+Files：提供了处理file的工具方法
+
+Resources：提供了处理URL资源文件的工具方法
+
+上述四个对独特的数据源进行操作其实是有共同特性的，只是操作的对象不一样，此时我们可以将这些对象抽象成一个**源或汇**，然后进行统一的处理。
+
+|      | 字节       | 字符       |
+| ---- | ---------- | ---------- |
+| 读   | ByteSource | CharSource |
+| 写   | ByteSink   | CharSink   |
+
+例如：
+
+```java
+public void test(){
+	CharSource fileSource = Files.asCharSource(new File("/test.txt"), Charset.defaultCharset());
+	CharSource urlSource = Resources.asCharSource(Resources.getResource("/test.txt"), Charset.defaultCharset());
+    List<String> l1 = read(fileSource);
+    List<String> l2 = read(urlSource);
+}
+
+public List<String> read(CharSource source){
+    return source.readlines();
+}
+```
+
+
+
+
 

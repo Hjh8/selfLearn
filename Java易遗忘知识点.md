@@ -668,7 +668,7 @@ for(int[] arr:arrs){  // 行数
 - 允许重复元素
 - 里面的每个数据都只能是对象，就算是由int类型它也会自动装箱。
 
-主要实现：`ArrayList(非同步)`、`LinkedList(非同步)`、`Vector(同步)` 
+主要实现：`ArrayList`、`LinkedList`
 
 三者共同的**方法**：
 
@@ -726,7 +726,7 @@ for(int[] arr:arrs){  // 行数
 - 无序性：集合内的元素无先后顺序
 - 每个数据都只能是对象
 
-主要实现：`HashSet(非同步)`、`LinkedHashSet(非同步)` 、`TreeSet(非同步)` 
+主要实现：`HashSet`、`LinkedHashSet` 、`TreeSet` 
 
 三者共同的**方法**：
 
@@ -836,9 +836,26 @@ int[] b = Arrays.copyOf(a, 2);
 ### 6.5.2 Collections类
 
 - 处理对象基本为**List**
-- 也有排序，查找，赋值
-- 还可以查找集合的最大值最小值
-- 反序排列
+- 排序：`Collections.sort(list);` 
+- 查找：`Collections.binarySearch(list, key)`
+- 赋值：`Collections.fill(list, obj);`
+- 查找集合的最大值最小值：`Collections.max(list);` 
+- 反序排列：
+- 打乱顺序：`Collections.shuffle();` 
+
+
+
+### 6.5.3 Ordering类
+
+排序后赋值生成新的list，不影响原先的
+
+```java
+List<String> list = Lists.newArrayList("a", "b", "c");
+List<String> strings = Ordering.natural().reverse().sortedCopy(list);
+System.out.println(strings);
+```
+
+
 
 
 
