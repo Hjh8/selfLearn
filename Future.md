@@ -288,3 +288,62 @@ public class ThenCombineTest {
 
 
 
+```java
+package org.codekiang.handleTimeout;
+
+/**
+ * 不过，实际开发中，使用System.currentTimeMillis()计算时间差，也并不靠谱。
+ * 因为获取的值的颗粒度取决于底层的操作系统。
+ * 例如，很多操作系统的时间颗粒度是10微妙，
+ * 而且这个时间又可能受NTP影响而产生微调，
+ * 当时间差小于此值时，时间差的计算会很不靠谱。
+ * 正确的操作应该使用System.nanoTime()
+ * nanoTime()返回的是JVM运行的纳秒数，它只依赖于当前的jvm，所以不会出现同步的情况。
+ */
+public class instance {
+
+    private volatile long lastTime = 0;
+
+    // 单位是毫秒
+    private int liveTime = 2000;
+
+    private volatile int count = 0;
+
+    private int limitCount = 7;
+
+    private int value = 1;
+
+    public void setValue(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        long time = lastTime;
+        long current_time = System.currentTimeMillis();
+        if(count > limitCount || (current_time - lastTime) > liveTime){
+            synchronized (this){
+                // 需判断最近更新时间lastTime是否有发现变化
+                if(count > limitCount || time == lastTime){
+                    System.out.println(count+":"+ (current_time - lastTime));
+                    value = 1;
+                    lastTime = current_time;
+                    count = 0;
+                    return value;
+                }
+                else {
+                    count++;
+                }
+            }
+        }
+        else {
+            synchronized (this){
+                count++;
+            }
+        }
+        return value;
+    }
+}
+```
+
+
+
