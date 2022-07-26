@@ -296,8 +296,6 @@ Map<Integer, User> userMap = Maps.uniqueIndex(users, (u) -> {u.getId});
 
 
 
-
-
 ### Multiset
 
 Multiset 是 **guava** 包下一种新的集合，可以方便的统计集合中重复元素出现的次数。

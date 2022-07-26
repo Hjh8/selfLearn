@@ -813,11 +813,37 @@ AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是j
 
 ### 加/解锁原理
 
-AQS是如何实现加锁解锁的？其内部维护了三个属性：state、ownerThread、Node。
+AQS是如何实现加锁解锁的？其内部维护了三个属性：state、Node、ownerThread。
+
+```JAVA
+static final class Node {
+    // 省略其他属性
+    
+    /**
+     * 该节点所属的线程
+     */
+    volatile Thread thread;
+}
+
+/**
+ * 等待队列的头部
+ */
+private transient volatile Node head;
+
+/**
+ * 等待队列的尾部
+ */
+private transient volatile Node tail;
+
+/**
+ * The synchronization state.
+ */
+private volatile int state;
+```
 
 - state表示是否有线程加锁，0表示没有，非0表示有线程正在使用锁。
 - Node其实是双向链表的节点，包含了前后指针、Thread（等待使用锁的线程）。多个Node节点形成的双向链表，我们称之为等待队列。
-- ownerThread表示当前正在使用锁的线程对象。
+- ownerThread表示当前正在使用锁的线程对象。（**ownerThread在AbstractOwnableSynchronizer中定义**）
 
 > 公平锁和非公平锁利用**等待队列**来实现。
 
@@ -825,16 +851,131 @@ AQS是如何实现加锁解锁的？其内部维护了三个属性：state、own
 
 
 
-**加锁**的实现步骤：
+**加锁**的实现步骤：（以下非特别说明都是非公平锁的步骤）
 
-1. 当一个线程使用lock()方法加锁的时候，会使用 <u>CAS操作将state从0变成1</u>。如果修改成功则将 ownerThread设置为自己。
-2. 如果修改失败说明当前有线程正在使用该锁，此时这个线程会 <u>判断这个ownerThread自己</u>，是的话允许加锁，然后state值加一；**这也是可重入锁的实现。** 
-3. 若不是属于自己，则该线程使用 <u>CAS操作进入到等待队列</u>中，然后调用 LockSupport.park(this) 等待
-4. 当锁对象释放之后，会重新尝试去获取。
+1. 当一个线程使用lock()方法加锁的时候，会使用 <u>CAS操作将state从0变成1</u>。如果修改成功则将 ownerThread设置为当前线程。
+
+   ```java
+   final void lock() {
+       if (compareAndSetState(0, 1))
+           setExclusiveOwnerThread(Thread.currentThread());
+       else
+           // 修改失败，说明当前有线程正在使用该锁
+           acquire(1);
+   }
+   ```
+
+2. 如果修改失败说明当前有线程正在使用该锁，此时这个线程会 <u>判断这个ownerThread自己</u>，是的话允许加锁，然后state值加一；**这也是可重入锁的实现。** 若不是属于自己，则该线程使用 <u>CAS操作进入到等待队列</u>中。
+
+   ```java
+   public final void acquire(int arg) {
+       // 首先tryAcquire尝试枷锁，然后acquireQueued尝试进入等待队列
+       if (!tryAcquire(arg) &&
+           acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+           // 如果上面过程被中断则自己中断
+           selfInterrupt();
+   }
+   ```
+
+   ```java
+   protected final boolean tryAcquire(int acquires) {
+       return nonfairTryAcquire(acquires);
+   }
+   ```
+
+   ```java
+   final boolean nonfairTryAcquire(int acquires) {
+       final Thread current = Thread.currentThread();
+       int c = getState();
+       if (c == 0) {
+           // 当锁对象释放之后，会重新尝试去获取
+           if (compareAndSetState(0, acquires)) {
+               setExclusiveOwnerThread(current);
+               return true;
+           }
+       }
+       else if (current == getExclusiveOwnerThread()) {
+           int nextc = c + acquires;
+           if (nextc < 0) // overflow
+               throw new Error("Maximum lock count exceeded");
+           setState(nextc);
+           return true;
+       }
+       return false;
+   }
+   ```
+
+3. 当锁对象释放之后，都会重新尝试去获取（不管是尝试加锁还是尝试进入等待队列）。当尝试获取都行不通时，会调用LockSupport.park(this); 挂起当前线程
+
+   ![image-20220720202612043](JUC学习.assets/image-20220720202612043.png)
+
+   ![image-20220720202632947](JUC学习.assets/image-20220720202632947.png)
+
+4. 如果挂起的时候被其他线程中断，则调用interrupt() 中断本线程
+
+   ```java
+   static void selfInterrupt() {
+       Thread.currentThread().interrupt();
+   }
+   ```
 
 **解锁**实现步骤：
 
-1. state减一。如果state值变为0，会将ownerThread设置为null，完成锁的释放。如果当前线程不是最后一个节点的话，则调用 LockSupport.unpark(s.thread); 
+1. 解锁时state减一。
+
+   ```java
+   public void unlock() {
+       sync.release(1);
+   }
+   ```
+
+   ```java
+   public final boolean release(int arg) {
+       // 尝试释放
+       if (tryRelease(arg)) {
+           Node h = head;
+           if (h != null && h.waitStatus != 0)
+               unparkSuccessor(h);
+           return true;
+       }
+       return false;
+   }
+   ```
+
+   ```java
+   protected final boolean tryRelease(int releases) {
+       // state-1
+       int c = getState() - releases;
+       if (Thread.currentThread() != getExclusiveOwnerThread())
+           throw new IllegalMonitorStateException();
+       boolean free = false;
+       if (c == 0) {
+           // 如果state值变为0，会将ownerThread设置为null
+           free = true;
+           setExclusiveOwnerThread(null);
+       }
+       setState(c);
+       return free;
+   }
+   ```
+
+2. 如果state值变为0，会将ownerThread设置为null，完成锁的释放。如果当前线程不是最后一个节点的话，则调用 LockSupport.unpark(s.thread); 
+
+   ```java
+   private void unparkSuccessor(Node node) {
+       // 删除节点
+       Node s = node.next;
+       if (s == null || s.waitStatus > 0) {
+           s = null;
+           for (Node t = tail; t != null && t != node; t = t.prev)
+               if (t.waitStatus <= 0)
+                   s = t;
+       }
+       // 如果不是最后一个节点的话
+       if (s != null)
+           LockSupport.unpark(s.thread);
+   }
+   ```
 
 > LockSupport提供的是一个许可，如果存在许可，线程在调用`park`的时候，会立马返回，此时 许可 会被消费掉变成不可用。如果没有许可，则会阻塞。调用unpark的时候，许可变成可用。
 >
