@@ -820,6 +820,21 @@ static final class Node {
     // 省略其他属性
     
     /**
+     * 该节点的等待状态
+     */
+	volatile int waitStatus;
+    
+    /**
+     * 指向的前一个节点
+     */
+	volatile Node prev;
+    
+	/**
+     * 指向的后一个节点
+     */
+	volatile Node next;
+    
+    /**
      * 该节点所属的线程
      */
     volatile Thread thread;
@@ -843,6 +858,7 @@ private volatile int state;
 
 - state表示是否有线程加锁，0表示没有，非0表示有线程正在使用锁。
 - Node其实是双向链表的节点，包含了前后指针、Thread（等待使用锁的线程）。多个Node节点形成的双向链表，我们称之为等待队列。
+  - 队列的第一个节点是正在使用锁的线程，第二个节点是第一个等待锁的线程。
 - ownerThread表示当前正在使用锁的线程对象。（**ownerThread在AbstractOwnableSynchronizer中定义**）
 
 > 公平锁和非公平锁利用**等待队列**来实现。
@@ -869,49 +885,117 @@ private volatile int state;
 
    ```java
    public final void acquire(int arg) {
-       // 首先tryAcquire尝试枷锁，然后acquireQueued尝试进入等待队列
-       if (!tryAcquire(arg) &&
-           acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
-           // 如果上面过程被中断则自己中断
-           selfInterrupt();
+       if (!tryAcquire(arg) && // 首先尝试获取锁
+           acquireQueued(addWaiter(Node.EXCLUSIVE), arg)) // 如果获取失败则尝试进入等待队列
+           selfInterrupt(); // 如果进入等待队列的时候被其他线程中断则自己中断，不抛出异常
    }
    ```
-
+   
    ```java
+// 尝试获取锁
    protected final boolean tryAcquire(int acquires) {
        return nonfairTryAcquire(acquires);
    }
    ```
-
-   ```java
+   
+```java
    final boolean nonfairTryAcquire(int acquires) {
        final Thread current = Thread.currentThread();
-       int c = getState();
-       if (c == 0) {
-           // 当锁对象释放之后，会重新尝试去获取
+       int c = getState(); // 返回同步状态的当前值
+       if (c == 0) { // c == 0表示当前锁对象是空闲的
+           // 如果在这个时候锁对象释放了，则会重新尝试去获取
            if (compareAndSetState(0, acquires)) {
                setExclusiveOwnerThread(current);
                return true;
-           }
-       }
-       else if (current == getExclusiveOwnerThread()) {
+          }
+      }
+      else if (current == getExclusiveOwnerThread()) { // 如果锁对象正在被使用并且是当前线程在使用，那么可以直接获取（可重入锁的实现）
            int nextc = c + acquires;
            if (nextc < 0) // overflow
                throw new Error("Maximum lock count exceeded");
            setState(nextc);
            return true;
+      }
+      return false; // 否则，尝试获取锁失败
+   }
+   ```
+   
+3. 如果是第一次进入等待队列需要先初始化head跟tail节点，否则就创建新节点入队
+
+   ```java
+   private Node addWaiter(Node mode) {
+       Node node = new Node(Thread.currentThread(), mode);
+       // Try the fast path of enq; backup to full enq on failure
+       Node pred = tail;
+       if (pred != null) { // 如果已经初始化过队列了，则直接进入队列
+           node.prev = pred;
+           if (compareAndSetTail(pred, node)) {
+               pred.next = node;
+               return node;
+           }
+       }
+   	// 否则初始化队列，然后入队
+       enq(node);
+       return node;
+   }
+   ```
+
+   ```java
+   private Node enq(final Node node) {
+       for (;;) {
+           Node t = tail;
+           if (t == null) { // 初始化
+               if (compareAndSetHead(new Node()))
+                   tail = head;
+           } else { // 进入队列
+               node.prev = t;
+               if (compareAndSetTail(t, node)) {
+    				// 上一个节点的next指向当前节点（注意，这个步骤是非线程安全的）
+                   t.next = node;
+                   return t;
+               }
+           }
+       }
+   }
+   ```
+
+4. 进入等待队列后会再次尝试获取锁对象，当尝试获取行不通时，会将前一个节点的状态**waitStatus**改成**SIGNAL(-1)，**只有设置了**SIGNAL**，该节点后面的节点才可以被唤醒。
+
+   ![image-20220727162651335](JUC学习.assets/image-20220727162651335.png)
+
+   ```java
+   private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
+       int ws = pred.waitStatus;
+       if (ws == Node.SIGNAL)
+           /*
+            * 如果前一个节点的状态已经是SIGNAL了，则直接返回
+            */
+           return true;
+       if (ws > 0) {
+           /*
+            * 大于0表示，前一个节点已经被取消了，此时需要跳过该节点
+            */
+           do {
+               node.prev = pred = pred.prev;
+           } while (pred.waitStatus > 0);
+           pred.next = node;
+       } else {
+           /*
+            * 将状态为设置为SIGNAL
+            */
+           compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
        }
        return false;
    }
    ```
 
-3. 当锁对象释放之后，都会重新尝试去获取（不管是尝试加锁还是尝试进入等待队列）。当尝试获取都行不通时，会调用LockSupport.park(this); 挂起当前线程
+5. 然后会调用**LockSupport.park(this);**挂起当前线程。直到被唤醒之后又继续尝试获取锁对象。
 
    ![image-20220720202612043](JUC学习.assets/image-20220720202612043.png)
 
    ![image-20220720202632947](JUC学习.assets/image-20220720202632947.png)
 
-4. 如果挂起的时候被其他线程中断，则调用interrupt() 中断本线程
+6. 如果挂起的时候被其他线程中断，则调用interrupt() 中断本线程
 
    ```java
    static void selfInterrupt() {
@@ -921,7 +1005,7 @@ private volatile int state;
 
 **解锁**实现步骤：
 
-1. 解锁时state减一。
+1. 解锁时state减一。如果state值变为0，会将ownerThread设置为null，完成锁的释放。
 
    ```java
    public void unlock() {
@@ -934,10 +1018,11 @@ private volatile int state;
        // 尝试释放
        if (tryRelease(arg)) {
            Node h = head;
+   		// 如果释放成功，则唤醒下个节点的线程
            if (h != null && h.waitStatus != 0)
-               unparkSuccessor(h);
+               unparkSuccessor(h); 
            return true;
-       }
+      }
        return false;
    }
    ```
@@ -950,30 +1035,31 @@ private volatile int state;
            throw new IllegalMonitorStateException();
        boolean free = false;
        if (c == 0) {
-           // 如果state值变为0，会将ownerThread设置为null
+           // 如果state值变为0，会将ownerThread设置为null，说明释放了锁对象
            free = true;
            setExclusiveOwnerThread(null);
-       }
+   	}
        setState(c);
        return free;
    }
    ```
 
-2. 如果state值变为0，会将ownerThread设置为null，完成锁的释放。如果当前线程不是最后一个节点的话，则调用 LockSupport.unpark(s.thread); 
+2. 释放完锁对象之后，如果当前线程不是最后一个节点的话，则调用**LockSupport.unpark(s.thread);**唤醒等待的线程。
 
    ```java
    private void unparkSuccessor(Node node) {
-       // 删除节点
-       Node s = node.next;
-       if (s == null || s.waitStatus > 0) {
-           s = null;
-           for (Node t = tail; t != null && t != node; t = t.prev)
-               if (t.waitStatus <= 0)
-                   s = t;
-       }
-       // 如果不是最后一个节点的话
-       if (s != null)
-           LockSupport.unpark(s.thread);
+   	Node s = node.next;
+   	// 如果下个节点为null，或者该节点的处于超时或中断状态（说明该节点要被取消），此时跳过该节点唤醒下一个正常等待的节点
+   	if (s == null || s.waitStatus > 0) {
+       	s = null;
+   		// 从后往前遍历，找到正常等待的节点
+        for (Node t = tail; t != null && t != node; t = t.prev)
+          	if (t.waitStatus <= 0)
+           	s = t;
+   	}
+     	// 如果不是最后一个节点，则唤醒该节点的线程
+     	if (s != null)
+     		LockSupport.unpark(s.thread);
    }
    ```
 
@@ -991,6 +1077,30 @@ private volatile int state;
 
 
 
+### waitStatus的含义
+
+- CANCELLED(1)：表示当前结点已取消调度。当timeout或被中断（响应中断的情况下），会触发变更为此状态，进入该状态后的结点将不会再变化。
+- SIGNAL(-1)：表示后继结点在等待前一个结点的唤醒。后继结点入队时，会将前继结点的状态更新为SIGNAL。
+- CONDITION(-2)：表示结点等待在Condition上（await），当其他线程调用了Condition的signal()方法后，CONDITION状态的结点将从等待队列转移到同步队列中，等待获取同步锁。
+- PROPAGATE(-3)：共享模式下，前继结点不仅会唤醒其后继结点，同时也可能会唤醒后继的后继结点。
+- 0：新结点入队时的默认状态。
+
+> **负值**表示结点处于有效等待状态，而**正值**表示结点已被取消。所以源码中很多地方用>0、<0来判断结点的状态是否正常。
+
+
+
+### 为什么要从后往前遍历呢？ 
+
+原因是因为enq方法中需要将当前节点置于尾部，虽然使用了CAS来保证线程安全，但cas是保证当前节点可以指向上一个尾节点，以及保证tail字段可以指向当前节点。但不能保证上一个尾节点的next指针指向当前节点，如下图所示：
+
+![image-20220727163011410](JUC学习.assets/image-20220727163011410.png)
+
+如果在高并发情况下，上一个尾节点的next指针是有可能还是处于null的，所以此时如果有线程需要从前往后遍历的方式唤醒线程的话就可能出现后续节点被漏掉的情况。
+
+因为cas是保证当前节点可以指向上一个尾节点，所以从后往前遍历是没问题的。
+
+
+
 ### 为什么使用park不用wait
 
 如果使用wait和notify，需要保证wait操作在notify操作之前，不然线程会一直**等待**下去。
@@ -1001,9 +1111,42 @@ park跟unPark的顺序则没有硬性要求，unpark可以在park之前，且执
 
 ### 公平和非公平锁的原理
 
-这两者的实现是靠AQS的**阻塞队列**。使用公平锁的情况下，线程获取锁的时候会先判断队列中给的第一个节点是不是自己，是的话才尝试加锁，不是的话就继续阻塞。
+**非公平锁的表现仅仅在于刚进来的线程可以跟第一个等待）的节点进行竞争，但队列中等待的节点都是依次被唤醒的**。而公平锁是不管刚进来或者队列中的节点都是依次被唤醒的。
 
-而使用非公平锁时，直接就尝试加锁。
+这两者的实现是靠AQS的**阻塞队列**。使用公平锁的情况下，线程获取锁的时候会先判断队列中给的第一个等待的节点是不是自己，是的话才尝试获取锁，不是的话就继续阻塞。
+
+```java
+protected final boolean tryAcquire(int acquires) {
+    final Thread current = Thread.currentThread();
+    int c = getState();
+    if (c == 0) {
+		// hasQueuedPredecessors方法判断当前线程是否是第一个等待的节点（公平和非公平锁的体现）
+        if (!hasQueuedPredecessors() &&
+            compareAndSetState(0, acquires)) {
+            setExclusiveOwnerThread(current);
+            return true;
+        }
+    }
+    else if (current == getExclusiveOwnerThread()) {
+        int nextc = c + acquires;
+        if (nextc < 0)
+            throw new Error("Maximum lock count exceeded");
+        setState(nextc);
+        return true;
+    }
+    return false;
+}
+```
+
+```java
+public final boolean hasQueuedPredecessors() {
+Node t = tail;
+Node h = head;
+Node s;
+return h != t && 
+	((s = h.next) == null || s.thread != Thread.currentThread());
+}
+```
 
 
 
