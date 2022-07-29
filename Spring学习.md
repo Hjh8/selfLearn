@@ -174,7 +174,7 @@ IOC思想的体现：比如 `Servlet` 在浏览器中的创建。我们只需要
 2.3 DI入门
 ---
 
-还记得吗，DI（依赖注入）表示创建对象、给属性赋值。
+还记得吗，DI（依赖注入）表示  创建对象、给属性赋值。
 
 DI的实现方式有两种：
 
@@ -825,6 +825,9 @@ AOP面向切面编程是从动态角度考虑程序运行过程，**其底层采
 `Pointcut`：切入点，一个或多个连接点方法的集合。
 
 `Advice`：通知，表示切面功能执行的时间
+
+`Weaving`：织入，是一个过程，是将切面应用到目标对象从而创建出AOP代理对象的过程，织入可以在
+编译期、类装载期、运行期进行。
 
 ![image-20210613102735773](Spring学习.assets/image-20210613102735773.png)
 
@@ -2390,25 +2393,19 @@ Spring bean的生命周期
 
 > bean的创建操作是在createBean()方法中创建
 
-1. 利用反射创建对象
+1. 实例化：利用反射创建对象
+2. 装配属性：调用populateBean方法，根据xml文件或注解（@Autowired）对属性进行赋值
 
-2. 调用populateBean方法，根据xml文件或注解（@Autowired）对属性进行赋值
-
-   - 此时除了容器对象属性，其他属性都完成赋值（bean中可能包含容器对象属性）
-
-3. 根据实现的aware接口调用相关的aware方法，**对应的容器对象属性完成赋值** 
+   - 此时除了容器对象属性，其他属性都完成赋值（bean中可能包含容器对象属性，用于获取spring上下文信息）
+3. aware设置：根据实现的aware接口，完成对应的容器对象属性赋值）、
 
    - ==aware接口是为了使某些自定义对象可以方便的获取到容器对象==。 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口，可以根据这些接口进行扩展
-
-4. 调用BeanPostProcessor的BeforeInitial方法
-
-5. 调用init方法
-
-6. 调用BeanPostProcessor的AfterInitial方法，**AOP代理对象**在此生成。
-
-7. 此时拥有完整对象，可以使用
-
-8. 销毁对象
+4. 初始化
+   1. 调用BeanPostProcessor的BeforeInitial方法
+   2. 调用init方法
+   3. 调用BeanPostProcessor的AfterInitial方法，**AOP代理对象**在此生成。
+5. 此时拥有完整对象，进行业务操作
+6. 销毁对象
 
 > BeanFactoryPostProcessor：是一个接口，针对整个工厂生产出来的BeanDefinition作出修改或者注册。比如ConfigurationClassPostProcessor处理类上的注解，PropertyPlaceholderConfigurer处理配置文件的占位符。
 >
@@ -2421,7 +2418,7 @@ BeanFactory和FactoryBean区别
 
 BeanFactory：是IOC容器的核心接口，在它的实现类中装载着整体的bean对象，具有完整的固定的创建bean的流程。
 
-FactoryBean: 是一个bean对象，它可以生产或者修饰bean对象，方式不固定，可自定义。例如给对象创建代理对象。
+FactoryBean: 是一个bean对象，它可以自定义生产或者修饰一个bean，比如比较重型的第三方祖组件mybatis，给对象创建代理对象。
 
 
 
@@ -2503,18 +2500,16 @@ Spring bean的作用域
 BeanFactory和ApplicationContext的区别
 ---
 
-**ApplicationContext是BeanFactory的子接口**，对其进行了许多扩展。
+BeanFactory是比较原始的API，其定义DI容器的基本操作。**ApplicationContext是BeanFactory的子接口**，对其进行了许多扩展：：
+
+1. 继承MessageSource，支持国际化
+2. 统一的资源文件访问方式
+3. 支持加载资源配置文件
 
 区别：
 
 1. **BeanFactory**通过**懒加载**的方式注入bean，**ApplicationContext**是在容器启动时就**加载了全部**的bean，所以可以在容器启动时就发现存在的配置问题。
 2. BeanFactory 和 ApplicationContext都支持 BeanPostProcessor、BeanFactoryPostProcessor的使用，但两者之间的区别是：BeanFactory需要**手动注册**，而Applicationcontext则是**自动注册**。
-
-ApplicationContext扩展的功能：
-
-1. 继承MessageSource，支持国际化
-2. 统一的资源文件访问方式
-3. 同时加载多个配置文件
 
 
 

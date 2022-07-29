@@ -1748,7 +1748,7 @@ Read View可简化成下面三部分：
 2. 接下来判断 `DB_TRX_ID ≥ low_limit_id` , 如果大于等于则代表DB_TRX_ID 所在的记录是在Read View生成后才出现的，那对当前事务肯定不可见。如果小于则进入下一个判断
 3. 判断`DB_TRX_ID 是否在活跃事务之中`，如果在，则代表Read View生成时刻，这个事务还在活跃，还没有Commit，即修改的数据当前事务也是看不见的；如果不在，则说明，这个事务在Read View生成之前就已经Commit了，即修改的结果当前事务是能看见的
 
-把要被修改的数据的最新记录中的DB_TRX_ID（当前事务ID）取出来，与系统当前其他活跃事务的ID去对比（由Read View维护），如果DB_TRX_ID跟Read View的属性做了某些比较，不符合可见性，那就通过DB_ROLL_PTR回滚指针去取出UndoLog中的DB_TRX_ID再比较，即遍历UndoLog的DB_TRX_ID，直到找到满足特定条件的DB_TRX_ID, 那么这个DB_TRX_ID所在的旧记录就是当前事务能看见的内容。
+把要被修改的数据的最新记录中的DB_TRX_ID（当前事务0 ID）取出来，与系统当前其他活跃事务的ID去对比（由Read View维护），如果DB_TRX_ID跟Read View的属性做了某些比较，不符合可见性，那就通过DB_ROLL_PTR回滚指针去取出UndoLog中的DB_TRX_ID再比较，即遍历UndoLog的DB_TRX_ID，直到找到满足特定条件的DB_TRX_ID, 那么这个DB_TRX_ID所在的旧记录就是当前事务能看见的内容。
 
 ***
 
