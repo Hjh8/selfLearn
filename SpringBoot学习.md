@@ -157,7 +157,7 @@ starter相当于一个**jar包**，需要使用时直接在maven中引入该star
    2. 定义实体类，用于映射配置信息（跟用户交互），提供setter和getter方法
    3. 定义service类 操作实体类。
    4. 定义一个 配置类，用于注册bean对象（实体类以及service）
-   5. 在`META-INF/spring.factories` 下指定 配置类 的路径
+   5. 在`META-INF/spring.factories` （手动创建）下指定 配置类 的路径
 
 > 其实第二个模块才是真正的自定义starter，第一个模块只是负责引入自定义starter，方便管理
 
