@@ -2371,7 +2371,7 @@ IOC（Inversion of Control）：控制反转，是一个思想，将对象的创
 ![img](Spring学习.assets/20547106-f2930c91e4c04a7d.webp)
 
 1. 首先，通过**BeanDefinitionReader** 读取指定的配置文件生成bean的定义信息（BeanDefinition）放到BeanDefinitionMap中，当所有的bean定义信息都生成之后==完成BeanFactory的创建==。BeanFactory是容器的入口，等同于容器。
-2. 通过**BeanFactoryPostProcessor**接口的实现类 可以动态的修改BeanDefinition的内容，比如数据库配置文件的占位符`${jdbc.url}` 、`类上注解`的解析。经过这一步骤之后才形成了**完整BeanDefinition**
+2. 通过**BeanFactoryPostProcessor**接口的实现类可以动态的修改BeanDefinition的内容，比如数据库配置文件的占位符`${jdbc.url}` 、`类上注解`的解析。经过这一步骤之后才形成了**完整BeanDefinition**
 3. 创建bean对象，初始化等操作，此时==完成BeanFactory的初始化==。
 
 对应的源码方法示意图如下：（死亡**十二**方法）
@@ -2391,7 +2391,7 @@ protected String[] getDefaultConfigLocations() {
 Spring bean的生命周期
 ---
 
-> bean的创建操作是在createBean()方法中创建
+> bean的创建操作是在createBean()方法中实现
 
 1. 实例化：利用反射创建对象
 2. 装配属性：调用populateBean方法，根据xml文件或注解（@Autowired）对属性进行赋值
