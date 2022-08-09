@@ -2397,7 +2397,7 @@ Spring bean的生命周期
 2. 装配属性：调用populateBean方法，根据xml文件或注解（@Autowired）对属性进行赋值
 
    - 此时除了容器对象属性，其他属性都完成赋值（bean中可能包含容器对象属性，用于获取spring上下文信息）
-3. aware设置：根据实现的aware接口，完成对应的容器对象属性赋值）、
+3. aware设置：根据实现的aware接口，完成对应的容器对象属性赋值
 
    - ==aware接口是为了使某些自定义对象可以方便的获取到容器对象==。 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口，可以根据这些接口进行扩展
 4. 初始化
@@ -2418,7 +2418,7 @@ BeanFactory和FactoryBean区别
 
 BeanFactory：是IOC容器的核心接口，在它的实现类中装载着整体的bean对象，具有完整的固定的创建bean的流程。
 
-FactoryBean: 是一个bean对象，它可以自定义生产或者修饰一个bean，比如比较重型的第三方祖组件mybatis，给对象创建代理对象。
+FactoryBean: 是一个bean对象，它可以自定义生产或者修饰一个bean，比如比较重型的第三方组件mybatis，给对象创建代理对象。
 
 
 
@@ -2544,10 +2544,48 @@ BeanFactory是比较原始的API，其定义DI容器的基本操作。**Applicat
 
 
 
-autowire自动注入的方式
----
+## 如何统计Spring项目中bean的个数
 
-autowire有四个自动注入方式：byName、byType、constructor、autodetect（先使用构造器注入，不行的话是要byType方式）
+实现思路：
+
+1. 创建一个类实现BeanFactoryPostProcessor，重写postProcessBeanFactory方法
+2. 利用postProcessBeanFactory方法中的参数configurableListableBeanFactory进行统计
+
+```java
+/**
+ * @author jianhang.huang
+ */
+@Component
+public class CountBean implements BeanFactoryPostProcessor {
+
+    // bean的数量
+    int count;
+
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
+        int beanDefinitionCount = configurableListableBeanFactory.getBeanDefinitionCount();
+        System.out.println("自定义bean的个数：" + beanDefinitionCount);
+        
+        System.out.println("所有bean的名字如下：");
+        Iterator<String> beanNamesIterator = configurableListableBeanFactory.getBeanNamesIterator();
+        while (beanNamesIterator.hasNext()){
+            System.out.println(beanNamesIterator.next());
+            count++;
+        }
+        System.out.println("所有bean的个数：" + count);
+        
+        int singletonCount = configurableListableBeanFactory.getSingletonCount();
+        System.out.println("所有单例bean的个数：" +singletonCount);
+    }
+}
+```
+
+结论：
+
+- 一个基础的spring项目包含的bean个数为3个。分别为：
+- `getBeanDefinitionCount()`：只能获取**自定义**的bean个数
+- `getBeanNamesIterator()`：可以获取**所有**的bean的名字
+- `getSingletonCount()`：可以获得单例bean的数量
 
 
 

@@ -138,7 +138,7 @@ starter相当于一个**jar包**，需要使用时直接在maven中引入该star
 
 如果一个自定义配置类经常需要在别的项目中使用，那么可以将该自定义配置类封装成一个starter，然后其他项目中直接引入坐标即可，这样可以很好的提高复用性。
 
-> starter等价于 jar包 + 配置文件 + 自动注册bean
+> starter等价于 配置文件 + 自动注册bean
 
 官方所有的starter的命名都遵从`spring-boot-starter-*`，如果自定义starter建议使用`自定义名称-spring-boot-starter` 。
 
@@ -157,7 +157,7 @@ starter相当于一个**jar包**，需要使用时直接在maven中引入该star
    2. 定义实体类，用于映射配置信息（跟用户交互），提供setter和getter方法
    3. 定义service类 操作实体类。
    4. 定义一个 配置类，用于注册bean对象（实体类以及service）
-   5. 在`META-INF/spring.factories` （手动创建）下指定 配置类 的路径
+   5. 在`META-INF/spring.factories` （手动创建）下指定 **配置类** 的路径
 
 > 其实第二个模块才是真正的自定义starter，第一个模块只是负责引入自定义starter，方便管理
 
@@ -347,6 +347,28 @@ com
 >
 > 1. 开发者工具包括一个嵌入式live load服务器，该服务器可用于在更改资源时触发浏览器刷新，即资源改变时浏览器会自动刷新。
 > 2. 静态资源放在resources目录下的static目录下。
+
+
+
+### springboot启动方式
+
+springboot启动方式有两种：Main方法启动和外部tomcat启动。
+
+- 外部tomcat启动：
+
+  - 启动类需要继承SpringBootServletInitializer类
+
+  - 修改**pom.xml**文件，添加`<packaging>war</packaging>` 节点
+
+  - 将内置Tomcat的作用范围修改成provided
+
+    ```xml
+    <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-tomcat</artifactId>
+       <scope>provided</scope>
+    </dependency>
+    ```
 
 
 
