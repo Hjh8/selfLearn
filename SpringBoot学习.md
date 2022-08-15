@@ -350,6 +350,10 @@ com
 
 
 
+### springboot启动流程
+
+![image-20210816171134155](SpringBoot学习.assets/image-20210816171134155.png)
+
 ### springboot启动方式
 
 springboot启动方式有两种：Main方法启动和外部tomcat启动。
@@ -372,9 +376,113 @@ springboot启动方式有两种：Main方法启动和外部tomcat启动。
 
 
 
-### springboot启动流程
+### 外部tomcat启动原理
 
-![image-20210816171134155](SpringBoot学习.assets/image-20210816171134155.png)
+使用外部tomcat运行SpringBoot项目时，需要继承SpringBootServletInitializer。
+
+首先看一下SpringBootServletInitializer的类，它里面有个**onStartup**方法：
+
+```java
+@Override
+public void onStartup(ServletContext servletContext) throws ServletException {
+    
+   WebApplicationContext rootApplicationContext = createRootApplicationContext(servletContext);
+    
+   if (rootApplicationContext != null) {
+      servletContext.addListener(new SpringBootContextLoaderListener(rootApplicationContext, servletContext));
+   }
+   else {
+      this.logger.debug("No ContextLoaderListener registered, as createRootApplicationContext() did not "
+            + "return an application context");
+   }
+}
+```
+
+所有逻辑都在createRootApplicationContext()方法中，继续追进去。
+
+```java
+protected WebApplicationContext createRootApplicationContext(ServletContext servletContext) {
+   // 创建SpringApplicationBuilder来整合一些配置项，然后生成SpringApplication
+   SpringApplicationBuilder builder = createSpringApplicationBuilder();
+   // 指定继承了SpringBootServletInitializer的类作为主类
+   builder.main(getClass());
+   
+   ApplicationContext parent = getExistingRootWebApplicationContext(servletContext);
+    
+   if (parent != null) {
+      this.logger.info("Root context already created (using as parent).");
+      servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, null);
+      builder.initializers(new ParentContextApplicationContextInitializer(parent));
+   }
+   builder.initializers(new ServletContextApplicationContextInitializer(servletContext));
+   builder.contextFactory((webApplicationType) -> new AnnotationConfigServletWebServerApplicationContext());
+ 
+   // 配置应用程序，主要是获取主类上面的元信息
+   builder = configure(builder);
+   builder.listeners(new WebEnvironmentPropertySourceInitializer(servletContext));
+ 
+   // 熟悉的SpringApplication，项目中启动类main方法中也是用这个类调用run方法启动项目
+   SpringApplication application = builder.build();
+    
+   if (application.getAllSources().isEmpty()
+         && MergedAnnotations.from(getClass(), SearchStrategy.TYPE_HIERARCHY).isPresent(Configuration.class)) {
+      application.addPrimarySources(Collections.singleton(getClass()));
+   }
+    
+   // 调用SpringApplication.run方法启动项目。 
+   return run(application);
+}
+```
+
+> 为什么有的方式不用重写Configure方法，有些方式要重写呢？
+>
+> 查看到builder.main(getClass());这行代码时可以发现，默认以继承SpringBootServletInitializer的类作为主类。所以你如果在SpringBoot的启动类上继承SpringBootServletInitializer的话就无需重写Configure，否则需要重写。
+>
+
+onStartup方法主要是进行自动配置，创建Spring容器等操作。那么onStartup方法是什么时候回调的呢？
+
+
+
+为了可以不使用web.xml，servlet提供过了的`ServletContainerInitializer`接口，通过实现WebApplicationInitializer，在其中可以添加servlet，listener等，它通过SPI机制，当启动web容器的时候，会自动到项目所有jar包下找到`META-INF/services`下以**ServletContainerInitializer**的全路径名称命名的文件，它的内容是ServletContainerInitializer实现类的全路径，然后容器根据全路径名称将它们实例化。
+
+例如Spring项目启动时会加载spring-web的`META-INF/services`下的ServletContainerInitializer的实现类：
+
+> 这也是为什么SpringBoot项目要引入spring-web依赖的原因。
+
+![img](SpringBoot学习.assets/20180306223233482)
+
+![img](SpringBoot学习.assets/20180306223353595)
+
+进入SpringServletContainerInitializer类后可看到：
+
+```java
+@HandlesTypes(WebApplicationInitializer.class)
+public class SpringServletContainerInitializer implements ServletContainerInitializer {
+    
+   @Override
+   public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
+         throws ServletException {
+       // 遍历Set，将需要用到的WebApplicationInitializer的实现类放在list中
+       // 对list进行升序排序（根据类上的Order注解的值）
+       // 对排序后的list的元素都调用onStartup方法 -- 创建spring容器、mvc的中央调度器等
+      }
+}
+```
+
+`@HandlesTypes`注解由Servlet容器提供支持（实现），参数中指定的**所有**实现类，传给回调方法onStartup的第一个参数。所以`@HandlesTypes(WebApplicationInitializer.class)` 是将WebApplicationInitializer接口的**所有**实现类放到set集合中传给onStartup的第一个参数。
+
+WebApplicationInitializer接口的所有实现类如下图：
+
+- AbstractDispatcherServletInitializer类的onStartup方法会创建**Spring容器**和**SpringMVC的中央调度器**。
+- SpringBootServletInitializer类的onStartup方法会进行**自动装配，然后启动Spring容器**。
+
+**tips**：SpringBootServletInitializer的优先级高，因为它的order值最小，所以SpringBootServletInitializer会在list的最前面。
+
+![image-20220811194233524](SpringBoot学习.assets/image-20220811194233524.png)
+
+至此，SpringBoot甚至是Spring的启动过程都明白了。tomcat启动web项目时，会通过SPI机制，加载spring-web包的ServletContainerInitializer的实现类，然后该实现类中会加载所有WebApplicationInitializer的实现类，并过滤掉无效的实现类，对他们排序后一次调用他们的onStartup，在此方法中会进行各自的操作，比如创建Spring容器、SpringMVC的中央调度器、以及完成自动装配等操作。
+
+所以说如果使用外部tomcat运行SpringBoot项目时，需要继承SpringBootServletInitializer。
 
 
 
