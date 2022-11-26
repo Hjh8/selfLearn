@@ -467,7 +467,9 @@ public class HelloMybatis {
 
 
 
-## 2.7 再补充：主要类介绍
+## 2.7 再补充
+
+### 主要类介绍
 
 `Resources`：负责读取主配置文件。
 
@@ -1167,7 +1169,28 @@ Map<Object,Object> selectStudentToMap(int id);
 
 
 
-## 6.4 代码片段
+## 6.4 set
+
+若语句的结尾为逗号，set 元素会将它们去除。
+
+![image-20220810164632144](Mybatis学习日记.assets/image-20220810164632144.png)
+
+
+
+## 6.5 trim
+
+标签有什么属性？有什么作用？
+
+- prefix：在trim标签包裹部分的**前面添加**内容
+- prefixOverrides：在trim标签包裹部分的**前面删除**内容
+- suffix：在trim标签包裹部分的**后面添加**内容
+- suffixOverrides ：在trim标签包裹部分的**后面删除**内
+
+![image-20220810164813038](Mybatis学习日记.assets/image-20220810164813038.png)
+
+
+
+## 6.6 代码片段
 
 > sql片段是指提取出sql代码，使其可以作为标签复用
 
@@ -1197,9 +1220,30 @@ Map<Object,Object> selectStudentToMap(int id);
 
 
 
-## 6.5 常见错误
+## 6.7 转义字符
 
-我们在使用动态sql使用`#{xxx}`引入参数.会抛异常`There is no getter for property named 'XXX' in 'class java.lang.String'` ，此时可能因为你没有使用命名参数。
+编写SQL中会用到<,>,<=,>= 等，但是在mybatis中不可以这么写，与xml文件的元素<>冲突，所以需要转义。整理转义字符如下：
+
+| 字符 | 转义符号 | 备注     |
+| ---- | -------- | -------- |
+| <    | &lt;     | 小于     |
+| <=   | &lt;=    | 小于等于 |
+| >    | &gt;     | 大于     |
+| >=   | &gt;=    | 大于等于 |
+| <>   | &lt;>    | 不等于   |
+| &    | &amp;    | 与       |
+| ’    | &apos;   | 单引号   |
+| ”    | &quot;   | 双引号   |
+
+
+
+## 6.8 常见错误
+
+- 我们在使用动态sql使用`#{xxx}`引入参数.会抛异常`There is no getter for property named 'XXX' in 'class java.lang.String'` ，此时可能因为你没有使用命名参数。
+- `if`判断中的坑，如判断**不是**String类型，**不要**加`!=‘’`的条件，否则判断为 false
+- 对于集合类型的返回值，如果没有查找到相关的内容，并不会返回null，而是返回空的集合，但是对于自定义的对象，没有查找到信息时直接返回一个null
+- 使用`where id in ()`进行查询，没有内容会报错，需要判空同时size大于0
+- 自定义对象的基本属性用包装类型，防止查询、更新异常
 
 
 
@@ -1438,6 +1482,127 @@ jdbc.password = 你的密码
 
 
 
+# 类型处理器TypeHandler
+
+MyBatis 中的 TypeHandler 类型处理器用于 JavaType 与 JdbcType 之间的转换。MyBatis 内置了大部分基本类型的类型处理器，所以对于基本类型可以直接处理，当我们需要处理其他类型的时候就需要自定义类型处理器。
+
+**自定义类型处理器**需要实现 TypeHandler 接口。这个接口定义了类型处理器的基本功能，接口定义如下所示：
+
+![img](Mybatis学习日记.assets/20190520184430201.png)
+
+- setParameter方法：用于把 java类型的参数设置到 PreparedStatement 的参数中
+- getResult方法：用于从ResultSet中取出数据库数据转换为 java类型的数据
+
+实际开发中，我们可以继承 BaseTypeHandler 类来实现自定义类型处理器。这个类型是抽象类，实现了 TypeHandler的方法进行通用流程的封装，做了判空处理和异常处理，并定义了几个抽象方法，非抽象方法在进行判空和异常处理之后会调用对应的抽象方法，如下所示：
+
+![image-20220812200442909](Mybatis学习日记.assets/image-20220812200442909.png)
+
+还可以通过以下注解来指定自定义类型处理器的能处理的类型：
+
+- `@MappedTypes`注解用于指明该TypeHandler实现类能够处理的Java类型的集合
+- `@MappedJdbcTypes`注解用于指明该TypeHandler实现类能够能够处理的JDBC类型集合
+
+当实现完自定义类型处理器之后需要将其注册到mybatis的全局配置文件中。
+
+---
+
+自定义类型处理器：
+
+1. 继承BaseTypeHandler
+
+   ```java
+   // 可以使用该注解来指定本处理器可以进行类型转换的类型
+   // @MappedTypes(value = { Enum1.class, Enum2.class}) 
+   public class EnumOrdinalTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
+   
+     private final Class<E> type;
+     private final E[] enums;
+   
+     public EnumOrdinalTypeHandler(Class<E> type) {
+       if (type == null) {
+         throw new IllegalArgumentException("Type argument cannot be null");
+       }
+       this.type = type;
+       this.enums = type.getEnumConstants();
+       if (this.enums == null) {
+         throw new IllegalArgumentException(type.getSimpleName() + " does not represent an enum type.");
+       }
+     }
+   
+     @Override
+     public void setNonNullParameter(PreparedStatement ps, int i, E parameter, JdbcType jdbcType) throws SQLException {
+       ps.setInt(i, parameter.ordinal());
+     }
+   
+     @Override
+     public E getNullableResult(ResultSet rs, String columnName) throws SQLException {
+       int ordinal = rs.getInt(columnName);
+       if (ordinal == 0 && rs.wasNull()) {
+         return null;
+       }
+       return toOrdinalEnum(ordinal);
+     }
+   
+     @Override
+     public E getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+       int ordinal = rs.getInt(columnIndex);
+       if (ordinal == 0 && rs.wasNull()) {
+         return null;
+       }
+       return toOrdinalEnum(ordinal);
+     }
+   
+     @Override
+     public E getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+       int ordinal = cs.getInt(columnIndex);
+       if (ordinal == 0 && cs.wasNull()) {
+         return null;
+       }
+       return toOrdinalEnum(ordinal);
+     }
+   
+     private E toOrdinalEnum(int ordinal) {
+       try {
+         return enums[ordinal];
+       } catch (Exception ex) {
+         throw new IllegalArgumentException("Cannot convert " + ordinal + " to " + type.getSimpleName() + " by ordinal value.", ex);
+       }
+     }
+   }
+   ```
+
+2. 在配置文件中指定该类型处理器
+
+   ```xml
+   <typeHandlers>
+       <typeHandler handler="com.xxx.handler.EnumTypeHandler"/>
+   </typeHandlers>
+   ```
+
+
+
+
+
+# Plugins
+
+MyBatis 允许在已映射语句执行过程中的某一点进行拦截调用。
+
+允许拦截调用的方法有哪些？ 
+
+Executor (update, query, flushStatements, commit, rollback, getTransaction,  close, isClosed) 
+
+ParameterHandler (getParameterObject, setParameters) ResultSetHandler (handleResultSets, 
+
+handleOutputParameters) StatementHandler (prepare, parameterize, batch, update, query)
+
+
+
+如何实现plugin？ 1.只需实现 Interceptor 接口，并指定想要拦截的方法签名即可。 2.增加mybatis-config.xml中配置
+
+![image-20220810164356760](Mybatis学习日记.assets/image-20220810164356760.png)
+
+
+
 Mybatis面试
 ===
 
@@ -1445,6 +1610,12 @@ Mybatis面试
 ---
 
 `mybatis`是一个半自动ORM（对象关系映射）框架，内部封装了JDBC。使用`mybatis`时，我们只需要关注**sql语句**，而无需关注其他操作（如创建销毁Connection、Statement、sql的执行）。
+
+Mybatis有什么缺点？
+
+- sql工作量很大，尤其是字段多、关联表多时，不支持级联更新、级联删除
+- sql依赖于数据库，导致数据库移植性差。
+- 提供的写动态sql的xml标签功能简单，且可读性低，调试不方便
 
 
 

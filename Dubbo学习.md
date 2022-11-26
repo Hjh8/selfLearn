@@ -330,36 +330,29 @@ GisService gisService;
 
 ### dubbo异步调用配置
 
-通常不会在provider端设置异步，都是在consumer端进行异步设置:
+异步通讯对于服务端响应时间较长的方法是必须的，能够有效地利用客户端的资源。
 
-1. 对整个consumer端所有服务和方法进行异步：在配置文件中`dubbo.reference.async=true`，很少这样使用。
+通常在消费端的配置文件中的`<dubbp:method>`标签指定`async="true"`，表示该方法为异步调用:
 
-2. 对某个具体引用服务所有方法异步：在属性上添加`@DubboReference(async = true)`，使用较少
-
-3. 对某些服务使用异步：在属性上添加 `@DubboReference(methods={@Method(name=“方法名1”,async = true), @Method(name=“方法名2”,async = true)})`，dubbo常用异步配置
-
-4. 在consumer端的调用内设置`RpcContext.getContext().setAttachment(Constants.ASYNC_KEY, “true”);` 优先级最高。
-
-```java
-@DubboReference(retries = 0, timeout = 2000, methods = {@Method(name="findProduct",async = true)})
-private ProductService productService;
-
-
-@Override
-public Result<ProductVO> getProduct(ProductDTO dto) {
-    Result<ProductVO> result = productService.findProduct(dto);//dubbo异步调用，此时输出result是null
-    Future<Object> future = RpcContext.getContext().getFuture();//获取异步执行结果Future
-    //do othder something
-    try {
-        result = (Result<ProductVO>) future.get();//获取具体的异步执行结果
-    } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
-    }
-    return result;
-}
+```xml
+<dubbo:reference id="xxx">
+    <dubbo:method name="method1" async="true" />
+</dubbo:reference>
 ```
 
+注意：当指定该方法为异步调用时，该方法的返回值会变成void，此时需要使用异步的方式来获取结果。
 
+具体使用有两种方式：
+
+1. NIO future主动获取结果，返回结果放在RpcContext中。需要注意的是，由于RpcContext是单例模式，所以每次调用完后，需要保存一个Future实例，如：
+
+   ```java
+   barService.findBar(barId);
+   Future<Bar> barFuture = RpcContext.getContext().getFuture();
+   Bar bar = barFuture.get(100, TimeUnit.MILLISECONDS);
+   ```
+
+2. 直接在服务端就定义异步接口，消费者直接调用等待。
 
 
 
@@ -408,4 +401,8 @@ public Result<ProductVO> getProduct(ProductDTO dto) {
 提供者配置
 <dubbo:service cluster="failover" retries="2"/>
 ```
+
+
+
+## Dubbo原理
 
