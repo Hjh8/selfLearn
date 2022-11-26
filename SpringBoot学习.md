@@ -350,11 +350,30 @@ com
 
 
 
-### springboot启动方式
+### springboot项目部署方式
 
-springboot启动方式有两种：Main方法启动和外部tomcat启动。
+jar包跟war包的区别：
 
-- 外部tomcat启动：
+- **jar包**（Java Application Archive）：java普通项目打包，通常是开发时要引用通用类，打成jar包便于存放管理。当你使用某些功能时就需要这些jar包的支持，需要导入jar包。
+
+- **war包**（Web Application Archive）：java web项目打包，web网站完成后，打成war包部署到服务器，以Tomcat来说，将war包放置在Tomcat\webapps\目录下，然后启动Tomcat，这个包就会自动解压，就相当于发布了。
+
+
+
+springboot项目部署有两种：**内置Tomcat启动（jar包）**和**外部tomcat启动（war包）**。
+
+- 内置Tomcat启动：直接通过内置Tomcat运行，不需要额外安装Tomcat。如需修改内置Tomcat的配置，只需要在SpringBoot的配置文件中配置。内置Tomcat没有自己的日志输出，全靠jar包应用输出日志。但是比较方便，快速，比较简单。
+
+  - 需要在pmo.xml中指定maven插件后才可以使用java -jar命令运行。
+
+    ```xml
+    <plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+    </plugin>
+    ```
+
+- 外部tomcat启动：传统的应用交付方式，需要安装Tomcat，然后放到wabapps目录下运行war包，可以灵活选择Tomcat版本，可以直接修改Tomcat的配置，有自己的Tomcat日志输出，可以灵活配置安全策略，相对打成jar包来说没那么快速方便。
 
   - 启动类需要继承SpringBootServletInitializer类
 
@@ -369,6 +388,53 @@ springboot启动方式有两种：Main方法启动和外部tomcat启动。
        <scope>provided</scope>
     </dependency>
     ```
+
+
+
+### 为什么SpringBoot的jar包可以直接运行？
+
+原因：
+
+1. springboot提供了一个spring-boot-maven-plugin插件用于把程序打包成一个jar包。
+
+2. SpringBoot打成的jar包叫做Fat jar（jar包中包含jar包），包含了应用依赖的jar包和SpringBoot 加载的相关类，目录如下：
+
+   ```java
+   spring-boot-learn-0.0.1-SNAPSHOT
+   ├── META-INF
+   │   └── MANIFEST.MF
+   ├── BOOT-INF
+   │   ├── classes
+   │   │   └── 应用程序类
+   │   └── lib
+   │       └── 第三方依赖jar
+   └── org
+       └── springframework
+           └── boot
+               └── loader
+                   └── springboot启动程序
+   ```
+
+3. java -jar会去找jar包中的manifest文件，在此文件中找到启动类。MANIFEST.MF文件内容如下：
+
+   ```java
+   Manifest-Version: 1.0
+   Implementation-Title: spring-learn
+   Implementation-Version: 0.0.1-SNAPSHOT
+   Start-Class: com.tulingxueyuan.Application  // 自己应用的Main函数
+   Spring-Boot-Classes: BOOT-INF/classes/
+   Spring-Boot-Lib: BOOT-INF/lib/
+   Build-Jdk-Spec: 1.8
+   Spring-Boot-Version: 2.1.5.RELEASE
+   Created-By: Maven Archiver 3.4.0
+   Main-Class: org.springframework.boot.loader.JarLauncher  // 这个是jar启动的Main函数
+   ```
+
+4. Fat jar的启动类是JarLauncher，它负责创建一个LaunchedURLClassLoader来加载/lib下面的jar包，并开启一个新线程启动应用的Main函数(Start-Class)。
+
+> **JarLauncher**通过加载BOOT-INF/classes目录及BOOT-INF/lib目录下jar文件，实现了fat jar的启动。
+>
+> **WarLauncher**通过加载WEB-INF/classes目录及WEB-INF/lib和WEB-INF/lib-provided目录下的jar文件，实现了war文件的直接启动及web容器中的启动。
 
 
 
@@ -387,6 +453,8 @@ springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import�
 > 因为springboot的自动配置是spring的扩展功能，所以会在spring的BeanFactoryPostProcessor中实现。
 >
 > springboot会将所有用到的自动配置类输出到一个总的配置文件中。
+
+
 
 
 

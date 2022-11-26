@@ -2489,8 +2489,8 @@ Spring bean的作用域
 
 `<bean id="" class="" scope="singleton" />` 设置作用域
 
-1. singleton：默认使用的作用域。每个容器中只有一个bean的实例，单例的模式由BeanFactory自身来维护。
-2. prototype：为每一次getBean()提供一个实例。
+1. singleton：默认使用的作用域。每个容器中只有一个bean的实例，单例的模式由BeanFactory自身来维护。在容器启动时就会创建对象。如果是@Bean就会调用一次方法。
+2. prototype：为每一次getBean()提供一个实例。如果是@Bean的对象，则每次都会调用方法。
 3. request：为每一个网络请求创建一个实例，在请求完成以后，bean会失效并被垃圾回收器回收。
 4. session：与request范围类似，确保每个session中有一个bean的实例，在session过期后，bean会随之失效。
 5. global-session：全局作用域，与session大体相同，但仅在**portlet**应用中使用
@@ -2500,7 +2500,7 @@ Spring bean的作用域
 BeanFactory和ApplicationContext的区别
 ---
 
-BeanFactory是比较原始的API，其定义DI容器的基本操作。**ApplicationContext是BeanFactory的子接口**，对其进行了许多扩展：：
+BeanFactory是比较原始的API，其定义DI容器的基本操作。**ApplicationContext是BeanFactory的子接口**，对其进行了许多扩展：
 
 1. 继承MessageSource，支持国际化
 2. 统一的资源文件访问方式
