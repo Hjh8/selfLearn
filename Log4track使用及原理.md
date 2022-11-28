@@ -84,7 +84,7 @@ public class MyTest {
 
 如图：
 
-![image-20221109151715008](/Users/jianhang/Documents/learing/Untitled.assets/image-20221109151715008.png)
+![image-20221109151715008](/Users/jianhang/Documents/learing/selfLearn/Untitled.assets/image-20221109151715008.png)
 
 lombok.config文件的内容如下：
 
@@ -338,7 +338,7 @@ private static String serialize(Object obj) {
 
 在对参数进行包装时，为什么说第一个参数的类型为什么一定是Marker或者String。这里需要查看Logger类（因为我们是给Logger添加的动态代理）
 
-![image-20221109161920794](/Users/jianhang/Documents/learing/Untitled.assets/image-20221109161920794.png)
+![image-20221109161920794](/Users/jianhang/Documents/learing/selfLearn/Untitled.assets/image-20221109161920794.png)
 
 
 

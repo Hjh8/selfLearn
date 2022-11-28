@@ -126,6 +126,38 @@ root$@$data$@$allFilters$@$detail$@$selapsedMillis,root$@$data$@$allFilters$@$de
 
 
 
+# 监听AppCode有提测等动作时进行diff
+
+1.   参考wiki：https://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=214817656
+
+     
+
+     灭霸代码逻辑：
+
+     1、在pmo状态改变时，会发生qmq消息：`@QmqConsumer(prefix = "qunar.cm.ic.issue-update", consumerGroup = "f_inter_autotest_dispatch")`
+
+     **【注意】wiki中的prefix是[qunar.cm](http://qunar.cm/).ic.issue-updated，\**updated\**有d，而灭霸是\**update，\**没有d。并且灭霸在代码中排除了带d的情况。这是为什么？**
+
+     2、监听到消息之后获取消息体里面的url获取对应的pmo信息，然后开始进行处理。
+
+     -   url返回结果参考：http://ic.corp.qunar.com/api/v2/event/80081917
+
+     
+
+     在灭霸基础上我们可以进行：
+
+     1.  根据上述url获取到pmo，我们参考 [diff项目实现自动部署方案](https://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=636826383)，根据pmo拿到需要的信息，如appcode以及对应的环境。
+     2.  使用qconfig配置需要监听的appcode
+     3.  根据qconfig和第一步获取的appcode进行判断，如果需要监听则发起diff。
+
+     ## 问题
+
+     1.  pmo状态为什么时才进行diff？pmo各状态参考：http://pmo.corp.qunar.com/rest/api/2/status/
+
+
+
+ 
+
 
 
 

@@ -84,16 +84,16 @@ public void login(HttpServletRequest req, HttpServletResponse resp) throws IOExc
 
 3.   然后点击登录按钮会调到如下界面：
 
-     ![image-20221122192835557](/Users/jianhang/Documents/learing/qsso接入和调试.assets/image-20221122192835557.png)
+     ![image-20221122192835557](/Users/jianhang/Documents/learing/selfLearn/qsso接入和调试.assets/image-20221122192835557.png)
 
 4.   因为qsso默认以当前的域名为请求的域名，所以针对前后端项目来说，需要使用代理工具进行代理转发，使其可以打到不同域名的后端。可以使用ng或者使用代理工具来实现。（这里以Charles工具为例）：
 
      1.   设置后端代理映射：
 
-          ![image-20221122193657427](/Users/jianhang/Documents/learing/qsso接入和调试.assets/image-20221122193657427.png)
+          ![image-20221122193657427](/Users/jianhang/Documents/learing/selfLearn/qsso接入和调试.assets/image-20221122193657427.png)
 
-          ![image-20221122193823370](/Users/jianhang/Documents/learing/qsso接入和调试.assets/image-20221122193823370.png)
+          ![image-20221122193823370](/Users/jianhang/Documents/learing/selfLearn/qsso接入和调试.assets/image-20221122193823370.png)
 
-          ![image-20221122194117567](/Users/jianhang/Documents/learing/qsso接入和调试.assets/image-20221122194117567.png)
+          ![image-20221122194117567](/Users/jianhang/Documents/learing/selfLearn/qsso接入和调试.assets/image-20221122194117567.png)
 
 5.   可以正常的进行测试了

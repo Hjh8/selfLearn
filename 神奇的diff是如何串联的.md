@@ -17,7 +17,7 @@
 
 在前端页面可以创建流程，一个流程下可以有多个场景，每个场景下都可以配置多个规则，以此来匹配每个场景的case。
 
-![image-20221107193948454](/Users/jianhang/Documents/learing/神奇的diff是如何串联的.assets/image-20221107193948454.png)
+![image-20221107193948454](/Users/jianhang/Documents/learing/selfLearn/selfLearn/神奇的diff是如何串联的.assets/image-20221107193948454.png)
 
 
 
@@ -70,17 +70,17 @@
 
 1.  维度配置：
 
-    ![image-20221107195736181](/Users/jianhang/Documents/learing/神奇的diff是如何串联的.assets/image-20221107195736181.png)
+    ![image-20221107195736181](/Users/jianhang/Documents/learing/selfLearn/神奇的diff是如何串联的.assets/image-20221107195736181.png)
 
 2.  生成的checklist：
 
-    ![image-20221107195804110](/Users/jianhang/Documents/learing/神奇的diff是如何串联的.assets/image-20221107195804110.png)
+    ![image-20221107195804110](/Users/jianhang/Documents/learing/selfLearn/神奇的diff是如何串联的.assets/image-20221107195804110.png)
 
 
 
 对应的表结构ER图：
 
-![image-20221107200117705](/Users/jianhang/Documents/learing/神奇的diff是如何串联的.assets/image-20221107200117705.png)
+![image-20221107200117705](/Users/jianhang/Documents/learing/selfLearn/神奇的diff是如何串联的.assets/image-20221107200117705.png)
 
 
 
@@ -115,7 +115,7 @@ filter {
 
 
 
-![image-20221108174839247](/Users/jianhang/Documents/learing/神奇的diff是如何串联的.assets/image-20221108174839247.png)
+![image-20221108174839247](/Users/jianhang/Documents/learing/selfLearn/神奇的diff是如何串联的.assets/image-20221108174839247.png)
 
 
 
@@ -137,7 +137,7 @@ filter {
     
     
 
-![image-20221108175810939](/Users/jianhang/Documents/learing/神奇的diff是如何串联的.assets/image-20221108175810939.png)
+![image-20221108175810939](/Users/jianhang/Documents/learing/selfLearn/神奇的diff是如何串联的.assets/image-20221108175810939.png)
 
 
 
@@ -155,7 +155,7 @@ filter {
 
 ### 流程串联具体实现
 
-![image-20221107163057377](/Users/jianhang/Documents/learing/神奇的diff是如何串联的.assets/image-20221107163057377.png)
+![image-20221107163057377](/Users/jianhang/Documents/learing/selfLearn/神奇的diff是如何串联的.assets/image-20221107163057377.png)
 
 1.   获取case和流程串联配置：
      1.   根据用户填写的流程、场景去es获取case
@@ -195,7 +195,7 @@ filter {
 
 
 
-![image-20221108192329779](/Users/jianhang/Documents/learing/神奇的diff是如何串联的.assets/image-20221108192329779.png)
+![image-20221108192329779](/Users/jianhang/Documents/learing/selfLearn/神奇的diff是如何串联的.assets/image-20221108192329779.png)
 
 
 
@@ -203,7 +203,7 @@ filter {
 
 ### 前后diff的QConfig配置
 
-![image-20221108193911828](/Users/jianhang/Documents/learing/神奇的diff是如何串联的.assets/image-20221108193911828.png)
+![image-20221108193911828](/Users/jianhang/Documents/learing/selfLearn/神奇的diff是如何串联的.assets/image-20221108193911828.png)
 
 
 

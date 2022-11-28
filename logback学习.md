@@ -70,7 +70,7 @@ logger是具有继承关系的，所有的logger都继承了一个**顶级记录
 
 当你运行` LoggerFactory.getLogger("org.example.app")` 创建记录器的时候，会**同时把 org记录器、org.example记录器都创建出来**。此时如果你再使用 `LoggerFactory.getLogger("org.example.app2")` 创建记录器时，则只会生成org.example.app2记录器，因为org记录器、org.example记录器已经存在了。
 
-![image-20221030213247076](/Users/jianhang/Documents/learing/logback学习.assets/image-20221030213247076.png)
+![image-20221030213247076](/Users/jianhang/Documents/learing/selfLearn/logback学习.assets/image-20221030213247076.png)
 
 
 
@@ -193,9 +193,9 @@ logback的滚动策略有两种
 
 pattern标签是用来控制日志内容的输出格式，具体规则如下：
 
-![image-20221030214229112](/Users/jianhang/Documents/learing/logback学习.assets/image-20221030214229112.png)
+![image-20221030214229112](/Users/jianhang/Documents/learing/selfLearn/logback学习.assets/image-20221030214229112.png)
 
-![image-20221030214258456](/Users/jianhang/Documents/learing/logback学习.assets/image-20221030214258456.png)
+![image-20221030214258456](/Users/jianhang/Documents/learing/selfLearn/logback学习.assets/image-20221030214258456.png)
 
 
 
