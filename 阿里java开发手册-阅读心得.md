@@ -42,8 +42,6 @@ B）领域模型命名规约：
 
 5）POJO 是 DO / DTO / BO / VO 的统称，禁止命名成 xxxPOJO。 
 
-
-
 ## (二) 常量定义
 
 long 或 Long 赋值时，数值后使用大写 L，不能是小写 l，小写容易跟数字混淆，造成误解。浮点数类型的数值后缀统一为大写的 D 或 F。
@@ -61,8 +59,6 @@ long 或 Long 赋值时，数值后使用大写 L，不能是小写 l，小写�
 4）包内共享常量：即在当前包下单独的 constant 目录下。
 
 5）类内共享常量：直接在类内部 private static final 定义
-
-
 
 ## (三) 代码格式
 
@@ -90,14 +86,12 @@ if / for / while / switch / do 等保留字与左右括号之间都必须加空�
 StringBuilder builder = new StringBuilder();
 // 超过 120 个字符的情况下，换行缩进 4 个空格，并且方法前的点号一起换行
 builder.append("yang").append("hao")
-	.append("chen")
-	.append("chen")
-	.append("chen");
+    .append("chen")
+    .append("chen")
+    .append("chen");
 ```
 
 不同逻辑、不同语义、不同业务的代码之间插入一个空行，分隔开来以提升可读性.
-
-
 
 ## (四) OOP 规约
 
@@ -139,32 +133,26 @@ POJO 类必须写 toString 方法。使用 IDE 中的工具 source > generate to
 
 避免上下文重复使用一个变量，使用 final 可以强制重新定义一个变量，方便更好地进行重构
 
--   大家在写代码的时候，为变量命名（尤其是临时变量）是一件很烧脑的事情，所以大家会偷懒重复使用变量名，但重复使用变量名在代码修改、代码重构时，因为修改的不彻底很容易出错，并且这类bug还很难测试出来，所以应该避免上下文重复使用一个变更，所以这种情况应该使用final关键字。
+- 大家在写代码的时候，为变量命名（尤其是临时变量）是一件很烧脑的事情，所以大家会偷懒重复使用变量名，但重复使用变量名在代码修改、代码重构时，因为修改的不彻底很容易出错，并且这类bug还很难测试出来，所以应该避免上下文重复使用一个变更，所以这种情况应该使用final关键字。
 
 慎用 Object 的 clone 方法来拷贝对象，因为对象 clone 方法默认是浅拷贝。若想实现深拷贝需覆写 clone 方法实现域对象的深度遍历式拷贝
 
-
-
 类成员与方法访问控制从严：
 
--   如果不允许外部直接通过 new 来创建对象，那么构造方法必须是 private。 
--   工具类不允许有 public 或 default 构造方法。
--   类非 static 成员变量并且与子类共享，必须是 protected。 
--   类非 static 成员变量并且仅在本类使用，必须是 private。 
--   类 static 成员变量如果仅在本类使用，必须是 private。 
--   若是 static 成员变量，考虑是否为 final。
--   类成员方法只供类内部调用，必须是 private。 
--   类成员方法只对继承类公开，那么限制为 protected。
-
-
-
-
+- 如果不允许外部直接通过 new 来创建对象，那么构造方法必须是 private。 
+- 工具类不允许有 public 或 default 构造方法。
+- 类非 static 成员变量并且与子类共享，必须是 protected。 
+- 类非 static 成员变量并且仅在本类使用，必须是 private。 
+- 类 static 成员变量如果仅在本类使用，必须是 private。 
+- 若是 static 成员变量，考虑是否为 final。
+- 类成员方法只供类内部调用，必须是 private。 
+- 类成员方法只对继承类公开，那么限制为 protected。
 
 ## 日期时间
 
 不允许在程序任何地方中使用：1）java.sql.Date 2）java.sql.Time 3）java.sql.Timestamp。
 
--   第 1 个不记录时间，getHours()抛出异常；第 2 个不记录日期，getYear()抛出异常；第 3 个在构造方法 super((time/1000)*1000)，fastTime 和 nanos 分开存储秒和纳秒信息。
+- 第 1 个不记录时间，getHours()抛出异常；第 2 个不记录日期，getYear()抛出异常；第 3 个在构造方法 super((time/1000)*1000)，fastTime 和 nanos 分开存储秒和纳秒信息。
 
 不要在程序中写死一年为 365 天，避免在公历闰年时出现日期转换错误或程序逻辑错误。例：
 
@@ -176,20 +164,16 @@ int daysOfThisYear = LocalDate.now().lengthOfYear();
 int days = LocalDate.of(2011, 1, 1).lengthOfYear();
 ```
 
-
-
 ## 集合处理
 
 关于 hashCode 和 equals 的处理，遵循如下规则：
 
-1.   只要重写 equals，就必须重写 hashCode。 因为 Set 存储的是不重复的对象，依据 hashCode 和 equals 进行判断，所以 Set 存储的对象必须重写这两个方法。
-2.   如果自定义对象作为 Map 的键，那么必须覆写 hashCode 和 equals。String 因为重写了 hashCode 和 equals 方法，所以我们可以愉快地使用 String 对象作为 key 来使用
-
-
+1. 只要重写 equals，就必须重写 hashCode。 因为 Set 存储的是不重复的对象，依据 hashCode 和 equals 进行判断，所以 Set 存储的对象必须重写这两个方法。
+2. 如果自定义对象作为 Map 的键，那么必须覆写 hashCode 和 equals。String 因为重写了 hashCode 和 equals 方法，所以我们可以愉快地使用 String 对象作为 key 来使用
 
 在使用 java.util.stream.Collectors 类的 toMap()方法转为 Map 集合时，一定要使用含有参数类型为 BinaryOperator，参数名为 mergeFunction 的方法，否则当出现相同 key值时会抛出 IllegalStateException 异常。
 
--   参数 mergeFunction 的作用是当出现 key 重复时，自定义对 value 的处理策略。
+- 参数 mergeFunction 的作用是当出现 key 重复时，自定义对 value 的处理策略。
 
 正例：
 
@@ -207,13 +191,9 @@ Collectors.toMap(Pair::getKey, Pair::getValue, (v1, v2) -> v2));
 
 在使用 java.util.stream.Collectors 类的 toMap()方法转为 Map 集合时，一定要注意当 value 为 null 时会抛 NPE 异常。此时需要先对value进行过滤。
 
-
-
 ArrayList 的 subList 结果不可强转成 ArrayList，否则会抛出 ClassCastException 异 常：java.util.RandomAccessSubList cannot be cast to java.util.ArrayList。
 
--   subList 返回的是 ArrayList 的内部类 SubList，并不是 ArrayList 而是 ArrayList 的一个视图，对于 SubList 子列表的所有操作最终会反映到原列表上。
-
-
+- subList 返回的是 ArrayList 的内部类 SubList，并不是 ArrayList 而是 ArrayList 的一个视图，对于 SubList 子列表的所有操作最终会反映到原列表上。
 
 使用 Map 的方法 keySet()/values()/entrySet()返回集合对象时，不可以对其进行添加元素操作，否则会抛出 UnsupportedOperationException 异常
 
@@ -230,29 +210,25 @@ String[] array = list.toArray(new String[0]);
 
 说明：
 
--   使用 toArray 带参方法，数组空间大小的 length， 等于 0，动态创建与 size 相同的数组，性能最好。
+- 使用 toArray 带参方法，数组空间大小的 length， 等于 0，动态创建与 size 相同的数组，性能最好。
 
--   大于 0 但小于 size，重新创建大小等于 size 的数组，增加 GC 负担。
--   等于 size，在高并发情况下，数组创建完成之后，size 正在变大的情况下，也会增加GC负担
--   大于 size，空间浪费，且在 size 处插入 null 值，存在 NPE 隐患
+- 大于 0 但小于 size，重新创建大小等于 size 的数组，增加 GC 负担。
+
+- 等于 size，在高并发情况下，数组创建完成之后，size 正在变大的情况下，也会增加GC负担
+
+- 大于 size，空间浪费，且在 size 处插入 null 值，存在 NPE 隐患
 
 在使用 Collection 接口任何实现类的 addAll()方法时，都要对输入的集合参数进行NPE 判断
 
 使用工具类 Arrays.asList()把数组转换成集合时，不能使用其修改集合相关的方法，它的 add/remove/clear 方法会抛出 UnsupportedOperationException 异常。因为得到的List也是视图。
 
-
-
 泛型通配符<? extends T>来接收返回的数据，此写法的泛型集合不能使用 add 方法，。而<? super T>不能使用 get 方法，两者在接口调用赋值的场景中容易出错。
 
--   扩展说一下 PECS(Producer Extends Consumer Super)原则：第一、频繁往外读取内容的，适合用<? extends T>。第二、经常往里插入的，适合用<? super T>
-
-
+- 扩展说一下 PECS(Producer Extends Consumer Super)原则：第一、频繁往外读取内容的，适合用<? extends T>。第二、经常往里插入的，适合用<? super T>
 
 不要在 foreach 循环里进行元素的 remove/add 操作。remove 元素请使用 Iterator方式，如果并发操作，需要对 Iterator 对象加锁。
 
 ![image-20221120121253856](/Users/jianhang/Documents/learing/阿里java开发手册-阅读心得.assets/image-20221120121253856.png)
-
-
 
 ## 并发处理
 
@@ -268,9 +244,7 @@ String[] array = list.toArray(new String[0]);
 
 高并发时，同步调用应该去考量锁的性能损耗。能用无锁数据结构，就不要用锁；能锁区块，就不要锁整个方法体；能用对象锁，就不要用类锁。
 
--   尽可能使加锁的代码块工作量尽可能的小，避免在锁代码块中调用 RPC 方法。
-
-
+- 尽可能使加锁的代码块工作量尽可能的小，避免在锁代码块中调用 RPC 方法。
 
 对多个资源、数据库表、对象同时加锁时，需要保持一致的加锁顺序，否则可能会造成死锁。
 
@@ -296,32 +270,22 @@ try {
 }
 ```
 
-
-
 并发修改同一记录时，避免更新丢失，需要加锁。要么在应用层加锁，要么在缓存加锁，要么在数据库层使用乐观锁，使用 version 作为更新依据
 
--   如果每次访问冲突概率小于 20%，推荐使用乐观锁，否则使用悲观锁。乐观锁的重试次数不得小于3 次
+- 如果每次访问冲突概率小于 20%，推荐使用乐观锁，否则使用悲观锁。乐观锁的重试次数不得小于3 次
 
 资金相关的金融敏感信息，使用悲观锁策略。
 
--   乐观锁在获得锁的同时已经完成了更新操作，校验逻辑容易出现漏洞，另外，乐观锁对冲突的解决策略有较复杂的要求，处理不当容易造成系统压力或数据异常，所以资金相关的金融敏感信息不建议使用乐观锁更新。
--   悲观锁遵循一锁二判三更新四释放的原则
-
-
+- 乐观锁在获得锁的同时已经完成了更新操作，校验逻辑容易出现漏洞，另外，乐观锁对冲突的解决策略有较复杂的要求，处理不当容易造成系统压力或数据异常，所以资金相关的金融敏感信息不建议使用乐观锁更新。
+- 悲观锁遵循一锁二判三更新四释放的原则
 
 避免 Random 实例被多线程使用，虽然共享该实例是线程安全的，但会因竞争同一 seed导致的性能下降。
 
--   Random 实例包括 java.util.Random 的实例或者 Math.random()的方式。
+- Random 实例包括 java.util.Random 的实例或者 Math.random()的方式。
 
--   在 JDK7 之后，可以直接使用 API ThreadLocalRandom，而在 JDK7 之前，需要编码保证每个线程持有一个单独的 Random 实例。
-
-
+- 在 JDK7 之后，可以直接使用 API ThreadLocalRandom，而在 JDK7 之前，需要编码保证每个线程持有一个单独的 Random 实例。
 
 ThreadLocal 对象使用 static 修饰。因为这个变量是针对一个线程内所有操作共享的，所以设置为静态变量，避免重复的创建，造成内存的浪费。
-
-
-
-
 
 ## (八) 控制语句
 
@@ -352,33 +316,31 @@ public class SwitchString {
 
 在高并发场景中，避免使用”等于”判断作为中断或退出的条件。
 
--   如果并发控制没有处理好，容易产生等值判断被“击穿”的情况，使用大于或小于的区间判断条件来代替。例如，当商品数量小于等于0时应该停止售卖。
+- 如果并发控制没有处理好，容易产生等值判断被“击穿”的情况，使用大于或小于的区间判断条件来代替。例如，当商品数量小于等于0时应该停止售卖。
 
 循环体中的语句要考量性能，以下操作尽量移至循环体外处理，如定义对象、变量、获取数据库连接，进行不必要的 try-catch 操作（这个 try-catch 是否可以移至循环体外）。
 
 下列情形，不需要进行参数校验： 
 
-1.   极有可能被循环调用的方法。但在方法说明里必须注明外部参数检查。
-2.   底层调用频度比较高的方法。毕竟是像纯净水过滤的最后一道，参数错误不太可能到底层才会暴露问题。一般 DAO 层与 Service 层都在同一个应用中，部署在同一台服务器中，所以 DAO 的参数校验，可以省略。
-3.   被声明成 private 只会被自己代码所调用的方法，如果能够确定调用方法的代码传入参数已经做过检查或者肯定不会有问题，此时可以不校验参数。
-
-
+1. 极有可能被循环调用的方法。但在方法说明里必须注明外部参数检查。
+2. 底层调用频度比较高的方法。毕竟是像纯净水过滤的最后一道，参数错误不太可能到底层才会暴露问题。一般 DAO 层与 Service 层都在同一个应用中，部署在同一台服务器中，所以 DAO 的参数校验，可以省略。
+3. 被声明成 private 只会被自己代码所调用的方法，如果能够确定调用方法的代码传入参数已经做过检查或者肯定不会有问题，此时可以不校验参数。
 
 ## 其他
 
 避免用 Apache Beanutils 进行属性的 copy。
 
--   Apache BeanUtils 性能较差，可以使用其他方案比如 Spring BeanUtils, Cglib BeanCopier，注意均是**浅拷贝**。
+- Apache BeanUtils 性能较差，可以使用其他方案比如 Spring BeanUtils, Cglib BeanCopier，注意均是**浅拷贝**。
 
 在调用 RPC、二方包、或动态生成类的相关方法时，捕捉异常必须使用 Throwable类来进行拦截。
 
 防止 NPE，是程序员的基本修养，注意 NPE 产生的场景(可使用 JDK8 的 Optional 类来防止 NPE 问题)：
 
-1.   返回类型为基本数据类型，return 包装数据类型的对象时，自动拆箱有可能产生 NPE。` public int f() { return Integer 对象}`
-2.   数据库的查询结果可能为 null。 
-3.   集合里的元素即使 isNotEmpty，取出的数据元素也可能为 null。 
-4.   远程调用返回对象时，一律要求进行空指针判断，防止 NPE。 
-5.   对于 Session 中获取的数据，建议进行 NPE 检查，避免空指针。
-6.   级联调用 obj.getA().getB().getC()；一连串调用，易产生 NPE。
+1. 返回类型为基本数据类型，return 包装数据类型的对象时，自动拆箱有可能产生 NPE。` public int f() { return Integer 对象}`
+2. 数据库的查询结果可能为 null。 
+3. 集合里的元素即使 isNotEmpty，取出的数据元素也可能为 null。 
+4. 远程调用返回对象时，一律要求进行空指针判断，防止 NPE。 
+5. 对于 Session 中获取的数据，建议进行 NPE 检查，避免空指针。
+6. 级联调用 obj.getA().getB().getC()；一连串调用，易产生 NPE。
 
 定义时区分 unchecked / checked 异常，避免直接抛出 new RuntimeException()，更不允许抛出 Exception 或者 Throwable，应使用有业务含义的自定义异常。推荐业界已定义过的自定义异常，如：DAOException / ServiceException 等

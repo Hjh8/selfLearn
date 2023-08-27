@@ -1,4 +1,4 @@
-#  Spring MVC学习日记
+# Spring MVC学习日记
 
 # 1.Spring MVC概述
 
@@ -15,13 +15,11 @@ SpringMVC向spring一样，使用`@Controller`创建控制器对象，把对象�
 在springMVC中，有一个对象是servlet，它就是`DispatherServlet` ，它叫做**中央调度器**，也叫前端控制器，负责接收用户的所有请求，然后分配给合适的控制器对象。以后的项目中都离不开它。
 
 > controller对象并不是线程安全的：
->
+> 
 > 有几种解决方法：
->
+> 
 > 1. 在Controller中使用ThreadLocal变量
 > 2. 在spring配置文件Controller中声明 scope="prototype"，每次都创建新的controller
-
-
 
 ## 1.1 第一个注解的SpringMVC程序
 
@@ -32,139 +30,137 @@ SpringMVC向spring一样，使用`@Controller`创建控制器对象，把对象�
 步骤：
 
 1. 加入依赖：spring-webmvc、servlet
-
-    ```java
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <version>5.2.5.RELEASE</version>
-    </dependency>
-    ```
+   
+   ```java
+   <dependency>
+     <groupId>javax.servlet</groupId>
+     <artifactId>javax.servlet-api</artifactId>
+     <version>3.1.0</version>
+     <scope>provided</scope>
+   </dependency>
+   <dependency>
+     <groupId>org.springframework</groupId>
+     <artifactId>spring-webmvc</artifactId>
+     <version>5.2.5.RELEASE</version>
+   </dependency>
+   ```
 
 2. 在web.xml中注册springmvc的核心对象DispatcherServlet
-
-    ```XML
-    <!--  声明DispatcherServlet
-            创建DispatcherServlet的过程中会同时读取springMVC配置文件，把配置文件中的对象都创建好。
-            springMVC会默认在/WEB-INF/<servlet-name>里的名字-servlet.xml读取配置文件。
-            如何修改读取配置文件的路径？使用<init-param>标签
-    -->
-    <servlet>
-        <servlet-name>springmvc</servlet-name>
-        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-        <init-param>
-            <param-name>contextConfigLocation</param-name>
-            <param-value>classpath:springmvc-config.xml</param-value>
-        </init-param>
-        <!-- load-on-startup表示在tomcat启动后创建对象的顺序，值越小越先创建 -->
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    
-    <servlet-mapping>
-        <servlet-name>springmvc</servlet-name>
-        <!-- url-pattern可以使用两个方式
-                1. 扩展名。语法： *.扩展名；例如：*.do http://localhost:8080/myweb/some.do
-                2. 使用斜杠 “/” 。 后面讲
-        -->
-        <url-pattern>*.do</url-pattern>
-    </servlet-mapping>
-    ```
+   
+   ```XML
+   <!--  声明DispatcherServlet
+           创建DispatcherServlet的过程中会同时读取springMVC配置文件，把配置文件中的对象都创建好。
+           springMVC会默认在/WEB-INF/<servlet-name>里的名字-servlet.xml读取配置文件。
+           如何修改读取配置文件的路径？使用<init-param>标签
+   -->
+   <servlet>
+       <servlet-name>springmvc</servlet-name>
+       <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+       <init-param>
+           <param-name>contextConfigLocation</param-name>
+           <param-value>classpath:springmvc-config.xml</param-value>
+       </init-param>
+       <!-- load-on-startup表示在tomcat启动后创建对象的顺序，值越小越先创建 -->
+       <load-on-startup>1</load-on-startup>
+   </servlet>
+   
+   <servlet-mapping>
+       <servlet-name>springmvc</servlet-name>
+       <!-- url-pattern可以使用两个方式
+               1. 扩展名。语法： *.扩展名；例如：*.do http://localhost:8080/myweb/some.do
+               2. 使用斜杠 “/” 。 后面讲
+       -->
+       <url-pattern>*.do</url-pattern>
+   </servlet-mapping>
+   ```
 
 3. 创建一个发起请求的页面
-
-    ```html
-    <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-    <html>
-    <head>
-        <title>HelloSpringMVC</title>
-    </head>
-    <body>
-        <a href="some.do">发送some.do请求</a>
-    </body>
-    </html>
-    ```
+   
+   ```html
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+   <head>
+       <title>HelloSpringMVC</title>
+   </head>
+   <body>
+       <a href="some.do">发送some.do请求</a>
+   </body>
+   </html>
+   ```
 
 4. 使用DI创建控制器类
     4.1 类上面使用@Controller创建控制器对象
     4.2 方法的上面使用@RequestMapping匹配请求路径
-
-    ```java
-    package Controller;
-    
-    import org.springframework.stereotype.Controller;
-    import org.springframework.web.bind.annotation.RequestMapping;
-    import org.springframework.web.servlet.ModelAndView;
-    
-    @Controller
-    public class MyController {
-        /*
-        * 调用方法来处理用户的请求，方法名称自定义，可以有多种返回值类型，多种参数类型
-        * */
-    
-        /*
-        * @RequestMapping为请求映射，将一个请求地址和一个方法绑定在一起
-        *   被修饰的方法叫做处理器方法或控制器方法，类似于servlet的doGet，doPost
-        *   属性
-        *       value：String类型，表示请求的url，必须唯一，一般以 “/” 开头。
-        * =================================================================
-        * 返回值ModelAndView
-        *   Model：请求处理完成后要显示给用户的数据
-        *   View：用户所见到的视图。
-        * */
-        @RequestMapping(value = "/some.do")
-        public ModelAndView doSome(){
-            //这里先不调用service，简单的处理一下
-            System.out.println("======================");
-            //创建返回值对象
-            ModelAndView mav = new ModelAndView();
-            //添加数据，框架会把数据放入到request的作用域，request.setAttribute()
-            mav.addObject("msg", "欢迎使用SpringMVC");
-            mav.addObject("name","codeKiang");
-            //设置视图，指定数据的去向，request.getRequestDispatcher(路径).forward(request,response).
-            mav.setViewName("/show.jsp");
-    
-            return mav;
-        }
-    }
-    ```
+   
+   ```java
+   package Controller;
+   
+   import org.springframework.stereotype.Controller;
+   import org.springframework.web.bind.annotation.RequestMapping;
+   import org.springframework.web.servlet.ModelAndView;
+   
+   @Controller
+   public class MyController {
+       /*
+       * 调用方法来处理用户的请求，方法名称自定义，可以有多种返回值类型，多种参数类型
+       * */
+   
+       /*
+       * @RequestMapping为请求映射，将一个请求地址和一个方法绑定在一起
+       *   被修饰的方法叫做处理器方法或控制器方法，类似于servlet的doGet，doPost
+       *   属性
+       *       value：String类型，表示请求的url，必须唯一，一般以 “/” 开头。
+       * =================================================================
+       * 返回值ModelAndView
+       *   Model：请求处理完成后要显示给用户的数据
+       *   View：用户所见到的视图。
+       * */
+       @RequestMapping(value = "/some.do")
+       public ModelAndView doSome(){
+           //这里先不调用service，简单的处理一下
+           System.out.println("======================");
+           //创建返回值对象
+           ModelAndView mav = new ModelAndView();
+           //添加数据，框架会把数据放入到request的作用域，request.setAttribute()
+           mav.addObject("msg", "欢迎使用SpringMVC");
+           mav.addObject("name","codeKiang");
+           //设置视图，指定数据的去向，request.getRequestDispatcher(路径).forward(request,response).
+           mav.setViewName("/show.jsp");
+   
+           return mav;
+       }
+   }
+   ```
 
 5. 创建一个显示结果的jsp
-
-    ```HTML
-    <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-    <html>
-    <head>
-        <title>显示页面</title>
-    </head>
-    <body>
-        <h3>msg的数据：${msg}</h3><br>
-        <h3>name的数据：${name}</h3>
-    </body>
-    </html>
-    ```
+   
+   ```HTML
+   <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+   <html>
+   <head>
+       <title>显示页面</title>
+   </head>
+   <body>
+       <h3>msg的数据：${msg}</h3><br>
+       <h3>name的数据：${name}</h3>
+   </body>
+   </html>
+   ```
 
 6. 创建springMVC配置文件：声明组件扫描器，指定@Controller注解所在的包名
-
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <beans xmlns="http://www.springframework.org/schema/beans"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xmlns:context="http://www.springframework.org/schema/context"
-           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
-    
-        <!--  声明组件扫描器  -->
-        <context:component-scan base-package="Controller" />
-    
-    </beans>
-    ```
-
-
+   
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:context="http://www.springframework.org/schema/context"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+   
+       <!--  声明组件扫描器  -->
+       <context:component-scan base-package="Controller" />
+   
+   </beans>
+   ```
 
 **视图解析器，InternalResourceViewResolver**
 
@@ -183,12 +179,10 @@ SpringMVC向spring一样，使用`@Controller`创建控制器对象，把对象�
 
 声明了视图解析器之后就可以省去前后缀了，比如`mav.setViewName("first")`；
 
-
-
 springMVC请求的处理流程：
 
 1. tomcat启动，根据load-on-start创建DispatcherServlet对象，因为DispatcherServlet是servlet，所以它会执行init方法
-
+   
    ```java
    WebApplication etc = new ClassPathXmlApplicationContext(配置文件的路径);
    getServletContext().setAttribute(key, etc);
@@ -206,8 +200,6 @@ springMVC请求的处理流程：
 
 **tips：** Dispatcher也叫作前端控制器（Front controller），Controller对象叫作后端控制器（Back controller）
 
-
-
 ## 1.2 请求映射@RequestMapping
 
 @RequestMapping为请求映射，将一个请求地址和一个方法绑定在一起
@@ -219,8 +211,6 @@ springMVC请求的处理流程：
 - value：请求的url，必须唯一，一般以 “/” 开头。有多个路径时，可以使用字符串数组，如`@RequestMapping(value = {"/some.do", "/second.do", "/third.do"})`；
 - method：请求的方式（get或post等），如`@RequestMapping(value = "/some.do", method = RequestMethod.GET)`；
 - produces：设置响应的**contentType**。
-
-
 
 前面的案例是将请求映射注解放在方法的上面，但它**也可以放在类的上面，用于表示url的模块**，比如`user/profile.do`、`user/setting.do`、`goods/detail.do`、`goods/money.do` ，用户跟商品是两个不同的模块，需要用模块进行区别。
 
@@ -249,8 +239,6 @@ public class MyController {
 
 此时需要使用**get**请求访问`user/some.do`才可以成功跳转页面。
 
-
-
 ## 1.3 请求参数的方式
 
 携带请求参数的方式有两种：一种是从url路径参数中获取，一种是从请求body中获取。
@@ -268,17 +256,15 @@ public class MyController {
 ```java
 @RequestMapping("/springmvc/{id}")
 public String getDetails(
-    @PathVariable(value="id") 	   String  id,
+    @PathVariable(value="id")        String  id,
     @RequestParam(value="param1")  String  param1,
     @RequestParam(value="param2")  String  param2)
 {
-	....逻辑代码	
+    ....逻辑代码    
 }
 ```
 
 **tips**：value属性可以省略，默认为方法的形参名
-
-
 
 ### 获取请求body中的参数
 
@@ -289,18 +275,16 @@ public void handle(
     @RequestBody String body,
     BindingResult result)
 {
-	if (result.hasErrors()) {
-		System.out.println("参数绑定失败");
-	}
-	else{
-		System.out.println("body:" + body);
-	}
+    if (result.hasErrors()) {
+        System.out.println("参数绑定失败");
+    }
+    else{
+        System.out.println("body:" + body);
+    }
 }
 ```
 
 **tips**：BindingResult：参数绑定后的结果，如果绑定失败（如类型不匹配）则hasErrors()为真。
-
-
 
 # 2. 处理器方法
 
@@ -316,8 +300,6 @@ public void handle(
 前面三个是之前学Servlet时就经常使用到的，这里只介绍第四类参数。
 
 处理器介绍请求携带的方式有两种：**逐个接收**和**对象接收**。
-
-
 
 ### 2.1.1 逐个接收
 
@@ -347,15 +329,11 @@ public class MyController {
 }
 ```
 
-
-
 ![image-20201006215625562](Spring MVC学习日记.assets/image-20201006215625562.png)
 
 ![image-20201006220451756](Spring MVC学习日记.assets/image-20201006220451756.png)
 
 可以看到参数是成功接收了，只不过出现了乱码。原因是我们使用post请求，框架不会自动帮我们匹配编码，如果我们**使用get请求就不会出现乱码问题**。
-
-
 
 #### 过滤器解决乱码
 
@@ -403,8 +381,6 @@ public class MyController {
 上面案例的age的类型是int，那如果输入的时候输入了字符串、浮点数或者不输入直接提交信息会发现什么？如果把int换成Integer呢？
 
 答：字符串、浮点数或者不输入直接提交都会报错（页面会出现400错误码），如果把int换成Integer，则不输入直接提交时该形参会被赋值为**null**，输入字符串或浮点数也会报错。
-
-
 
 ### 2.1.2 对象接收
 
@@ -460,10 +436,6 @@ public ModelAndView doObj(ParamObj obj){
 
 ![](Spring MVC学习日记.assets/image-20201007210208033.png)
 
-
-
-
-
 ## 2.2 处理器方法的返回值
 
 根据不同的情况，处理器方法应使用不同的返回值，常见的返回值有四种：
@@ -471,7 +443,7 @@ public ModelAndView doObj(ParamObj obj){
 1. ModelAndView：需要在跳转到其他资源的时候传递数据时使用
 
 2. String：只需要跳转而不需要传递数据时使用。返回值为要跳转的视图路径。
-
+   
    ```java
    @RequestMapping(value = "/returnStr.do")
    public String returnStr(){
@@ -482,15 +454,13 @@ public ModelAndView doObj(ParamObj obj){
 3. void：不代表数据也不代表视图，但可以响应ajax请求。此种方式需要手动编写代码响应ajax，而第四种返回值则可以使用框架封装好的功能，所以这里不介绍该返回方式，重点介绍自定义类型对象的返回方式。
 
 4. 自定义类型对象：只需要传递数据，不需要跳转。比如响应ajax请求。
-
+   
    **tips：List、对象数组、String都是对象**。
-
-
 
 ### 案例：Student对象响应ajax请求
 
 1. 加入处理json的工具库依赖，springmvc默认使用**jackson**。
-
+   
    ```xml
    <!--  jackson依赖  -->
    <dependency>
@@ -506,14 +476,14 @@ public ModelAndView doObj(ParamObj obj){
    ```
 
 2. 在配置文件中加入注解驱动`<mvc:annotation-driven>` ，其可以将java对象自动转换成json、xml、text、二进制等数据格式。
-
+   
    ```xml
    <!--  声明注解驱动 注意要选mvc结尾的 -->
    <mvc:annotation-driven />
    ```
-
+   
    处理器方法的上面加上`@ResponseBody`注解，其可以将转换后的json通过**HttpServletResponse**输出给浏览器
-
+   
    ```java
    @RequestMapping(value = "/some.do")
    @ResponseBody
@@ -524,7 +494,7 @@ public ModelAndView doObj(ParamObj obj){
    ```
 
 3. 写ajax请求页面
-
+   
    ```html
    <%@ page contentType="text/html;charset=UTF-8" language="java" %>
    <html>
@@ -564,8 +534,6 @@ public ModelAndView doObj(ParamObj obj){
 
 ![image-20201009185004513](Spring MVC学习日记.assets/image-20201009185004513.png)
 
-
-
 `<mvc:annotation-driven>` 的原理
 ---
 
@@ -581,8 +549,6 @@ public ModelAndView doObj(ParamObj obj){
 
 1. StringHttpMessageConverter：读取和写出**字符串**格式的数据
 2. MappingJackson2HttpMessageConverter：读取和写入**json**格式的数据，
-
-
 
 ## 2.3 produces属性解决String乱码
 
@@ -609,8 +575,6 @@ public String doStringData(){
     return "hello 我是作为数据返回的"
 }
 ```
-
-
 
 ## 2.4 \<url-pattern>的斜杠方式
 
@@ -640,6 +604,7 @@ public String doStringData(){
     <url-pattern>/</url-pattern>
 </servlet-mapping>
 ```
+
 根据前面的知识可以知道，这个servlet的名字为default，匹配的路径是`/`，表示这个default会匹配所有的路径。
 
 再看看default上面的注解：这个默认的servlet是所有web应用程序的默认servlet，用于静态资源。它处理所有未映射到其他带有servlet映射的servlet。
@@ -650,8 +615,6 @@ public String doStringData(){
 
 1. 处理静态资源
 2. 处理所有未映射到其他带有servlet映射的servlet
-
-
 
 ### 2.4.2 使用斜杠会出现的问题
 
@@ -664,8 +627,6 @@ public String doStringData(){
 1. springmvc配置文件中加入`<mvc:default-servlet-handler>`标签。
 2. 配置文件。
 
-
-
 ### 2.4.3 访问静态资源
 
 第一种访问静态资源的方式：springmvc配置文件中加入`<mvc:default-servlet-handler>`标签。加入这个标签后，框架会创建控制器对象DefaultServletHttpRequestHandler，此对象相当于一个检查员，对进入Dispatcher的URL进行筛查，如果发现是静态资源的请求，就将该请求转发给Web应用服务器默认的servlet处理。
@@ -676,8 +637,6 @@ public String doStringData(){
 
 但是这两个标签都会与`@RequestMapping`注解有冲突，都需要**配合`<mvc:annotation-driven />` 注解驱动一起使用**。
 
-
-
 ## 2.5 相对、绝对、参考地址
 
 绝对地址：带有协议名称的是绝对地址，例如`http://baidu.com` 
@@ -687,19 +646,19 @@ public String doStringData(){
 参考地址：（项目名为test）
 
 1. 访问地址不加`/` 
-
+   
    当你发起`user/some.do`请求
-
+   
    访问地址变为：`https://localhost:8080/test/user/some.do` 
-
+   
    此时的参考路径是`https://localhost:8080/test` 
 
 2. 访问地址加`/` 
-
+   
    当你发起`/user/some.do`请求，
-
+   
    访问地址变为：`https://localhost:8080/user/some.do` 
-
+   
    此时的参考路径是`https://localhost:8080` 。
 
 > 不加斜杠，表示项目的根路径。加了斜杠，代表web服务器的根路径。
@@ -721,7 +680,7 @@ el表达式好是好，可是需要给每个路径前都加上就很麻烦，有
 
 ```jsp
 <%
-	String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContentPath()+"/";   
+    String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContentPath()+"/";   
 %>
 <head>
     <title>test</title>
@@ -736,8 +695,6 @@ springMVC容器是管理controller控制器对象的，Spring容器是管理serv
 容器内的对象可以直接互相调用，但是controller要如何调用service。因为**springMVC容器是Spring容器的子容器**，类似继承关系，所以在controller中可以直接调用service，但不能在service中调用controller。
 
 总结起来就是：**在service中使用dao对象进行数据库操作，在controller中使用service对象执行业务逻辑**。 
-
-
 
 4.SpringMVC的核心技术
 ===
@@ -768,8 +725,6 @@ mv.setViewName("redirect:/WEB-INF/view/show.jsp");
 
 重定向是两次请求，所以`mv.addObject()`之后进行重定向是获取不到数据的，但框架会自动在第二次请求时把参数放在地址栏中，所以我们可以获取地址栏的参数来获取数据，比如`${param.name}`。
 
-
-
 ## 4.2 统一异常处理
 
 使用AOP的思想，异常的抛出与业务逻辑完全可以分离开来。在springMVC中使用两个注解来实现统一的异常处理。
@@ -777,14 +732,14 @@ mv.setViewName("redirect:/WEB-INF/view/show.jsp");
 1. 创建一个普通类，作为全局异常处理类，加上`@ControllerAdvice`  
 
 2. 在类中定义方法，方法的上面加入`@ExceptionHandler(value = 异常名.class)`  
-
+   
    ```java
    @ControllerAdvice
    public class GlobalExceptionHandler{
        /*
-       	处理异常方法跟处理器方法的定义一样，可以有多个参数，不同的返回值。
-       		形参：Exception表示controller中抛出的异常对象
-       	@ExceptionHandler(value=异常名.class)表示发送此类型异常时由该方法处理
+           处理异常方法跟处理器方法的定义一样，可以有多个参数，不同的返回值。
+               形参：Exception表示controller中抛出的异常对象
+           @ExceptionHandler(value=异常名.class)表示发送此类型异常时由该方法处理
        */
        @ExceptionHandler(value=NameException.class)
        public ModelAndView doNameException(Exception ex){
@@ -803,12 +758,10 @@ mv.setViewName("redirect:/WEB-INF/view/show.jsp");
        }
    }  
    ```
-
+   
    如果需要获取到异常的信息，可以使用`${ex.message}` 
 
 3. 在配置文件中声明`@ControllerAdvice`所在的包名和注解驱动
-
-
 
 ## 4.3 拦截器
 
@@ -820,8 +773,6 @@ mv.setViewName("redirect:/WEB-INF/view/show.jsp");
 
 1. 创建类实现`HandlerInterceptor`接口，并实现接口中三个方法的任意个方法
 2. 配置文件中指定拦截器的URI地址.
-
-
 
 `HandlerInterceptor`接口的源码：
 
@@ -851,13 +802,9 @@ public interface HandlerInterceptor {
 
 返回值`boolean` 为true时拦截器才会放行该请求，否则请求中断。
 
-
-
 **postHandle** 为后处理方法，即在控制器方法执行之后拦截。该方法中可以修改控制器中的ModelAndView。
 
 参数`Object handler` 为被拦截的控制器对象；`ModelAndView modelAndView`为控制器方法的返回值。
-
-
 
 **afterCompletion** 是请求处理完成之后执行的方法，即渲染完成后，一般做资源回收工作的。
 
@@ -902,19 +849,15 @@ public interface HandlerInterceptor {
 
 ![image-20201013171755284](Spring MVC学习日记.assets/image-20201013171755284.png)
 
-
-
 4.4 拦截器与过滤器的区别
 ---
 
 > 这两个使用的设计模式都是 **责任链模式**。
 
 1. 过滤器实现Filter接口，拦截器实现HandlerInterceptor接口。
-3. 过滤器侧重于数据过滤；拦截器用来验证请求的。
-4. 过滤器在拦截器之前执行。
-5. 过滤器是tomcat创建的对象，拦截器是框架创建的对象。
-
-
+2. 过滤器侧重于数据过滤；拦截器用来验证请求的。
+3. 过滤器在拦截器之前执行。
+4. 过滤器是tomcat创建的对象，拦截器是框架创建的对象。
 
 面试题
 ===
@@ -931,15 +874,15 @@ SpringMVC执行流程示意图：
 1. 浏览器提交请求到中央调度器。
 
 2. 中央调度器直接将请求转给**处理器映射器HandleMapping**。
-
+   
    - handler等价于controller，封装了方法的定义信息，如方法名、参数类型、返回类型等信息
 
 3. 处理器映射器通过`map.get(URI)`的方式得到处理该请求的处理器handler，并将其跟拦截器一起封装成**处理器执行链HandlerExecutionChain** 并返回给中央调度器。
-
+   
    - 处理器执行链 中保存着`处理器对象`跟`针对该对象的拦截器`。
 
 4. 中央调度器根据处理器执行链中的处理器，找到能够执行该处理器的**处理器适配器HandleAdaptor**。
-
+   
    - 因为controller的实现有三种，所以要使用适配器来执行
 
 5. 处理器适配器调用处理器，执行controller中的某个方法。
@@ -949,9 +892,9 @@ SpringMVC执行流程示意图：
 7. 适配器将结果返回给调度器。
 
 8. 调度器调用**视图解析器**，将ModelAndView中的视图名封装成视图对象**View**。
-
+   
    View是一个接口，在框架中，是用View跟其实现类来表示视图的。
-
+   
    `mv.setViewName("show");` 等价于 `mv.setView(new InternalResourceView("/WEB-INF/view/show.jsp"));` 
 
 9. 视图解析器将封装好的**视图对象View**返回给调度器。
@@ -959,8 +902,6 @@ SpringMVC执行流程示意图：
 10. 调度器调用视图对象，让其自己进行渲染，即进行数据填充，形成响应对象。
 
 11. 调度器响应浏览器
-
-
 
 controller的类型
 ---
@@ -971,11 +912,9 @@ controller的类型有两种：<u>Controller类型</u> 跟 <u>BeanName类型</u>
 - 实现**Controller接口**或**HttpRequestHandler接口**的类为BeanName类型
 
 > controller对象并不是线程安全的，有几种解决方法：
->
+> 
 > 1. 在Controller中使用ThreadLocal变量
 > 2. 在spring配置文件Controller中声明 scope="prototype"，每次都创建新的controller
-
-
 
 参数绑定过程
 ---
@@ -996,8 +935,6 @@ public interface HandlerMethodArgumentResolver {
 }
 ```
 
-
-
 ### 简单类型参数绑定
 
 首先，参数绑定发生在方法执行之前，由方法参数解析器去解析请求中的参数。
@@ -1017,8 +954,6 @@ Object returnValue = invoke(args);
 
 最后，通过反射执行HandleMethod中的method，方法参数为args。
 
-
-
 ### 对象参数绑定
 
 > 对象参数的解析由 ModelAttributeMethodProcessor 完成。
@@ -1028,6 +963,3 @@ Object returnValue = invoke(args);
 ![image-20210913151620375](Spring MVC学习日记.assets/image-20210913151620375.png)
 
 然后遍历propertyValueList，根据每个元素的name 使用setter方法给对象同名属性赋值。
-
-
-

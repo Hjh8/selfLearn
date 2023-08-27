@@ -6,16 +6,12 @@ Spring的**核心技术**：`IOC`（控制反转） 和 `AOP`（面向切面编�
 
 Spring可管理**依赖** （类a中使用类b的属性或方法，叫做类a依赖类b。）
 
-
-
 **Spring优点** 
 
 1. 轻量：Spring框架使用的jar包都比较小，运行时占用的资源少
 2. 针对接口编程，解耦合
 3. AOP编程的支持
 4. 方便集成各种优秀框架
-
-
 
 Spring框架至今已集成了20多个模块，这些模块分布在以下模块中：
 
@@ -31,10 +27,6 @@ Spring框架至今已集成了20多个模块，这些模块分布在以下模块
 
 ![img](Spring学习.assets/480452-20190318225849216-2097896352.png)
 
-
-
-
-
 # 2. IOC 控制反转
 
 ## 2.1 简单介绍
@@ -46,8 +38,6 @@ IOC（Inversion of Control）：控制反转，是一个概念、是一个思想
 1. 即使减少代码的改动也可以实现不同的功能。
 2. **实现解耦合**。
 
-
-
 专业名词解释：
 
 **“控制”**：创建对象、对象属性的赋值，对象之间的关系管理。
@@ -58,22 +48,16 @@ IOC（Inversion of Control）：控制反转，是一个概念、是一个思想
 
 **“容器”**：实际上是一个map，里面存放各种对象（xml里配置的bean节点、@repository、@controller等注解修饰的对象），在项目启动的时候会读取配置文件里面的bean节点 / 扫描到拥有上述注解的类，根据全限定类名使用反射技术创建对象放到map里。
 
-
-
 IOC既然是一个思想，那么肯定有落地的技术来实现它。
 
 IOC的技术实现是`DI`（Dependency Injection **依赖注入**），只需要在程序中提供要使用的对象名即可，其他都交给容器实现。比如**Spring底层自动创建对象，其原理是利用了Java反射的机制**。
 
-
-
 IOC思想的体现：比如 `Servlet` 在浏览器中的创建。我们只需要在`web.xml`中使用`<servlet-name>跟<servlet-class>`标签来注册`Servlet` ，然后Tomcat服务器会自动创建`Servlet` 对象。所以，Tomcat也可以叫做容器。
-
-
 
 ## 2.2 Spring的第一个程序
 
 1. 创建maven项目并在`pom.xml`中加入spring的**maven依赖** 
-
+   
    ```xml
    <dependency>
      <groupId>org.springframework</groupId>
@@ -83,7 +67,7 @@ IOC思想的体现：比如 `Servlet` 在浏览器中的创建。我们只需要
    ```
 
 2. 创建所需的类/接口
-
+   
    ```java
    // 创建接口
    package org.example.service;
@@ -92,7 +76,7 @@ IOC思想的体现：比如 `Servlet` 在浏览器中的创建。我们只需要
        void example();
    }
    ```
-
+   
    ```java
    // 实现接口
    package org.example.service.Impl;
@@ -108,9 +92,9 @@ IOC思想的体现：比如 `Servlet` 在浏览器中的创建。我们只需要
    ```
 
 3. 在resources目录下创建spring的配置文件，在`<beans>`标签中声明类的信息
-
+   
    ![image-20200828160343663](Spring学习.assets/image-20200828160343663.png)
-
+   
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
    <!--
@@ -131,8 +115,9 @@ IOC思想的体现：比如 `Servlet` 在浏览器中的创建。我们只需要
    
    </beans>
    ```
-
+   
    **tips：**spring把创建好的对象放入到**map**中，springMap.put(id, 对象);
+   
                例如：`springMap.put("demo", new DemoImpl());` 
 
 4. 创建spring容器对象（**在创建spring容器的时候会创建配置文件中所有的对象。默认调用类的无参构造方法**。）
@@ -140,7 +125,7 @@ IOC思想的体现：比如 `Servlet` 在浏览器中的创建。我们只需要
 5. spring容器对象使用getBean获取到想要的对象
 
 6. 使用对象
-
+   
    ```java
        @Test
        public void shouldAnswerWithTrue()
@@ -160,16 +145,14 @@ IOC思想的体现：比如 `Servlet` 在浏览器中的创建。我们只需要
            d.example();
        }
    ```
-
+   
    【注意】
-
+   
    1. `ApplicationContext`是一个接口，不能直接new，所以要new它的实现类，其中`ClassPathXmlApplicationContext` 最常用。
    
    ![image-20200828123112639](Spring学习.assets/image-20200828123112639.png)
    
    2. **spring中的对象默认都是单例** 
-   
-   
 
 2.3 DI入门
 ---
@@ -181,8 +164,6 @@ DI的实现方式有两种：
 1. **基于XML**：在spring的配置文件中，使用标签和属性来实现。
 2. **基于注解**：使用spring中的注解来完成属性赋值。（常用）
 
-
-
 DI的语法分类：
 
 1. set注入：spring调用类的set方法来实现属性的赋值。
@@ -192,8 +173,6 @@ DI的语法分类：
 
 **【注意】set注入仅仅只是调用类的set方法** 
 
-
-
 ### 2.3.1 XML之set注入
 
 #### 简单类型的set注入
@@ -202,8 +181,8 @@ DI的语法分类：
 
 ```xml
 <bean id="对象名" class="类的全限定名">
-	<property name="属性名" value="属性值" />
-	<property name="属性名" value="属性值" />
+    <property name="属性名" value="属性值" />
+    <property name="属性名" value="属性值" />
 </bean>
 ```
 
@@ -234,9 +213,9 @@ public void test01(){
     ApplicationContext ac = new ClassPathXmlApplicationContext(config);
     Student s = (Student)ac.getBean("myStudent");
     System.out.println(s);
-    
+
     System.out.println("=========以下为非自定义类的调用======");
-    
+
     Date date = (Date) ac.getBean("myDate");
     System.out.println(date);
 }
@@ -266,8 +245,8 @@ public class Student {
     private int age;
     // 引用类型
     private School school;
-    
-	。。。省略setter/getter方法
+
+    。。。省略setter/getter方法
 }
 ```
 
@@ -298,7 +277,7 @@ public class School {
         <!--  引用类型  -->
         <property name="school" ref="school" />
     </bean>
-        
+
     <bean id="school" class="org.example.ba02.School">
         <property name="name" value="清华" />
         <property name="address" value="北京" />
@@ -319,24 +298,24 @@ public class School {
 常用两种方式：
 
 1. `byName`（按名称注入）：java类中引用类型的属性名要与`bean`标签的id值一致。
-
+   
    语法：
-
+   
    ```xml
    <bean id="对象名" class="类的全限定名称" autowire="byName">
        简单类型的赋值
    </bean>
    ```
-
+   
    例子：
-
+   
    ```xml
    <bean id="myStudent" class="org.example.ba02.Student" autowire="byName">
        <property name="name" value="codekiang" />
        <property name="age" value="18" />
        <!-- <property name="school" ref="school" /> -->
    </bean>
-       
+   
    <!--  id名跟类中的属性名一致都是school  -->
    <bean id="school" class="org.example.ba02.School">
        <property name="name" value="清华" />
@@ -345,23 +324,23 @@ public class School {
    ```
 
 2. `byType` （按类型注入）：java类中引用类型的数据类型和`bean`的class属性是**同源**关系。
-
+   
    **同源**就是一类的意思：
-
+   
    1. java类中引用类型的数据类型和`bean`的class值一样。
    2. java类中引用类型的数据类型和`bean`的class值是父子关系。（引用类型的数据类型为父类）
    3. java类中引用类型的数据类型和`bean`的class值是接口与实现类关系。（引用类型的数据类型为接口类型）
-
+   
    语法：
-
+   
    ```xml
    <bean id="对象名" class="类的全限定名称" autowire="byType">
        简单类型的赋值
    </bean>
    ```
-
+   
    例子：
-
+   
    ```java
    <bean id="myStudent" class="org.example.ba02.Student" autowire="byType">
        <property name="name" value="byType" />
@@ -372,15 +351,13 @@ public class School {
    </bean>
    
    <bean id="mySchool" class="org.example.ba02.School">
-   	<property name="name" value="清华" />
-   	<property name="address" value="北京" />
+       <property name="name" value="清华" />
+       <property name="address" value="北京" />
    </bean>
    ```
 - [ ] 思考：如果现在有两个bean，它们的关系为其中一个是父类，另一个为子类，也就是说引用类型是爷爷、父类bean是爸爸、子类bean是儿子，那么根据`byType`自动注入会是什么情况？
-
+  
   答：编辑器会报错。因为此时spring不知道该创建父类bean还是子类bean。
-
-
 
 ### 2.3.2 XML之构造注入
 
@@ -397,8 +374,6 @@ public class School {
 ```
 
 tips：当形参类型为**引用类型**时，需要把`value` 改成`ref`。
-
-
 
 ### 2.3.3 包含关系的配置文件
 
@@ -428,8 +403,6 @@ tips：当形参类型为**引用类型**时，需要把`value` 改成`ref`。
 </beans>
 ```
 
-
-
 `spring-Student.xml` 
 
 ```xml
@@ -446,8 +419,6 @@ tips：当形参类型为**引用类型**时，需要把`value` 改成`ref`。
 </beans>
 ```
 
-
-
 `Total.xml` 
 
 ```xml
@@ -456,7 +427,7 @@ tips：当形参类型为**引用类型**时，需要把`value` 改成`ref`。
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!--  主配置文件：关联其他配置文件,一般不定义其他对象  -->
+    <!--  主配置文件：关联其他配置文件,一般不定义其他对象  -->
     <import resource="classpath:ba04/spring-School.xml" />
     <import resource="classpath:ba04/spring-Student.xml" />
 </beans>
@@ -465,8 +436,6 @@ tips：当形参类型为**引用类型**时，需要把`value` 改成`ref`。
 【注意】 `classpath:` 表示类路径。即告诉spring要去class文件下去找该文件。
 
 通配符`*`：表示匹配任何字符。如**Total.xml**的第七八行的代码等价于`<import resource="classpath:ba04/spring-*.xml" />` 。需要注意的是，**主配置文件的名字不能跟通配符匹配，否则会陷入死循环。（循环调用主配置文件）** 
-
-
 
 ### 2.3.4 注解
 
@@ -479,37 +448,33 @@ spring还可以使用注解的方式来完成对象的创建，属性的赋值�
 1. 加入依赖（加入spring-context依赖的时候自动加入了spring-aop依赖）
 
 2. 创建类，在类中加入注解
-
+   
    ```java
    @Component
        语法：@Component(value = "对象名")
-       	可以省略value，即 @Component("对象名")
-       	可以不传value：即@Component，默认是首字母小写的类名
+           可以省略value，即 @Component("对象名")
+           可以不传value：即@Component，默认是首字母小写的类名
    ```
 
 3. 创建spring的配置文件
-
+   
    声明组件扫描器的标签，指明注解在项目中的位置。
-
+   
    ```java
    <!--  声明组件扫描器
        base-package：指定注解在你项目中的包名
        工作方式：spring会扫描遍历base-package指定的包中所有的类，找到类中的注解，
-       		按照注解的功能创建对象/给属性赋值
+               按照注解的功能创建对象/给属性赋值
    -->
    <context:component-scan base-package="componentDemo" />
    ```
 
 4. 创建容器，使用对象。
 
-
-
 组件扫描器扫描多个包的方式：
 
 1. 分隔符 `;`或`,`：`<context:component-scan base-package="com.package1;com.package2" />` 
 2. 指定父包：`<context:component-scan base-package="com" />`
-
-
 
 #### 创建对象的几个注解
 
@@ -520,8 +485,6 @@ spring还可以使用注解的方式来完成对象的创建，属性的赋值�
 `@Service`：作用于业务层类，创建service对象
 
 `@Controller`：作用于控制器类，创建控制器对象，相当于servlet
-
-
 
 #### 简单类型赋值
 
@@ -563,9 +526,7 @@ public class Student {
 }
 ```
 
-
-
-#### 引用类型赋值 
+#### 引用类型赋值
 
 使用注解对引用类型的赋值有两种方法：`@Autowired` 和 `@Resource` 
 
@@ -576,8 +537,6 @@ public class Student {
 属性：`required` 是一个boolean类型，**默认为true** 表示当引用类型赋值失败时，程序会报错，并终止执行。
 
 位置：属性定义的上面或set方法的上面。
-
-
 
 例子：
 
@@ -759,8 +718,6 @@ public class Student {
 }
 ```
 
-
-
 ### 2.3.5 @bean跟@component的区别
 
 @bean跟@component一样都可以注册bean到Spring容器中。
@@ -784,8 +741,6 @@ public class WebSocketConfig {
 }
 ```
 
-
-
 ### 2.3.6 小结
 
 IoC的解耦合是实现业务对象之间的解耦合，例如Service跟dao之间的解耦合。
@@ -797,8 +752,6 @@ xml配置文件和注解的对比
 由于xml文件代码量多，比较繁琐，但是由于他与代码是分隔开的，所以它修改起代码来比较简单，因此我们可以在对经常需要改动的地方使用xml配置文件的方式使用依赖注入。
 
 很明显，注解的方式很简单也很简洁，但是它与代码是嵌在一起的，修改起来不方便，因此我们可以在对不需要经常改动的地方使用注解的方式使用依赖注入。
-
-
 
 # 3. AOP 面向切面编程
 
@@ -831,15 +784,11 @@ AOP面向切面编程是从动态角度考虑程序运行过程，**其底层采
 
 ![image-20210613102735773](Spring学习.assets/image-20210613102735773.png)
 
-
-
 如何理解面向切面编程？
 
 1. 要以**切面**为核心，分析项目中哪些功能可以用切面的形式去实现它
 2. 要合理的安排切面执行的**时间Advice**（在目标方法的前还是后）
 3. 要合理的安排切面执行的**位置Pointcut**（在哪个类哪个方法中）
-
-
 
 什么时候考虑使用AOP？
 
@@ -847,16 +796,12 @@ AOP面向切面编程是从动态角度考虑程序运行过程，**其底层采
 2. 给项目中多个类增加相同的功能时。
 3. 给业务方法增加事务、日志输出等。
 
-
-
 ## 3.2 AOP的实现
 
 AOP的技术实现框架有两种：
 
 1. **spring**：其内部实现了AOP规范，可以做AOP的工作。但因为spring的AOP比较笨重，所以一般不用这种方式。
 2. **aspectJ**：一个专门做AOP的框架，轻量高效，所以开发中一般都用此方式。spring框架中集合了aspectJ框架，所以spring可以使用aspectJ的功能。
-
-
 
 ### 3.2.1 aspectJ
 
@@ -870,11 +815,11 @@ tips：`?`结尾的都是可选参数。也就是说 **返回值类型** 、**�
 
 切入表达式还可以使用通配符：
 
-| 符号 |                             意义                             |
-| :--: | :----------------------------------------------------------: |
-|  *   |                          任意个字符                          |
-|  ..  | 用在方法参数中，表示任意个参数<br />用在包名后，表示当前包及其子包路径 |
-|  +   | 用在类名后，表示当前类及其子类<br />用在接口后，表示当前接口及其实现类 |
+| 符号  | 意义                                     |
+|:---:|:--------------------------------------:|
+| *   | 任意个字符                                  |
+| ..  | 用在方法参数中，表示任意个参数<br />用在包名后，表示当前包及其子包路径 |
+| +   | 用在类名后，表示当前类及其子类<br />用在接口后，表示当前接口及其实现类 |
 
 - [ ] 练习
 
@@ -884,35 +829,30 @@ tips：`?`结尾的都是可选参数。也就是说 **返回值类型** 、**�
 
 `execution(* com.service..*.*(..))` **指定com.service包或子包下的任意方法都是切入点**。【第二个*代表任意类名，第三个\*代表任意方法名】
 
-
-
 切面的执行时间**advice**的五个注解：
 
 1. @Before
-3. @Around
+2. @Around
 3. @AfterReturning
 4. @AfterThrowing：异常后执行的切面方法，相当于catch里面的代码。
 5. @After：无论如何都会执行的切面方法，相当于finally里面的代码。
 
 **【注意】**下面不进行介绍第四第五注解。
 
-
-
 ### 3.2.2 前置通知
 
 使用aspectJ的步骤：
+
 1. 新建maven项目，加入spring和aspectJ依赖
-3. 创建目标类：接口和其实现类
-4. 创建切面类
+2. 创建目标类：接口和其实现类
+3. 创建切面类
     在类的上面加入`@Aspect`注解
     在类中定义方法，即切面要执行的代码。
     在切面方法上加入通知注解，例如@Before
     通知注解的value属性中指定切入点表达式execution()，例如@Before(value = “execution(* *(..))”)
-5. 使用DI创建对象
+4. 使用DI创建对象
     声明**目标**对象和**切面类**对象
     声明aspectJ中的**自动代理生成器标签**，可以完成代理对象的自动创建。
-
-
 
 第一步：在`pom.xml`中加入依赖
 
@@ -1017,27 +957,24 @@ public class MyAspect {
 
 【注意】这个`JoinPoint` 参数实际是每个通知注解修饰的切面方法都有的一个参数，其他切面如果要使用它的话就要把它放在第一个位置。
 
-
-
 ### 3.2.3 后置通知
 
 后置通知`@AfterReturning`
 
 - 属性：
+  
           value 切入点表达式
           returning 接收目标方法的返回值
+
 - 特点：
+  
           可以获取到目标方法的返回值，开发人员可以根据返回值来做不同的事情
           可以修改返回值
-
-
 
 被后置通知修饰的切面方法特点：
 
 1. public void修饰
 2. 有参数，参数为目标方法的返回值，类型推荐写`Object`。参数名要与returning的属性值一致
-
-
 
 创建接口
 
@@ -1089,8 +1026,6 @@ public class MyAspect {
 1. returning的属性值与方法的形参名一致都是res。
 2. `* *..ba02.*.do*(..)` 表示任意返回类型 任意包下的 ba02包下的 任意类下的 以do开头的 方法
 
-
-
 配置文件
 
 ```xml
@@ -1111,8 +1046,6 @@ public class MyAspect {
 运行结果：
 
 ![image-20200923205228770](Spring学习.assets/image-20200923205228770.png)
-
-
 
 后置通知修改返回值：
 
@@ -1143,43 +1076,36 @@ public void myAfterReturning2(Student res){
 
 可以看到修改是成功的。其实这个道理就跟方法传参一样，当你传递的是不可变参数时，则无论你在切面类如何进行改动都不会改变其返回值。当你传递的是引用类型的参数时，你只有在不改变指针指向的情况下才可以修改返回值。
 
-
-
 使用`JoinPoint`参数：
 
 ![image-20200924191955817](Spring学习.assets/image-20200924191955817.png)
-
-
 
 ### 3.2.4 环绕通知
 
 后置通知`@Around`
 
 - 属性：
+  
       value 切入点表达式
 
 - 特点：
   是功能最强的通知。可以在目标方法前后增强功能。经常用于事务操作。
-
+  
   可控制目标方法是否调用
-
+  
   修改目标方法的执行结果，影响最后的调用结果
-
+  
   等同于jdk动态代理的InnovationHandler接口
-
-
 
 被环绕通知修饰的切面方法特点：
 
 1. public void修饰
 
 2. 固定参数：`ProceedingJoinPoint` 
-
+   
    作用：等同于jdk动态代理的Method
 
 3. 返回值：目标方法的执行结果，可以被修改
-
-
 
 接口
 
@@ -1233,8 +1159,6 @@ public class MyAspect {
 
 ![image-20200924195815176](Spring学习.assets/image-20200924195815176.png)
 
-
-
  `pjp.proceed();` 为执行目标方法，等价于`Method.invoke();`。
 
 ![image-20200924200201290](Spring学习.assets/image-20200924200201290.png)
@@ -1244,8 +1168,6 @@ public class MyAspect {
 ![image-20200924200425347](Spring学习.assets/image-20200924200425347.png)
 
 正是因为它可以根据参数来决定目标方法执不执行或者其他的操作，所以它的功能很强大。
-
-
 
 ### 3.2.5 管理切入点@Pointcut
 
@@ -1283,8 +1205,6 @@ public class MyAspect {
 }
 ```
 
-
-
 ## 3.3 小结
 
 AOP是面向切面编程，是动态代理的规范化，开发项目时要注意三个点：`切入面功能`、`切入时间`和`切入位置`。
@@ -1295,8 +1215,6 @@ AOP是面向切面编程，是动态代理的规范化，开发项目时要注�
 
 目标类有接口的，使用的是jdk动态代理。目标类没有接口的，spring会自动使用cglib代理。如果你期望目标类有接口时依旧使用cglib代理，则需要在配置文件的自动代理生成器标签加上一点东西：`<aop:aspectj-autoproxy proxy-target-class="true" />` 
 
-
-
 # 4. Spring与Mybatis的整合
 
 Mybatis的学习日记在我的另一篇博客：[Mybatis学习日记（全）](https://blog.csdn.net/weixin_43521592/article/details/107324255)
@@ -1304,7 +1222,7 @@ Mybatis的学习日记在我的另一篇博客：[Mybatis学习日记（全）](
 在这里简单回顾下Mybatis的使用步骤：
 
 1. 读取主配置文件，创建SqlSessionFactory对象
-
+   
    最基本的配置文件应该有数据库信息、mapper文件的位置。
 
 2. 使用openSession()方法获取SqlSession对象
@@ -1317,14 +1235,12 @@ Mybatis的学习日记在我的另一篇博客：[Mybatis学习日记（全）](
 
 整合思路：我们手动创建基本所需的类与配置文件，创建对象（SqlSessionFactory，dao）的活都交给spring来实现，另外数据库连接池的部分也交由spring，我们只需要使用service对象调用dao完成数据访问。
 
-
-
 实现步骤：
 
 1. 创建项目，加入maven依赖
-
+   
    spring依赖、mybatis依赖、mysql驱动依赖、spring事务的依赖。
-
+   
    mybatis与spring继承的依赖：用来在项目中创建mybatis的SqlSessionFactory、dao对象的。
 
 2. 创建实体类
@@ -1336,12 +1252,10 @@ Mybatis的学习日记在我的另一篇博客：[Mybatis学习日记（全）](
 5. 创建service接口和实现类，属性是dao
 
 6. 创建spring主配置文件：声明mybatis的对象交给spring创建
-
+   
    数据源、SqlSessionFactory、dao对象、声明自定义的Service
 
 7. 创建测试类，通过Service对象调用dao完成数据访问
-
-
 
 案例
 
@@ -1574,7 +1488,7 @@ spring-config.xml
     -->
     <bean id="myDataSource" class="com.alibaba.druid.pool.DruidDataSource"
           init-method="init" destroy-method="close">
-        <property name="url" value="jdbc:mysql://localhost:3306/ssm?useSSL=false&amp;serverTimezone=UTC" />
+        <property name="url" value="jdbc:mysql://localhost:3306/ssm?useSSL=false&serverTimezone=UTC" />
         <property name="username" value="root" />
         <property name="password" value="密码" />
         <property name="maxActive" value="20" />
@@ -1625,8 +1539,6 @@ public void test01()
 }
 ```
 
-
-
 在实际开发中，我们一般是把数据库信息单独放在一个以`.properties`为后缀名的文件里，然后在spring的主配置文件中使用，这样方便管理。
 
 如：
@@ -1655,8 +1567,6 @@ jdbc.max = 20
 </bean>
 ```
 
-
-
 # 5. Spring事务
 
 什么是事务？事务就是一组sql语句，这组语句要么全部执行成功，要么全部执行失败。
@@ -1670,44 +1580,42 @@ jdbc.max = 20
 spring处理事务的模型
 
 1. 使用**事务管理器对象**进行事务提交和回滚事务
-
+   
    事务管理器是一个接口和它的众多实现类
-
+   
    接口：PlatformTransactionManager，定义了commit、rollback方法
-
+   
    实现类：
-
-   ​	mybatis对应的实现类为DataSourceTransactionManager
-
-   ​	hibernate对应的实现类为HibernateTransactionManager
-
+   
+   ​    mybatis对应的实现类为DataSourceTransactionManager
+   
+   ​    hibernate对应的实现类为HibernateTransactionManager
+   
    使用：`<bean id="xxx" class="...TransactionManager">` 
 
 2. 声明使用什么样的事务、事务的类型
-
+   
    1. 指定事务的隔离级别
-
+      
       **DEFAULT**：使用DB默认的事务隔离级别。Mysql的默认级别是`REPEATABLE_READ`；Oracle默认为`READ_COMMITTED`.
-
+      
       **READ_UNCOMMITTED**：读未提交
-
+      
       **READ_COMMITTED**：读已提交
-
+      
       **REPEATABLE_READ**：可重复读
-
+      
       **SERIALIZABLE**：串行化
-
+   
    2. 指定事务的超时时间：一个方法最长的执行时间。若该方法超过了时间，事务就回滚。单位是**秒**。默认值是-1，代表无限时间。（一般使用默认值）
-
+   
    3. 指定事务的传播行为：控制业务是否有事务，是怎样的事务。
-
+   
    4. 提交事务，回滚事务的机制
-
+      
       当业务方法执行成功，没有**运行时异常**，则spring在方法执行完之后提交事务。
-
+      
       当业务方法抛出运行时异常或ERROR，spring会执行回滚。
-
-
 
 5.1 事务传播行为
 ---
@@ -1718,7 +1626,7 @@ spring处理事务的模型
 
 **PROPAGATION_REQUIRED_NEW**：总是创建一个事务。若当前存在事务，则将当前事务挂起，重新创建一个新事务，新事务执行完毕才将原事务唤醒。
 
-​	如上述的doSome()跟doOther()；若doSome()的执行有事务，则doOther()会创建一个新事务并将doSome()的事务挂起，直至新事务执行完毕。
+​    如上述的doSome()跟doOther()；若doSome()的执行有事务，则doOther()会创建一个新事务并将doSome()的事务挂起，直至新事务执行完毕。
 
 **PROPAGATION_SUPPORTS**：指定的方法支持当前事务，但若当前没有事务，则以非事务的方式执行。如doSome()的执行有事务，则doOther()会加入到当前事务；若doSome()的执行没有事务，则doOther()就以非事务的方式执行。
 
@@ -1730,8 +1638,6 @@ PROPAGATION_MANDATORY：如果当前存在事务，就加入该事务，如果�
 
 PROPAGATION_NEVER：以非事务方式执行，如果当前存在事务，则抛出异常。
 
-
-
 5.2 事务失效场景
 ---
 
@@ -1740,8 +1646,6 @@ PROPAGATION_NEVER：以非事务方式执行，如果当前存在事务，则抛
 3. 注解所在的类没有被加载成bean
 4. 异常被catch掉
 5. 传播行为没有设置正确
-
-
 
 5.3 中小型项目的事务处理方案----注解
 ---
@@ -1752,8 +1656,6 @@ spring使用aop方式给业务方法增加事务的功能。使用`@Transactiona
 
 1. 主配置文件中声明事务管理器对象。如`<bean id="" class="...DataSourceTransactionManager" />`
 2. 使用**`@Transactional`**创建代理对象，给方法增加事务功能
-
-
 
 案例：
 
@@ -1782,7 +1684,7 @@ public class Goods {
     }
 
  // 省略了getter跟setter
-    
+
     @Override
     public String toString() {
         return "Goods{" +
@@ -1996,7 +1898,7 @@ public class BuyGoodsServiceImpl implements BuyGoodsService {
         <property name="password" value="${jdbc.pwd}" />
         <property name="maxActive" value="${jdbc.max}" />
     </bean>
-    
+
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" >
         <property name="dataSource" ref="myDataSource" />
         <property name="configLocation" value="classpath:mybatis.xml" />
@@ -2011,7 +1913,7 @@ public class BuyGoodsServiceImpl implements BuyGoodsService {
         <property name="goodsDao" ref="goodsDao" />
         <property name="saleDao" ref="saleDao" />
     </bean>
-    
+
     <!--  1. 声明事务管理器 -->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
         <!--  连接的数据库，指定数据源  -->
@@ -2035,7 +1937,7 @@ public class BuyGoodsServiceImpl implements BuyGoodsService {
         propagation = Propagation.REQUIRED,
         isolation = Isolation.DEFAULT,
         readOnly = false,
-    	rollbackFor = {}
+        rollbackFor = {}
 )
 ```
 
@@ -2057,8 +1959,6 @@ public void shouldAnswerWithTrue()
 }
 ```
 
-
-
 5.4 大型项目事务处理方案----aspectJ配置文件
 ---
 
@@ -2067,7 +1967,7 @@ public void shouldAnswerWithTrue()
 实现步骤：
 
 1. 加入依赖，使用aspectJ框架
-
+   
    ```xml
    <dependency>
        <groupId>org.springframework</groupId>
@@ -2077,7 +1977,7 @@ public void shouldAnswerWithTrue()
    ```
 
 2. 声明事务管理器对象
-
+   
    ```xml
    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
        <property name="dataSource" ref="myDataSource" />
@@ -2085,7 +1985,7 @@ public void shouldAnswerWithTrue()
    ```
 
 3. 声明对应方法需要的事务类型
-
+   
    ```xml
    <!-- 2.声明业务方法的事务属性（传播行为，隔离级别等） -->
    <tx:advice id="myAdvice" transaction-manager="transactionManager">
@@ -2103,7 +2003,7 @@ public void shouldAnswerWithTrue()
    ```
 
 4. 配置aop，指定哪些类要创建代理
-
+   
    ```xml
    <!-- 配置aop：即指定哪些包哪些类要应用事务 -->
    <aop:config>
@@ -2113,8 +2013,6 @@ public void shouldAnswerWithTrue()
        <aop:advisor advice-ref="myAdvice" pointcut-ref="service" />
    </aop:config>
    ```
-
-
 
 # 6.Web项目
 
@@ -2127,8 +2025,6 @@ public void shouldAnswerWithTrue()
 3. 创建需要是实体类，service、controller、dao。
 4. 使用ioc在控制层创建service对象，使用service对象调用dao层对象进行数据库访问
 5. 配置tomcat服务器，启动项目
-
-
 
 案例：
 
@@ -2206,7 +2102,7 @@ import java.io.IOException;
 @WebServlet(name = "RegisterServlet")
 public class RegisterServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
+
         int id = Integer.parseInt(request.getParameter("id"));
         String name = request.getParameter("name");
         String email = request.getParameter("email");
@@ -2236,17 +2132,17 @@ public class RegisterServlet extends HttpServlet {
 2. ![image-20201002194836858](Spring学习.assets/image-20201002194836858.png)
 
 3. 先点击减号再点击加号
-
+   
    ![image-20201002195000634](Spring学习.assets/image-20201002195000634.png)
 
 4. ![image-20201002195443494](Spring学习.assets/image-20201002195443494.png)
 
 5. 完美
-
+   
    ![image-20201002195644251](Spring学习.assets/image-20201002195644251.png)
 
 6. 配置servlet
-
+   
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
    <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
@@ -2283,8 +2179,6 @@ public class RegisterServlet extends HttpServlet {
 1. ![image-20201002200526893](Spring学习.assets/image-20201002200526893.png)
 2. ![image-20201002200708464](Spring学习.assets/image-20201002200708464.png)
 
-
-
 6.2 配置监听器
 ---
 
@@ -2293,8 +2187,6 @@ public class RegisterServlet extends HttpServlet {
 思路：使用监听器，当全局作用域对象被创建时，创建容器对象并存入到ServletContext
 
 在spring框架中有封装好的工具类`ContextLoaderListener`，可以直接获取到ServletContext。
-
-
 
 第一步：加入依赖
 
@@ -2349,19 +2241,774 @@ System.out.println("容器对象信息是========="+ac);
 1. 创建容器对象，执行`ApplicationContext ac = new ClassPathXmlApplicationContext("spring-config.xml"); ` 
 2. 把容器对象放入到ServletContext中。`setAttribute`的方式。
 
+# 7.注解驱动
 
+## 包扫描
 
+### @ComponentScan
 
+包扫描，扫描包下面的`@Controller`、`@Service`等组件类，等同于配置文件的`<context:component-scan>`
 
-7.Spring面试
+属性：
+
+- value：要扫描的包，
+- basePackages：等同于`value` 
+- useDefaultFilters：是否使用默认过滤规则，默认值为true
+- includeFilters：指定只包含的组件，属性值是一个`@Filter`数组。**需要配合useDefaultFilters=false使用** 
+- excludeFilters：指定排除的组件，属性值是一个`@Filter`数组
+
+示例：
+
+扫描com.study包下的组件，只加载@Controller、@Service注解修饰的类
+
+```java
+@Configuration
+@ComponentScan(value = "com.study", 
+               useDefaultFilters = false,
+               includeFilters = {
+                   @Filter(type = FilterType.ANNOTATION, classes = {Controller.class, Service.class})}
+              )
+public class MyConfig {
+
+    @Bean
+    public Person person() {
+        return new Person("ZhangSan", 10);
+    }
+}
+```
+
+`@ComponentScan`使用了 JDK8的`@Repeatable`的注解，表示这个注解可以在一个类上多次使用。
+
+如果使用的 JDK7，则可以使用`@ComponentScans`，value属性为 `@ComponentScan`数组。
+
+### @Filter
+
+作用：配置包扫描的过滤规则。
+
+属性：
+
+- type：要排除的方式，值为`FilterType`枚举类
+  
+  - Annotation：按照注解
+  
+  - Assignable_type：按照给定的类
+  
+  - AspectJ：使用AspectJ表达式
+  
+  - Regex：使用正则表达式
+  
+  - Custom：使用自定义规则，**该规则必须是`TypeFilter`的实现类**
+
+- value：要排除的类型。
+
+- Classes：同value
+
+- pattern：正则表达式
+
+自定义`TypeFilter`规则：
+
+```java
+public class MyTypeFilter implements TypeFilter {
+
+    /* 
+    * MetadataReader：读取到的当前正在扫描的类的信息
+    * MetadataReaderFactory：可以获取到其他任何类的信息
+    */
+    @Override
+    public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
+        // 获取当前正在扫描类的注解信息
+        AnnotationMetadata annotationMetadata = metadataReader.getAnnotationMetadata();
+        // 获取当前正在扫描的类的类信息
+        ClassMetadata classMetadata = metadataReader.getClassMetadata();
+        // 获取当前的资源信息
+        metadataReader.getResource();
+
+        String className = classMetadata.getClassName();
+
+        // 类全限定名等于AAA的才会被加载
+        return "AAA".equals(className);
+    }
+}
+```
+
+Spring bean的作用域
+---
+
+`<bean id="" class="" scope="singleton" />` 或者` @Scope` 设置作用域
+
+1. singleton：默认使用的作用域。每个容器中只有一个bean的实例，单例的模式由BeanFactory自身来维护。在容器启动时就会创建对象。如果是@Bean的方式，则就会调用一次方法。
+2. prototype：为每一次getBean()提供一个实例。如果是@Bean的对象，则每次都会调用方法。
+3. request：为每一个网络请求创建一个实例，在请求完成以后，bean会失效并被垃圾回收器回收。
+4. session：与request范围类似，确保每个session中有一个bean的实例，在session过期后，bean会随之失效。
+
+## @Lazy
+
+作用：懒加载bean，即容器创建时不创建对象，而是第一次获取bean的时候才创建对象并初始化。一般只针对单例对象，因为单例对象在容器启动时就会创建对象。
+
+##@Conditional 的派生注解
+
+作用：必须满足其指定的条件，才会在spring容器中添加其对应的bean，配置里面的内容才会生效。**如果需要自定义Conditional，需要实现Conditional接口**。
+
+| @Conditional 的派生注解            | 作用                          |
+| ----------------------------- | --------------------------- |
+| @ConditionalOnJava            | 系统的java版本是否符合要求             |
+| @ConditionalOnBean            | 容器中存在指定Bean                 |
+| @ConditionalOnMissingBean     | 容器中不存在指定Bean                |
+| @ConditionalOnExpression      | 满足spEL表达式                   |
+| @ConditionalOnProperty        | 指定的属性是否有指定的值                |
+| @ConditionalOnResource        | 类路径下是否有资源文件                 |
+| @ConditionalOnWebapplication  | 当前是否为web环境                  |
+| @ConditionalOnSingleCandidate | 容器中只存在一个指定的bean，或这个bean是首选的 |
+
+自定义判断条件类：
+
+```java
+public class MyCondition implements Condition {
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        // 获取类加载器
+        ClassLoader classLoader = context.getClassLoader();
+        // 获取ioc使用的beanFactory
+        ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+        // 获取到bean定义的注册类
+        BeanDefinitionRegistry registry = context.getRegistry();
+        ResourceLoader resourceLoader = context.getResourceLoader();
+
+        // 获取当前环境信息
+        Environment environment = context.getEnvironment();
+        String osName = environment.getProperty("os.name");
+        return osName.startsWith("Linux");
+    }
+}
+```
+
+## 注册bean
+
+给容器中注册bean：
+
+- 包扫描+bean标注注解（`@Controller`、`@Service`、`@Repository`、`@Component`）
+
+- 包扫描+`@Bean`：一般用于导入的第三方包里面的组件
+
+- `@Import`：快速的给容器中导入一个组件
+
+- 使用Spring提供的FactoryBean（工厂bean）实现自定义bean，然后使用上述方式将自定义bean放入容器中
+
+### @Import
+
+使用方式：
+
+1. `@Import(要导入的组件类或组件类数组)`：容器中就会自动注册这个/些bean，id默认是类的全限定名。
+   - `@Import(A.class)` 或者 `@Import({A.class, B.class})` 
+2. `@Import(ImportSelector)`：ImportSelector为自定义选择器，返回要导入的类的全限定名的数组
+3. `@Import(ImportBeanDefinitionRegistrar)`：手动往容器中注册bean定义信息
+
+>   以上三种使用方法可以作为数组的元素混合使用，例如：@Import({Color.class, Red.class, MyImportSelector.class}) 
+
+#### 自定义ImportSelector
+
+```java
+public class MyImportSelector implements ImportSelector {
+    /*
+    *    AnnotationMetadata：当前标注@Import注解的类的所有注解信息.
+    *    返回值不能是null，否则会报空指针异常。
+    */
+    @Override
+    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+        // 进行一些逻辑处理
+        return new String[]{"要加载的组件全限定名"};
+    }
+}
+```
+
+#### 自定义ImportBeanDefinitionRegistrar
+
+```java
+public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+    /*
+     *    AnnotationMetadata：当前类的注解信息
+     *    BeanDefinitionRegistry：BeanDefinition注册类。需要添加到容器中的Bean，可以通过BeanDefinitionRegistry.registerBeanDefinition手工注册进来。
+     */
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        String[] beanDefinitionNames = registry.getBeanDefinitionNames();
+        Arrays.asList(beanDefinitionNames).forEach(System.out::println);
+
+        // 判断ioc容器中是否注册了指定id的Bean
+        boolean redDefinition = registry.containsBeanDefinition("com.study.bean.Red");
+        boolean blueDefinition = registry.containsBeanDefinition("com.study.bean.Blue");
+
+        if(redDefinition && blueDefinition) {
+            // 调用registry的registerBeanDefinition方法手工注册Bean
+            // 使用RootBeanDefinition指定要注册的Bean的类型
+            RootBeanDefinition beanDefinition = new RootBeanDefinition(RainBow.class);
+            // 指定注册进容器的bean的id
+            registry.registerBeanDefinition("rainBow", beanDefinition);
+        }
+    }
+}
+```
+
+### FactoryBean
+
+```java
+public class ColorFactoryBean implements FactoryBean<Color> {
+    // 返回一个color对象，这个对象会添加进容器中
+    @Override
+    public Color getObject() throws Exception {
+        return new Color();
+    }
+
+    // 返回的对象的类型
+    @Override
+    public Class<?> getObjectType() {
+        return Color.class;
+    }
+
+    // 是否为单例：true代表这个bean是单实例的
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
+}
+
+// 放入容器
+@Bean("colorTest")
+public ColorFactoryBean colorFactoryBean() {
+    return new ColorFactoryBean();
+}
+```
+
+【注意】在获取colorTest这个Bean时，实际获取到的bean对象的类型是`ColorFactoryBean::getObjectType()`返回的类型，即`Color`类型。获取到的Bean对象是`ColorFactoryBean::getObject()`创建的对象。
+
+如果想要获取`ColorFactoryBean`类型的bean对象，需要在BeanID前添加前缀`&`，即`&colorTest`。这个前缀是在`BeanFactory.FACTORY_BEAN_PREFIX`中定义的。
+
+## bean的生命周期
+
+bean的生命周期包括：创建、初始化、销毁。
+
+而spring为了更好的扩展bean，为我们提供了几种对生命周期进行自定义操作的方式：
+
+1. bean实现`InitializingBean` 和 `DisposableBean` 接口，可以在属性赋值之后和销毁的时候进行自定义逻辑
+2. 使用`@Bean`注解的`initMethod` 和 `destroyMethod` 两个属性，可以在初始化和销毁的时候进行自定义操作
+3. 在bean的方法上使用`@PostConstruct` 和 `@PreDestroy` 注解，在调用构造器之后和销毁之前进行自定义操作
+4. 使用bean的后置处理器，BeanPostProcessor接口，在bean初始化之前和初始化之后进行自定义操作。
+   - 注意：后置处理器是针对spring所有的bean（包括spring内部的bean）进行操作。
+
+>   单实例bean的销毁动作是在容器关闭时自动执行。而多实例bean的销毁动作是需要程序员手动执行的。
+
+## @Profile
+
+Spring为我们提供的可以根据当前环境，动态的激活和切换一系列Bean的功能。
+
+指定组件在哪个环境的情况下才能被注册到容器中，不指定时在任何环境下都能注册这个组件。
+
+`@Profile`也可以注解在配置类上：只有在指定的环境的时候，整个配置类里面的所有配置才能生效。如：
+
+```java
+@Profile("test")
+@PropertySource("classpath:/db.test.config.properties")
+@Configuration
+public class TestDbConfigProfile {
+
+    @Value("${db.user}")
+    private String user;
+
+    @Value("${db.driverClass}")
+    private String driverClass;
+
+    @Bean("testDataSource")
+    public DataSource dataSourceTest(@Value("${db.password}") String pwd) throws Exception{
+        ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        dataSource.setUser(user);
+        dataSource.setPassword(pwd);
+        dataSource.setJdbcUrl("jdbc:oracle:thin:@localhost:1521:orcl");
+        dataSource.setDriverClass(driverClass);
+        return dataSource;
+    }
+
+}
+```
+
+使用`@PropertySource`指定读取的配置文件路径。
+
+## AOP原理
+
+首先先了解aop的使用：
+
+1. 添加@EnableAspectJAutoProxy
+2. 编写切面类，实现切面功能
+3. 在切面类上添加@Aspect注解
+
+### @EnableAspectJAutoProxy 原理
+
+```java
+@Import({AspectJAutoProxyRegistrar.class})
+public @interface EnableAspectJAutoProxy {
+    boolean proxyTargetClass() default false;
+
+    boolean exposeProxy() default false;
+}
+```
+
+@EnableAspectJAutoProxy导入了AspectJAutoProxyRegistrar组件。
+
+而AspectJAutoProxyRegistrar实现了ImportBeanDefinitionRegistrar，所以可以在registerBeanDefinitions方法里注册组件：
+
+```java
+class AspectJAutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
+    AspectJAutoProxyRegistrar() {
+    }
+
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        // 注册注解版的AspectJ的代理创建器
+        AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry);
+        AnnotationAttributes enableAspectJAutoProxy = AnnotationConfigUtils.attributesFor(importingClassMetadata, EnableAspectJAutoProxy.class);
+        if (enableAspectJAutoProxy != null) {
+            if (enableAspectJAutoProxy.getBoolean("proxyTargetClass")) {
+                AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
+            }
+
+            if (enableAspectJAutoProxy.getBoolean("exposeProxy")) {
+                AopConfigUtils.forceAutoProxyCreatorToExposeProxy(registry);
+            }
+        }
+
+    }
+}
+```
+
+最终会来到这个方法：注册类型为**`AnnotationAwareAspectJAutoProxyCreator`**的组件
+
+```java
+public static BeanDefinition registerAspectJAnnotationAutoProxyCreatorIfNecessary(BeanDefinitionRegistry registry, @Nullable Object source) {
+    return registerOrEscalateApcAsRequired(AnnotationAwareAspectJAutoProxyCreator.class, registry, source);
+}
+```
+
+```java
+private static BeanDefinition registerOrEscalateApcAsRequired(Class<?> cls, BeanDefinitionRegistry registry, @Nullable Object source) {
+    // 如果已存放此组件，则直接返回
+    if (registry.containsBeanDefinition("org.springframework.aop.config.internalAutoProxyCreator")) {
+        // 省略非核心代码
+        return null;
+    } else {
+        // 注册类型为AnnotationAwareAspectJAutoProxyCreator的bean定义信息，但名字是internalAutoProxyCreator
+        RootBeanDefinition beanDefinition = new RootBeanDefinition(cls);
+        beanDefinition.setSource(source);
+        beanDefinition.getPropertyValues().add("order", Integer.MIN_VALUE);
+        beanDefinition.setRole(2);
+        registry.registerBeanDefinition("org.springframework.aop.config.internalAutoProxyCreator", beanDefinition);
+        return beanDefinition;
+    }
+}
+```
+
+可以看到，@EnableAspectJAutoProxy最终会注册 类型为AnnotationAwareAspectJAutoProxyCreator的bean定义信息，但名字是internalAutoProxyCreator的自动代理创建器。
+
+那么AnnotationAwareAspectJAutoProxyCreator的作用是什么呢？是什么时候被放入到spring容器中的呢？
+
+### AnnotationAwareAspectJAutoProxyCreator
+
+![image-20230102201444279](/Users/jianhang/Documents/learing/selfLearn/Spring学习.assets/image-20230102201444279.png)
+
+从上图AnnotationAwareAspectJAutoProxyCreator的关系图中可以看出，其实现了`BeanFactoryAware`、`BeanPostProcessor` 接口。
+
+- BeanFactoryAware可以拿到BeanFactory对象
+- BeanPostProcessor可以在bean初始化的前后进行自定义操作
+
+所以AnnotationAwareAspectJAutoProxyCreator得作用是：对bean初始化前后进行自定义操作。到底做了什么操作继续往下看。
+
+因为AnnotationAwareAspectJAutoProxyCreator实际是一个BeanPostProcessor，所以会被spring统一注册BeanPostProcessor的时候创建并放入容器中，即调用`this.registerBeanPostProcessors(beanFactory);` 
+
+1. 获取所有BeanProcessor类型的bean的名字 `String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);`
+2. 根据名字去容器中获取bean`beanFactory.getBean(ppName, BeanPostProcessor.class)`，如果获取不到就创建。
+3. 优先注册实现了PriorityOrdered接口的BeanProcessor
+4. 再给容器中注册实现了Ordered接口的BeanPostProcessor
+5. 最后注册没实现优先级接口的BeanPostProcessor
+   1. 分别有三个List存放这三种BeanPostProcessor。然后前两种会排序之后再根据顺序创建。
+
+注册完BeanPostProcessor，最后会完成工厂的初始化 `finishBeanFactoryInitialization(beanFactory)` 创建普通单实例bean。
+
+1. `beanFactory.preInstantiateSingletons();` -> `List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);` 获取所有bean定义信息，遍历List依次给剩余还未被创建的bean进行创建 `createBean()`。
+2. **在对每个bean执行createBean()的时候，会先给BeanPostProcessor创建bean的机会**：resolveBeforeInstantiation(beanName, mbdToUse)，如果此bean满足被BeanPostProcessor创建的条件，最后会执行InstantiationAwareBeanPostProcessor这个抽象类的postProcessBeforeInstantiation()方法创建了代理对象。否则进行正常的bean创建动作。
+
+>   **BeanPostProcessor**的postProcessBeforeInitialization和postProcessAfterInitialization是在**Bean对象创建完成初始化前后**调用的；
+> 
+>   **InstantiationAwareBeanPostProcessor**的postProcessBeforeInstantiation和postProcessAfterInstantiation是在BeanPostProcessor实例化Bean之前尝试返回代理对象。
+
+### Advice、Pointcut和Advisor这三个接口之间的关系
+
+在具体深入了解之前先了解一下这三个接口的含义和关系。
+
+Advice：与通知相关的接口，其子类也实现了拦截器接口（使用拦截器实现aop切面），所以具体的增强动作会在拦截器的的invoke方法中实现。另外，通知的具体增强行为会存储在Advice子类的属性中。实际上所有的后置通知都实现了拦截器接口，例如@After注解对应着AspectJAfterAdvice类，而AspectJAfterAdvice实现了拦截器接口。但是前置通知则没有实现拦截器接口，而是再对其再进行了一层封装，使封装后的对象具有拦截器功能，例如@Before注解对应着AspectJBeforeAdvice类，然后将其封装成MethodBeforeAdviceInterceptor（组合了AspectJBeforeAdvice），然后MethodBeforeAdviceInterceptor实现了拦截器接口。
+
+Pointcut：对通知中的表达式进行匹配的接口，即使用Pointcut来判断这个类是否要进行通知。例如AspectJExpressionPointcut就是使用表达式来匹配目标方法。
+
+Advisor：组合了Advice和Pointcut，便于后续的操作。例如一个普通bean的方法需要进行增强时，会每每个方法符合的通知和表达式都封装成一个个的advisor，然后放入代理对象的属性中，从而形成这个代理对象的增强器。
+
+### InstantiationAwareBeanPostProcessor
+
+`AnnotationAwareAspectJAutoProxyCreator`的父类`AbstractAutoProxyCreator`，实现了`InstantiationAwareBeanPostProcessor`接口，它的作用是：
+
+1. 每一个bean创建之前，调用`postProcessBeforeInstantiation()`；
+   
+   1. 判断当前bean是否在`advisedBeans`中（`advisedBeans`保存了所有需要增强的bean）
+   
+   2. 调用`isInfrastructureClass()`判断当前Bean是否是基础类型 或者 带有`@Aspect`注解的bean，aop相关基础设施类型的bean 以及切面 不应该被动态代理。
+      
+      - ```java
+        boolean retVal = Advice.class.isAssignableFrom(beanClass) ||
+                        Pointcut.class.isAssignableFrom(beanClass) ||
+                        Advisor.class.isAssignableFrom(beanClass) ||
+                        AopInfrastructureBean.class.isAssignableFrom(beanClass);
+        ```
+   
+   3. 调用shouldSkip方法，判断该bean是否为AspectJPointcutAdvisor类型，是的话也不应该被代理。shouldSkip还做了许多事情，后面详细介绍。
+
+2. 如果不符合上面的条件（即不是切面类），则会为这个bean创建代理。
+   
+   1. 创建代理前会先遍历所有的增强方法，找到符合当前bean的增强方法，然后根据注解的顺序进行排序，然后把每个方法封装成增强器。如果存在增强器，则会在增强器列表的第一个元素中添加默认的增强器DefaultPointcutAdvisor。
+   
+   2. 使用JDK或cjlib方式创建代理，如果代理的对象实现了某个接口则会优先使用jdk方式创建，否则使用cjlib方法生成一个子类作为代理。
+      
+      ```java
+      public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
+              if (NativeDetector.inNativeImage() || !config.isOptimize() && !config.isProxyTargetClass() && !this.hasNoUserSuppliedProxyInterfaces(config)) {
+                  return new JdkDynamicAopProxy(config);
+              } else {
+                  Class<?> targetClass = config.getTargetClass();
+                  if (targetClass == null) {
+                      throw new AopConfigException("TargetSource cannot determine target class: Either an interface or a target is required for proxy creation.");
+                  } else {
+                      return (AopProxy)(!targetClass.isInterface() && !Proxy.isProxyClass(targetClass) && !AopProxyUtils.isLambda(targetClass) ? new ObjenesisCglibAopProxy(config) : new JdkDynamicAopProxy(config));
+                  }
+              }
+          }
+      ```
+
+上面提到了切面类会被跳过，不创建代理，那切面类什么时候被放入spring容器的呢？shouldSkip()会告诉我们答案。
+
+#### shouldSkip()
+
+shouldSkip首先会拿到所有的切面类的增强器，然后判断bean是否命中了增强器的类型，命中了就应该被跳过。
+
+![image-20230212183322914](/Users/jianhang/Documents/learing/selfLearn/Spring学习.assets/image-20230212183322914.png)
+
+看下如何获得增强器列表：(可以看到先调用父类的方法获取了一个list,**其实是空的**然后在调用自己的builder返回一个list)
+
+![image-20230212183805829](/Users/jianhang/Documents/learing/selfLearn/Spring学习.assets/image-20230212183805829.png)
+
+build方法里aspectBeanNames为空的情况下会遍历容器的对象判断其是否为切面类（使用@Aspect修饰的类）。是的话进行以下操作：
+
+1. 把**切面类**的名字记录aspectBeanNames中
+
+2. 找到该切面类中所有的增强方法并将每个增强方法都封装成advisor（实际上是封装成拦截器）
+   
+   ```
+   @AfterThrowing 注解的增强器对应 AspectJAfterThrowingAdvice
+   @AfterReturning 注解的增强器对应 AspectJAfterReturningAdvice
+   @After 注解的增强器对应 AspectJAfterAdvice
+   @Before 注解的增强器对应 AspectJBeforeAdvice
+   ```
+
+3. 缓存切面类与其所有advisor的映射。
+
+![image-20230212183919024](/Users/jianhang/Documents/learing/selfLearn/Spring学习.assets/image-20230212183919024.png)
+
+是如何查找增强方法的：获取类中的每个没有标记@PointCut的方法，然后放在一个list后对其排序。
+
+![image-20230216103216040](/Users/jianhang/Documents/learing/selfLearn/Spring学习.assets/image-20230216103216040.png)
+
+排序算法如下：
+
+![image-20230222213841212](/Users/jianhang/Documents/learing/selfLearn/Spring学习.assets/image-20230222213841212.png)
+
+小结：shouldSkip的作用是初始化所有的切面类的所有增强方法，并过滤掉切面类，保证不对切面类创建代理。实现具体是依次将切面类中每个方法按照注解排好序之后依次封装成advisor，然后都放在list里。
+
+#### 创建代理
+
+spring使用JdkDynamicAopProxy 和 CglibAopProxy 真正的创建aop的代理对象，这两个类都实现了AopProxy接口，而AopProxy的getProxy()方法将具体创建代理的操作交给其子类实现。所以看一下jdk和cglib具体创建代理的操作，以及他们是如何进行方法拦截的。
+
+##### JdkDynamicAopProxy
+
+JdkDynamicAopProxy#getProxy()
+
+```java
+public Object getProxy(@Nullable ClassLoader classLoader) {
+    if (logger.isTraceEnabled()) {
+        logger.trace("Creating JDK dynamic proxy: " + this.advised.getTargetSource());
+    }
+    // 可以看到JdkDynamicAopProxy创建代理就是用jdk的方式创建了一个代理对象。
+    // 由于JdkDynamicAopProxy本身就实现了InvocationHandler，所以this即可
+    return Proxy.newProxyInstance(classLoader, this.proxiedInterfaces, this);
+}
+```
+
+根据jdk动态代理的特性可以知道，目标方法如果被执行时，会被JdkDynamicAopProxy所拦截，执行invoke方法。
+
+JdkDynamicAopProxy#invoke()
+
+```java
+public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    Object oldProxy = null;
+    boolean setProxyContext = false;
+
+    TargetSource targetSource = this.advised.targetSource;
+    Object target = null;
+
+    try {
+        // 代理不会拦截equals，hashCode方法
+        if (!this.equalsDefined && AopUtils.isEqualsMethod(method)) {
+            return equals(args[0]);
+        }
+        else if (!this.hashCodeDefined && AopUtils.isHashCodeMethod(method)) {
+            return hashCode();
+        }
+        else if (method.getDeclaringClass() == DecoratingProxy.class) {
+            // There is only getDecoratedClass() declared -> dispatch to proxy config.
+            return AopProxyUtils.ultimateTargetClass(this.advised);
+        }
+        else if (!this.advised.opaque && method.getDeclaringClass().isInterface() &&
+                 method.getDeclaringClass().isAssignableFrom(Advised.class)) {
+            // Service invocations on ProxyConfig with the proxy config...
+            return AopUtils.invokeJoinpointUsingReflection(this.advised, method, args);
+        }
+
+        Object retVal;
+
+        if (this.advised.exposeProxy) {
+            // Make invocation available if necessary.
+            oldProxy = AopContext.setCurrentProxy(proxy);
+            setProxyContext = true;
+        }
+
+        // Get as late as possible to minimize the time we "own" the target,
+        // in case it comes from a pool.
+        target = targetSource.getTarget();
+        Class<?> targetClass = (target != null ? target.getClass() : null);
+
+        // 获取符合此目标方法的增强方法链（因为advised里保存的是这个对象中所有方法的增强链，所以需要拿到只符合当前方法的增强链）
+        List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+
+        // 如果这个增强链为空，则直接调用原目标方法
+        if (chain.isEmpty()) {
+            Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
+            // 调用原目标方法
+            retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
+        }
+        else {
+            // 如果增强链不为空，则说明目标方法需要增强，此时需要创建ReflectiveMethodInvocation对象，由此对象来完成aop功能
+            MethodInvocation invocation =
+                new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);
+            // 执行增强链和目标方法
+            retVal = invocation.proceed();
+        }
+
+        // Massage return value if necessary.
+        Class<?> returnType = method.getReturnType();
+        if (retVal != null && retVal == target &&
+            returnType != Object.class && returnType.isInstance(proxy) &&
+            !RawTargetAccess.class.isAssignableFrom(method.getDeclaringClass())) {
+            // Special case: it returned "this" and the return type of the method
+            // is type-compatible. Note that we can't help if the target sets
+            // a reference to itself in another returned object.
+            retVal = proxy;
+        }
+        else if (retVal == null && returnType != Void.TYPE && returnType.isPrimitive()) {
+            throw new AopInvocationException(
+                "Null return value from advice does not match primitive return type for: " + method);
+        }
+        return retVal;
+    }
+}
+```
+
+可以看到spring是使用`AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);`来调用原目标方法。使用ReflectiveMethodInvocation的proceed()来执行增强链的，具体如何执行的后续再详细介绍。
+
+![image-20230301103332154](/Users/jianhang/Documents/learing/selfLearn/Spring学习.assets/image-20230301103332154.png)
+
+##### CglibAopProxy
+
+CglibAopProxy#getProxy()
+
+```java
+public Object getProxy(@Nullable ClassLoader classLoader) {
+    try {
+        Class<?> rootClass = this.advised.getTargetClass();
+        Assert.state(rootClass != null, "Target class must be available for creating a CGLIB proxy");
+
+        Class<?> proxySuperClass = rootClass;
+        if (rootClass.getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR)) {
+            proxySuperClass = rootClass.getSuperclass();
+            Class<?>[] additionalInterfaces = rootClass.getInterfaces();
+            for (Class<?> additionalInterface : additionalInterfaces) {
+                this.advised.addInterface(additionalInterface);
+            }
+        }
+
+        // Validate the class, writing log messages as necessary.
+        validateClassIfNecessary(proxySuperClass, classLoader);
+
+        // Configure CGLIB Enhancer...
+        Enhancer enhancer = createEnhancer();
+        if (classLoader != null) {
+            enhancer.setClassLoader(classLoader);
+            if (classLoader instanceof SmartClassLoader &&
+                ((SmartClassLoader) classLoader).isClassReloadable(proxySuperClass)) {
+                enhancer.setUseCache(false);
+            }
+        }
+        enhancer.setSuperclass(proxySuperClass);
+        enhancer.setInterfaces(AopProxyUtils.completeProxiedInterfaces(this.advised));
+        enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
+        enhancer.setStrategy(new ClassLoaderAwareGeneratorStrategy(classLoader));
+
+        // 将增强器列表封装成DynamicAdvisedInterceptor类型的拦截器链，下面会放在代理对象里面
+        Callback[] callbacks = getCallbacks(rootClass);
+        Class<?>[] types = new Class<?>[callbacks.length];
+        for (int x = 0; x < types.length; x++) {
+            types[x] = callbacks[x].getClass();
+        }
+        // fixedInterceptorMap only populated at this point, after getCallbacks call above
+        enhancer.setCallbackFilter(new ProxyCallbackFilter(
+            this.advised.getConfigurationOnlyCopy(), this.fixedInterceptorMap, this.fixedInterceptorOffset));
+        enhancer.setCallbackTypes(types);
+
+        // Generate the proxy class and create a proxy instance.
+        return createProxyClassAndInstance(enhancer, callbacks);
+    }
+    catch (CodeGenerationException | IllegalArgumentException ex) {
+        // 省略。。。
+    }
+    catch (Throwable ex) {
+        throw new AopConfigException("Unexpected AOP exception", ex);
+    }
+}
+```
+
+以上可知，目标方法执行的时候会被DynamicAdvisedInterceptor所拦截，执行intercept方法。
+
+```java
+public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
+   Object oldProxy = null;
+   boolean setProxyContext = false;
+   Object target = null;
+   TargetSource targetSource = this.advised.getTargetSource();
+   try {
+      if (this.advised.exposeProxy) {
+         // Make invocation available if necessary.
+         oldProxy = AopContext.setCurrentProxy(proxy);
+         setProxyContext = true;
+      }
+      // Get as late as possible to minimize the time we "own" the target, in case it comes from a pool...
+      target = targetSource.getTarget();
+      Class<?> targetClass = (target != null ? target.getClass() : null);
+
+      // 获取符合此目标方法的增强方法链（因为advised里保存的是这个对象中所有方法的增强链，所以需要拿到只符合当前方法的增强链）
+      List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+      Object retVal;
+
+       // 没有增强链则执行目标方法
+      if (chain.isEmpty() && CglibMethodInvocation.isMethodProxyCompatible(method)) {
+         // 获取参数
+         Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
+         try {
+             // 根据cglib的方式执行目标方法
+            retVal = methodProxy.invoke(target, argsToUse);
+         }
+         catch (CodeGenerationException ex) {
+            CglibMethodInvocation.logFastClassGenerationFailure(method);
+            retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
+         }
+      }
+      else {
+         // 如果增强链不为空，则说明目标方法需要增强，此时需要创建CglibMethodInvocation对象，由此对象来完成aop功能
+         retVal = new CglibMethodInvocation(proxy, target, method, args, targetClass, chain, methodProxy).proceed();
+      }
+      retVal = processReturnType(proxy, target, method, retVal);
+      return retVal;
+   }
+}
+```
+
+可以看到，cglib是使用CglibMethodInvocation对象来完成aop功能的，而CglibMethodInvocation继承了ReflectiveMethodInvocation，所以最终还是来到ReflectiveMethodInvocation的proceed方法。
+
+##### ReflectiveMethodInvocation#proceed
+
+```java
+public Object proceed() throws Throwable {
+   // currentInterceptorIndex的初始值为 -1，表示当前拦截器的下标
+   // 如果没有拦截器，则直接执行原目标方法
+   if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
+      // 实际调用AopUtils.invokeJoinpointUsingReflection方法
+      return invokeJoinpoint();
+   }
+
+   Object interceptorOrInterceptionAdvice =
+         this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
+   if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
+      InterceptorAndDynamicMethodMatcher dm =
+            (InterceptorAndDynamicMethodMatcher) interceptorOrInterceptionAdvice;
+      Class<?> targetClass = (this.targetClass != null ? this.targetClass : this.method.getDeclaringClass());
+      // 再次确认是否增强器是否满足
+      if (dm.methodMatcher.matches(this.method, targetClass, this.arguments)) {
+         // 满足的话就执行这个增强器的增强方法
+         return dm.interceptor.invoke(this);
+      }
+      else {
+         // Dynamic matching failed.
+         // Skip this interceptor and invoke the next in the chain.
+         return proceed();
+      }
+   }
+   else {
+      // It's an interceptor, so we just invoke it: The pointcut will have
+      // been evaluated statically before this object was constructed.
+      return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
+   }
+}
+```
+
+增强链的执行顺序如下图所示：
+
+![image-20230301171800294](/Users/jianhang/Documents/learing/selfLearn/Spring学习.assets/image-20230301171800294.png)
+
+不同增强器对应的增强方法的实现：
+
+AspectJAfterAdvice：后置通知
+
+```java
+public Object invoke(MethodInvocation mi) throws Throwable {
+   try {
+      // 继续往下执行增强链
+      return mi.proceed();
+   }
+   finally {
+      // 真正进行after切面的功能，等最后执行完后续的增强链才会执行after切面的功能
+      invokeAdviceMethod(getJoinPointMatch(), null, null);
+   }
+}
+```
+
+MethodBeforeAdviceInterceptor（继承了BeforeAdvice）：前置通知
+
+```java
+public Object invoke(MethodInvocation mi) throws Throwable {
+   // 先执行before切面的功能
+   this.advice.before(mi.getMethod(), mi.getArguments(), mi.getThis());
+   // 在继续往下执行增强链
+   return mi.proceed();
+}
+```
+
+8.Spring面试
 ===
 
 什么是Spring？
 ---
 
 spring本身是一个框架，同时也提供了对其他框架的整合方案。有着ioc容器的作用，用来装载整体的bean对象，它帮我们管理着bean对象从创建、初始化到销毁的整个生命周期。另外spring也提供了AOP的支持，分离了主业务代码跟交叉业务代码，很大程度上的降低了代码耦合度。
-
-
 
 IOC的加载过程
 ---
@@ -2386,32 +3033,34 @@ protected String[] getDefaultConfigLocations() {
 }
 ```
 
-
-
 Spring bean的生命周期
 ---
 
 > bean的创建操作是在createBean()方法中实现
 
 1. 实例化：利用反射创建对象
+
 2. 装配属性：调用populateBean方法，根据xml文件或注解（@Autowired）对属性进行赋值
-
+   
    - 此时除了容器对象属性，其他属性都完成赋值（bean中可能包含容器对象属性，用于获取spring上下文信息）
-3. aware设置：根据实现的aware接口，完成对应的容器对象属性赋值
 
+3. aware设置：根据实现的aware接口，完成对应的容器对象属性赋值
+   
    - ==aware接口是为了使某些自定义对象可以方便的获取到容器对象==。 比如BeanNameAware、BeanFactoryAware、ApplicationContextAware接口，可以根据这些接口进行扩展
+
 4. 初始化
-   1. 调用BeanPostProcessor的BeforeInitial方法
-   2. 调用init方法
-   3. 调用BeanPostProcessor的AfterInitial方法，**AOP代理对象**在此生成。
+   
+   1. 调用BeanPostProcessor的BeforeInitialization方法。(遍历所有的BeanPostProcessor，执行BeforeInitialization。但如果中间有一个BeforeInitialization返回null，则终止遍历)
+   2. 调用initMethod方法
+   3. 调用BeanPostProcessor的AfterInitialization方法，**AOP代理对象**在此生成。
+
 5. 此时拥有完整对象，进行业务操作
+
 6. 销毁对象
 
 > BeanFactoryPostProcessor：是一个接口，针对整个工厂生产出来的BeanDefinition作出修改或者注册。比如ConfigurationClassPostProcessor处理类上的注解，PropertyPlaceholderConfigurer处理配置文件的占位符。
->
+> 
 > BeanPostProcessor：是一个接口，可用于bean对象初始化前后进行逻辑增强。
-
-
 
 BeanFactory和FactoryBean区别
 ---
@@ -2419,8 +3068,6 @@ BeanFactory和FactoryBean区别
 BeanFactory：是IOC容器的核心接口，在它的实现类中装载着整体的bean对象，具有完整的固定的创建bean的流程。
 
 FactoryBean: 是一个bean对象，它可以自定义生产或者修饰一个bean，比如比较重型的第三方组件mybatis，给对象创建代理对象。
-
-
 
 对AOP的理解
 ---
@@ -2440,8 +3087,6 @@ aop称为面向切面编程，可以将交叉业务代码跟主业务代码分�
 
 ![img](Spring学习.assets/20160811193349342)
 
-
-
 AOP的实现
 ---
 
@@ -2451,8 +3096,6 @@ AOP的实现
 4. 否则将chain对象加入到代理对象中，由代理对象递归调用执行链上的通知。只有递归完所有的通知（计数判断）才利用反射执行目标方法，接着逐层递归回去执行切面。
 
 > 综上：before会在链表的最末端，因为要最先执行。
-
-
 
 AOP为什么不能拦截内部方法
 ---
@@ -2482,21 +3125,6 @@ public class SomeServiceImpl implements SomeService {
 
 代理对象只是负责增加逻辑以及调用原始方法，当代理对象执行完逻辑调用目标方法时，实际还是原始对象调用目标方法，所以doInnerMethod也是由原始对象调用，而不会被拦截器调用。
 
-
-
-Spring bean的作用域
----
-
-`<bean id="" class="" scope="singleton" />` 设置作用域
-
-1. singleton：默认使用的作用域。每个容器中只有一个bean的实例，单例的模式由BeanFactory自身来维护。在容器启动时就会创建对象。如果是@Bean就会调用一次方法。
-2. prototype：为每一次getBean()提供一个实例。如果是@Bean的对象，则每次都会调用方法。
-3. request：为每一个网络请求创建一个实例，在请求完成以后，bean会失效并被垃圾回收器回收。
-4. session：与request范围类似，确保每个session中有一个bean的实例，在session过期后，bean会随之失效。
-5. global-session：全局作用域，与session大体相同，但仅在**portlet**应用中使用
-
-
-
 BeanFactory和ApplicationContext的区别
 ---
 
@@ -2511,19 +3139,17 @@ BeanFactory是比较原始的API，其定义DI容器的基本操作。**Applicat
 1. **BeanFactory**通过**懒加载**的方式注入bean，**ApplicationContext**是在容器启动时就**加载了全部**的bean，所以可以在容器启动时就发现存在的配置问题。
 2. BeanFactory 和 ApplicationContext都支持 BeanPostProcessor、BeanFactoryPostProcessor的使用，但两者之间的区别是：BeanFactory需要**手动注册**，而Applicationcontext则是**自动注册**。
 
-
-
 依赖注入的两种方式
 ---
 
 常用的注入方式主要有两种：**构造方法注入**，**setter注入**。
 
 - 构造方法注入：调用构造方法来完成对象赋值
-
+  
   ```java
   public class Student {
       private Student student;
-      
+  
       public Student(Student student) {
           this.Student = student;
       }
@@ -2531,18 +3157,16 @@ BeanFactory是比较原始的API，其定义DI容器的基本操作。**Applicat
   ```
 
 - setter注入：使用setter方法来完成对象赋值
-
+  
   ```java
   public class Student {
       private Student student;
-      
+  
       public void setStudent(Student student) {
          this.student = student;
       }
   }
   ```
-
-
 
 ## 如何统计Spring项目中bean的个数
 
@@ -2565,7 +3189,7 @@ public class CountBean implements BeanFactoryPostProcessor {
     public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
         int beanDefinitionCount = configurableListableBeanFactory.getBeanDefinitionCount();
         System.out.println("自定义bean的个数：" + beanDefinitionCount);
-        
+
         System.out.println("所有bean的名字如下：");
         Iterator<String> beanNamesIterator = configurableListableBeanFactory.getBeanNamesIterator();
         while (beanNamesIterator.hasNext()){
@@ -2573,7 +3197,7 @@ public class CountBean implements BeanFactoryPostProcessor {
             count++;
         }
         System.out.println("所有bean的个数：" + count);
-        
+
         int singletonCount = configurableListableBeanFactory.getSingletonCount();
         System.out.println("所有单例bean的个数：" +singletonCount);
     }
@@ -2587,8 +3211,6 @@ public class CountBean implements BeanFactoryPostProcessor {
 - `getBeanNamesIterator()`：可以获取**所有**的bean的名字
 - `getSingletonCount()`：可以获得单例bean的数量
 
-
-
 Spring事务是如何实现的
 ---
 
@@ -2599,10 +3221,8 @@ spring事务是基于数据库事务和AOP机制的
 3. 如果加了则利用**事务管理器对象**去连接数据库，然后根据指定的事务传播行为进行相关的操作，比如关闭自动提交，接着执行目标方法，如果没有出现异常则进行提交（afterReturning），否则进行回滚（afterThrowing）。
 
 > 为了保证**事务同步**，将获取连接的操作交给spring，让其去数据库连接池中获取连接，这也是为什么要在spring配置文件中配置连接池的原因。而mybatis需要用到连接时去spring获取即可。
->
+> 
 > 一个线程一个连接，spring中使用ThreadLocal来保证每个连接的线程安全。
-
-
 
 循环依赖
 ---
@@ -2635,20 +3255,16 @@ public class TestService2 {
 2. 非单例的setter注入。（不能解决）
 3. 构造器注入。（不能解决）
 
-
-
 ### spring怎么检测是否存在循环依赖？
 
 在Bean创建的时候给该Bean做标记，如果递归调用回来发现Bean存在标记，则说明这个bean正在创建中，即产生了循环依赖。
-
-
 
 ### spring如何解决循环依赖？
 
 ==spring通过三级缓存提前暴露对象来解决循环依赖问题==。
 
 > 为什么单例bean可以解决循环依赖？只有单例bean会放到三级缓存中。
->
+> 
 > 为什么构造器中注入不能解决循环依赖？因为构造方法创建实例，每次都要new一个要构造的实例bean，而A创建时，依赖B，就去创建B，B又依赖了A，这样会无限递归创建。
 
 spring内部有三级缓存：
@@ -2669,8 +3285,6 @@ B对象初始化完成之后放入一级缓存中，并且删除二级缓存中�
 
 > spring中do开头的方法才是真正执行逻辑的方法。
 
-
-
 ### 为什么需要第三级缓存或者为什么需要二级缓存
 
 二级缓存存储 三级缓存中创建出来的早期Bean， 可以**避免三级缓存重复执行，保证每次得到的对象都是同一个**。如果重复去三级缓存获取早期Bean的话，每次返回的代理对象是不同的。
@@ -2680,12 +3294,9 @@ B对象初始化完成之后放入一级缓存中，并且删除二级缓存中�
 在三级缓存中根据bean创建工厂获取刚实例化对象的时候，会先判断该对象是否被AOP代理了，是的话则返回代理对象，将代理对象放到二级缓存中。
 
 > 为什么不直接把代理对象放入二级缓存？
->
+> 
 > 这样就必须在实例化阶段就得执行BeanPosseccor的after方法创建代理对象。如果有三级缓存，则需要初始化的时候才会调用BeanPosseccor的after方法。相当于是延迟初始化。
-
-
 
 ### 第三级缓存中为什么要添加ObjectFactory对象，直接保存实例对象不行吗？
 
 便于对实例对象进行增强，如果直接放实例对象，那就不能在后续操作中增强对象了。比如创建AOP的代理对象。
-

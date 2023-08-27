@@ -20,16 +20,12 @@
 - 数据的一致性问题需要解决
 - 增加了集成测试的复杂度；
 
-
-
 1.2 认识Spring Cloud
 ---
 
 Spring Cloud 为开发人员提供了快速构建分布式系统中一些常见模式的工具。比如：配置管理，服务发现，断路器，智能路由、微代理、控制总线、全局锁、决策竞选、分布式会话和集群状态管理等 。
 
 Spring Cloud 是基于 Spring Boot 框架构建微服务架构。
-
-
 
 二、 Spring Cloud快速入门
 ===
@@ -38,16 +34,12 @@ Spring Cloud 是基于 Spring Boot 框架构建微服务架构。
 
 Spring Cloud 提供了多种服务注册与发现的实现方式，例如：Eureka、Consul、Zookeeper。在这里我们介绍Eureka。
 
-
-
 2.1 Eureka介绍
 ---
 
 Eureka 采用了 **C-S（客户端/服务端）**的设计架构，即 Eureka 由两个组件组成：Eureka服务端 和 Eureka客户端。Eureka服务端 是服务注册中心，而系统中的其他微服务，作为 Eureka客户端 连接到 Eureka服务端，并维持心跳连接。
 
 有了 Eureka 注册中心，微服务之间可以相互调用，并且系统的维护人员也可以通过 Eureka服务端 来监控系统中各个微服务是否正常运行。
-
-
 
 2.2 搭建两个微服务
 ---
@@ -56,17 +48,13 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，即 Eureka �
 
 ![image-20210721210116272](SpringCloud学习.assets/image-20210721210116272.png)
 
-
-
-
-
 2.3 搭建与配置Eureka 服务注册中心
 ---
 
 1. 创建另一个系统用于服务注册中心
 
 2. 添加eureka-server依赖：（**注意，springboot的版本要跟eureka一致**）
-
+   
    ```xml
    <dependency>
        <groupId>org.springframework.cloud</groupId>
@@ -86,11 +74,11 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，即 Eureka �
        </dependencies>
    </dependencyManagement>
    ```
-   
+
 3. 在 Spring Boot 的入口类上添加一个**@EnableEurekaServer** 注解，用于开启 Eureka 注册中心服务端
 
 4. 在配置文件中配置 Eureka 服务注册中心信息
-
+   
    ```properties
    # 内嵌定时 tomcat 的端口
    server.port=8093
@@ -102,14 +90,10 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，即 Eureka �
    # 表示不去检索其他的服务
    eureka.client.fetch-registry=false
    ```
-   
+
 5. 访问页面
-
+   
    ![image-20210721231109426](SpringCloud学习.assets/image-20210721231109426.png)
-
-
-
-
 
 2.4 向Eureka注册中心注册服务
 ---
@@ -117,7 +101,7 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，即 Eureka �
 1. 在之前两个客户端系统中添加eureka-client依赖
 
 ```xml
-<dependency>   		
+<dependency>           
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
     <version>2.2.7.RELEASE</version>
@@ -139,7 +123,7 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，即 Eureka �
 2. 在 Spring Boot 的入口类上添加一个 **@EnableEurekaClient** 注解来表明自己是一个 eureka 客户端
 
 3. 配置服务名称和注册中心地址
-
+   
    ```properties
    # 注册的客户端名字，一般与项目名一致
    spring.application.name=XXX
@@ -148,7 +132,7 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，即 Eureka �
    ```
 
 4. 自定义配置类，将RestTemplate放入容器中
-
+   
    ```java
    package com.study.config;
    
@@ -166,9 +150,10 @@ Eureka 采用了 **C-S（客户端/服务端）**的设计架构，即 Eureka �
        }
    }
    ```
-> @LoadBalanced实现负载均衡，合理的把请求分配给不同的服务器，从而让每个服务器可以发挥最大程度的作用。
->
-> 服务的真正调用由 ribbon实现，所以我们需要在调用服务提供者时使用 ribbon 来调用，而@LoadBalanced实际就是调用ribbon。
+   
+   > @LoadBalanced实现负载均衡，合理的把请求分配给不同的服务器，从而让每个服务器可以发挥最大程度的作用。
+   > 
+   > 服务的真正调用由 ribbon实现，所以我们需要在调用服务提供者时使用 ribbon 来调用，而@LoadBalanced实际就是调用ribbon。
 
 5. 使用restTemplate进行系统通信
 
@@ -191,8 +176,6 @@ public class ConsumerController {
 }
 ```
 
-
-
 三、服务注册中心Eureka
 ===
 
@@ -207,10 +190,6 @@ eureka 它也可以看做是一个提供者，又可以看做是一个消费者�
 
 ![image-20210722101647041](SpringCloud学习.assets/image-20210722101647041.png)
 
-
-
-
-
 3.2 Eureka与Zookeeper的比较
 ---
 
@@ -224,17 +203,15 @@ eureka 它也可以看做是一个提供者，又可以看做是一个消费者�
 
 Eureka 优先保证可用性，Eureka **各个节点是平等**的，某几个节点挂掉不会影响正常节点的工作，剩余的节点依然可以提供注册和查询服务。而 Eureka 的客户端在向某个 Eureka 注册时如果发现连接失败，则会自动切换至其它Eureka节点，只要有一台 Eureka 还在，就能保证注册服务可用(保证可用性)，只不过查到的信息可能不是最新的(不保证强一致性)。
 
-
-
 3.3 Eureka注册中心高可用集群搭建
 ---
 
 1. 新创建一个系统，做为新的注册中心（**端口号假设为8094**）。
 
 2. 让两个注册中心相互注册到对方
-
+   
    旧注册中心的配置文件：
-
+   
    ```properties
    # 内嵌定时 tomcat 的端口
    server.port=8093
@@ -247,9 +224,9 @@ Eureka 优先保证可用性，Eureka **各个节点是平等**的，某几个�
    # 指定 新服务注册中心 的位置
    eureka.client.service-url.defaultZone=http://127.0.0.1:8094/eureka
    ```
-
+   
    新注册中心的配置文件：
-
+   
    ```properties
    # 内嵌定时 tomcat 的端口
    server.port=8094
@@ -262,8 +239,6 @@ Eureka 优先保证可用性，Eureka **各个节点是平等**的，某几个�
    # 指定 旧服务注册中心 的位置
    eureka.client.service-url.defaultZone=http://127.0.0.1:8093/eureka
    ```
-
-
 
 3.4 Eureka服务注册中心自我保护机制
 ---
@@ -301,8 +276,6 @@ eureka.instance.lease-renewal-interval-in-seconds=2
 eureka.instance.lease-expiration-duration-in-seconds=90
 ```
 
-
-
 四、客户端负载均衡Ribbon
 ===
 
@@ -317,8 +290,6 @@ eureka.instance.lease-expiration-duration-in-seconds=90
 
 硬件负载均衡或是软件负载均衡，他们都会维护一个**可用的服务端清单**，通过心跳检测来剔除故障的服务端节点。当客户端发送请求到负载均衡设备的时候，该设备按**某种算法（比如轮询、权重、最小连接数等）**从可用服务端清单中取出一台服务端的地址，然后进行转发。
 
-
-
 4.2 Ribbon介绍
 ---
 
@@ -327,8 +298,6 @@ Ribbon 是**客户端负载均衡**工具，所有客户端节点下的 服务�
 **服务端负载均衡**：例如Nginx，通过Nginx进行负载均衡，先发送请求，然后通过负载均衡算法，在多个服务器之间选择一个进行访问、即在服务器端再进行负载均衡算法分配。
 
 > 客户端负载均衡 和 服务器负载均衡的核心差异在 **服务端清单的存放位置**，客户端负载均衡的服务端清单需要自己去注册中心获取，而服务器负载均衡的服务端清单由中间服务单独维护。
-
-
 
 4.3 Ribbon负载均衡策略
 ---
@@ -363,14 +332,10 @@ public IRule iRule(){
 }
 ```
 
-
-
 五、Rest请求模板类
 ===
 
 RestTemplate可以让我们方便的访问另一个服务，它是一个 HTTP 请求工具，它提供了常见的REST请求方案的模版，例如 GET 请求、POST 请求、PUT 请求、DELETE 请求。
-
-
 
 5.1 GET请求
 ---
@@ -399,8 +364,6 @@ params.put("name", "codekiang");
 String s = restTemplate.getForObject("http://01-SPRINGCLOUD-PROVIDER/provider/hello?id={id}&name={name}", String.class, params);
 ```
 
-
-
 5.2 POST请求
 ---
 
@@ -418,14 +381,12 @@ body.add("name", "codekiang");
 String s = restTemplate.postForObject("http://01-SPRINGCLOUD-PROVIDER/provider/hello", body, String.class);
 
 ==================================================
-    
+
 User user = new User();
 user.setId(1);
 user.setName("codekiang");
 String s = restTemplate.postForObject("http://01-SPRINGCLOUD-PROVIDER/provider/hello", user, String.class);
 ```
-
-
 
 5.3 PUT请求
 ---
@@ -434,16 +395,12 @@ put请求无返回值，传递参数跟get一样。
 
 ![image-20210723171555660](SpringCloud学习.assets/image-20210723171555660.png)
 
-
-
 5.4 DELETE请求
 ---
 
 delete请求无返回值，传递参数跟post类似，要使用MultiValueMap。
 
 ![image-20210723171446218](SpringCloud学习.assets/image-20210723171446218.png)
-
-
 
 六、服务熔断 Hystrix
 ===
@@ -461,13 +418,11 @@ delete请求无返回值，传递参数跟post类似，要使用MultiValueMap。
 
 **Hystrix** 是由Netflix开源的一个延迟和容错库，用于隔离访问远程系统、服务或者第三方库，防止级联失败，从而提升系统的可用性、容错性与局部应用的弹性，是一个实现了超时机制和断路器模式的工具类库。
 
-
-
 6.2 Hystrix快速入门
 ---
 
 1. 在微服务上添加依赖
-
+   
    ```xml
    <!--Spring Cloud 熔断器起步依赖-->
    <dependency>
@@ -480,7 +435,7 @@ delete请求无返回值，传递参数跟post类似，要使用MultiValueMap。
 2. 在入口类中使用 **@EnableCircuitBreaker** 注解开启断路器功能
 
 3. 在调用远程服务的方法上添加注解：`@HystrixCommand(fallbackMethod="回调方法")` 
-
+   
    ```java
    // 超时或发生错误时调用fallbackMethod的方法
    @HystrixCommand(fallbackMethod="errorFun")
@@ -500,7 +455,7 @@ delete请求无返回值，传递参数跟post类似，要使用MultiValueMap。
    ```
 
 > @SpringCloudApplication 等价于下面三个注解：
->
+> 
 > @EnableCircuitBreaker
 > @EnableEurekaClient
 > @SpringBootApplication
@@ -525,8 +480,6 @@ hystrix 默认超时时间是 1000 毫秒，如果你后端的响应超过此时
 
 `@HystrixCommand(fallbackMethod="errorFun", ignoreExceptions = Exception.class)`
 
-
-
 6.3 服务降级
 ---
 
@@ -536,8 +489,6 @@ hystrix 默认超时时间是 1000 毫秒，如果你后端的响应超过此时
 
 > 服务熔断是思想，服务降级是实现。
 
-
-
 6.4 Dashboard仪表盘
 ---
 
@@ -546,7 +497,7 @@ Hystrix Dashboard，它主要用来实时监控Hystrix的各项指标信息。�
 ### 使用步骤
 
 1. 添加依赖
-
+   
    ```xml
    <dependency>
        <groupId>org.springframework.cloud</groupId>
@@ -561,15 +512,13 @@ Hystrix Dashboard，它主要用来实时监控Hystrix的各项指标信息。�
 2. 在启动类上面引入注解 **@EnableHystrixDashboard**，启用Dashboard 功能。
 
 3. 配置文件中配置 springboot 监控端点的访问权限
-
+   
    ```properties
    # 开放所有端点
    management.endpoints.web.exposure.include=*
    ```
 
 4. 浏览器中输入 http://主机:端口号/hystrix 可以访问到仪表盘界面
-
-
 
 ### 参数解读
 
@@ -588,9 +537,8 @@ Hystrix Dashboard共支持三种不同的监控方式：
 - **Delay**：控制服务器上轮询监控信息的延迟时间，默认为2000毫秒，可以通过配置该属性来降低客户端的网络和CPU消耗。
 
 - **Title**：监控的标题，默认是项目名
+
 - **Monitor Stream按钮**：开始监控
-
-
 
 七、声明式服务消费 OpenFeign
 ===
@@ -602,8 +550,6 @@ OpenFeign为微服务架构下服务之间的调用提供了解决方案，OpenF
 
 在Spring Cloud中使用OpenFeign，可以做到使用HTTP请求访问远程服务，就像调用本地方法一样的，开发者完全感知不到这是在调用远程方法，更感知不到在访问HTTP请求
 
-
-
 7.2 Fegin与OpenFeign
 ---
 
@@ -611,15 +557,11 @@ OpenFeign为微服务架构下服务之间的调用提供了解决方案，OpenF
 
 简单来说，Feign 整合了 Ribbon 和 Hystrix 两个组件,就像 Spring Boot 是对 Spring+SpringMVC 的简化一样。而OpenFeign是对Feign的进一步封装。
 
-
-
-
-
 7.3 使用OpenFeign
 ---
 
 1. 添加依赖
-
+   
    ```xml
    <dependency>
        <groupId>org.springframework.cloud</groupId>
@@ -638,7 +580,7 @@ OpenFeign为微服务架构下服务之间的调用提供了解决方案，OpenF
 3. 配置文件的编写跟ribbon差不多，也要被加入到注册中心
 
 4. 定义服务接口，方法的定义要跟远程服务的controller中的方法定义一致。
-
+   
    ```java
    @Service
    // 另一个微服务在注册中心的名称
@@ -657,20 +599,20 @@ OpenFeign为微服务架构下服务之间的调用提供了解决方案，OpenF
    ```
 
 5. 定义controller，调用service
-
+   
    ```java
    @RestController
    public class FeignController {
         // 把feignService注入到容器中去
        @Autowired
        FeignService feignService;
-       
+   
        @GetMapping("/feignTest")
        public String feignTest(String mes){
            String s = feignService.hello(mes);
            return s;
        }
-       
+   
        @GetMapping("/user")
        public int addUser(){
            User user = new User();
@@ -680,7 +622,7 @@ OpenFeign为微服务架构下服务之间的调用提供了解决方案，OpenF
            int i = feignService.addUser(user);
            return i;
        }
-       
+   
        @GetMapping("/deleteUser")
        int deleteUser(){
            int id = 1;
@@ -693,8 +635,6 @@ OpenFeign为微服务架构下服务之间的调用提供了解决方案，OpenF
 ribbon跟openfeign调用远程微服务方式的区别：
 
 ![image-20210724122650503](SpringCloud学习.assets/image-20210724122650503.png)
-
-
 
 7.4 设置过期时间和开启熔断
 ---
@@ -709,11 +649,11 @@ hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds=5000
 如果要进行服务降级：
 
 1. 指定熔断回调逻辑
-
+   
    `@FeignClient(name="01-springcloud-service-provider", fallback = 回调类.class)` 
 
 2. 创建回调类（继承服务类）
-
+   
    ```java
    @Component
    public class MyFallback implements FeignService {
@@ -723,8 +663,6 @@ hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds=5000
        } 
    }
    ```
-
-
 
 八、API网关Zuul
 ===
@@ -736,13 +674,11 @@ hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds=5000
 
 Zuul是Spring Cloud全家桶中的微服务API网关。
 
-
-
 8.2 zuul使用
 ---
 
 1. 添加依赖
-
+   
    ```xml
    <!-- 网关跟客户端一样，要注册到服务中心 -->
    <dependency>
@@ -758,7 +694,7 @@ Zuul是Spring Cloud全家桶中的微服务API网关。
 2. 在入口类上添加 **@EnableZuulProxy** 注解，开启 Zuul的 API 网关服务功能
 
 3. 修改配置文件
-
+   
    ```properties
    server.port=8095
    # 配置服务的名称
@@ -770,8 +706,6 @@ Zuul是Spring Cloud全家桶中的微服务API网关。
    ```
 
 4. 此时可以访问 `http://localhost:8095/user/queryAll/` 可以放行，转发到04-springcloud-service-feign服务中
-
-
 
 8.3 路由规则
 ---
@@ -820,8 +754,6 @@ zuul.prefix=/myapi
   - 如 `/05-springcloud-service-feign/*` 可以匹配 `/05-springcloud-service-feign/aa` ，但**不能**匹配 `/05-springcloud-service-feign/a/b/c` 
 - ******：匹配任意个字符，可以匹配 `/05-springcloud-service-feign/aa` ，**也能**匹配 `/05-springcloud-service-feign/a/b/c` 
 
-
-
 8.4 zuul过滤器
 ---
 
@@ -851,17 +783,17 @@ Zuul中提供了过滤器定义，可以用来过滤代理请求，提供额外�
 public class LoggerFilter extends ZuulFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggerFilter.class);
-    
+
     @Override
     public String filterType() {
         return "pre";
     }
-    
+
     @Override
     public int filterOrder() {
         return 0;
     }
-    
+
     @Override
     public boolean shouldFilter() {
         return true;
@@ -872,7 +804,7 @@ public class LoggerFilter extends ZuulFilter {
         // 通过zuul，获取请求上下文
         RequestContext rc = RequestContext.getCurrentContext();
         HttpServletRequest request = rc.getRequest();
-        
+
         String token = request.getParameter("token");
         if (token == null) {
             ctx.setSendZuulResponse(false);
@@ -885,8 +817,6 @@ public class LoggerFilter extends ZuulFilter {
     }
 }
 ```
-
-
 
 九、springcloud配置
 ===
@@ -905,13 +835,11 @@ Spring cloud 使用 git 或 svn 存放配置文件，默认情况下使用 git�
 - 运行期间动态更新配置
 - 可以对配置文件进行版本管理
 
-
-
 9.1 搭建配置中心
 ---
 
 1. 创建项目，加入依赖
-
+   
    ```xml
    <dependency>
        <groupId>org.springframework.cloud</groupId>
@@ -922,7 +850,7 @@ Spring cloud 使用 git 或 svn 存放配置文件，默认情况下使用 git�
 2. 在启动类上添加注解 **@EnableConfigServer** 
 
 3. 在 application.properties 中配置一下 git 仓库信息
-
+   
    ```properties
    server.port=3721
    spring.application.name=06-springcloud-config-server
@@ -949,13 +877,11 @@ Spring cloud 使用 git 或 svn 存放配置文件，默认情况下使用 git�
 
 - {label} 表示分支，默认我们放在 master 分支上
 
-
-
 9.2 客户端使用
 ---
 
 1. 添加依赖
-
+   
    ```xml
    <dependency>
        <groupId>org.springframework.cloud</groupId>
@@ -964,7 +890,7 @@ Spring cloud 使用 git 或 svn 存放配置文件，默认情况下使用 git�
    ```
 
 2. 创建 `bootstrap.properties` 文件，文件内容如下:
-
+   
    ```properties
    server.port=8091
    spring.cloud.config.uri=配置中心所在的地址
@@ -972,6 +898,3 @@ Spring cloud 使用 git 或 svn 存放配置文件，默认情况下使用 git�
    spring.cloud.config.profile=dev
    spring.cloud.config.label=master
    ```
-
-
-

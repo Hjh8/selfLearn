@@ -13,23 +13,19 @@ tomcat采用**线程池**部署项目，部署项目的**三种**方式：
 1. webapps文件夹下部署：tomcat默认会扫描该文件夹下的项目
 
 2. server.xml项目映射的部署：在Context标签中指定
-
+   
    ```xml
    <Context path="/WebProject" docBase="D:/WebProject" reloadable="true" />
    ```
 
 3. 进入tomcat根项目下的`conf\Catalina\localhost`目录下新建一个xml文件，文件名为项目名，在项目名中指定Context标签。
-
+   
    - 新建`WebProject.xml`，在里面指定`<Context docBase="D:/WebProject" reloadable="true" />` 
-
-
 
 Tomcat组成
 ---
 
 Tomcat 的核心功能有两个，分别是负责接收/响应请求的**连接器** Connector 和 负责处理请求的**容器** Container。其中连接器和容器相辅相成，一起构成了基本的 web 服务 Service。每个 Tomcat 服务器可以管理多个 Service。
-
-
 
 ### Connector
 
@@ -45,8 +41,6 @@ Tomcat 的核心功能有两个，分别是负责接收/响应请求的**连接�
 - Processor：处理器，负责构建Request和Response对象。
 - Adapter：适配器，实现Request跟ServletRequest、Response跟ServletResponse之间的转换。
 
-
-
 ### Container
 
 每个 Service 会包含一个容器。容器中含有一个引擎，引擎可以管理多个虚拟主机；每个虚拟主机可以管理多个 Web 应用；每个 Web 应用会有多个 Servlet 包装器（Wrapper）。
@@ -57,8 +51,6 @@ Tomcat 的核心功能有两个，分别是负责接收/响应请求的**连接�
 - Wrapper：每一个Wrapper封装着一个Servlet，负责Servlet创建、执行和销毁；
 
 > Tomcat中默认的配置是webapps下的每一个文件夹都是一个Context，其中ROOT目录中存放着主应用，其他目录存放着子应用，而整个webapps就是一个Host站点
-
-
 
 请求过程
 ---
@@ -72,20 +64,19 @@ Tomcat 的核心功能有两个，分别是负责接收/响应请求的**连接�
 3. 找到**引擎**中的对应域名的**虚拟主机**，以及找到该主机的目录。默认情况下，请求会找到 tomcat/webapps 目录。
 4. 接着解析到WebDemo是web 程序的应用名，所以会在webapps下找WebDemo文件夹
 5. 解析的 api/user 是具体的业务逻辑地址。此时需要从 WebDemo/WEB-INF/web.xml 中找映射关系，最后调用业务 servlet 的对应方法
-4. 将方法的返回结果发送给Connector
+6. 将方法的返回结果发送给Connector
 7. Connector 将结果封装成 response 并将其写到 socket 中
 
 > 综上：server.xml文件的配置中，部署项目时，需要将locahost全部换成你的域名，可以不加www。
->
+> 
 > ```xml
 > <Engine name="Catalina" defaultHost="localhost(例如：888.com)">
 >      <Host name="localhost(例如：888.com)" appBase="webapps"
->         	unpackWARs="true" autoDeploy="true">
+>             unpackWARs="true" autoDeploy="true">
 >             <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
->          	prefix="localhost_access_log." suffix=".txt"
->             	pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+>              prefix="localhost_access_log." suffix=".txt"
+>                 pattern="%h %l %u %t "%r" %s %b" />
 >             <Context path="项目名称" docBase="项目真实路径" reloadable="true" ></Context>
 >         </Host>
 > </Engine>
->    ```
-> 
+> ```

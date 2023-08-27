@@ -1,7 +1,5 @@
 log4track使用文献参考：https://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=531398290，本文在此基础上加入自己的理解以及原理的解析。
 
-
-
 # log4track的使用
 
 ## 背景
@@ -22,8 +20,6 @@ log.info("toInfo:[{}]", JsonUtil.toJson(info));
 
 对于slf4j来讲，解决此问题的方式就是 **延迟序列化**，即在真正打印日志时，才调用入参的序列化操作。具体方案：**JDK动态代理**，为Logger包装一层proxy，执行打印操作时才对参数对象进行序列化。而java对象在输出时是调用toString方法的，也是说我们需要重写toString方法，然后在toString方法里进行序列化。
 
-
-
 ## 解决方案
 
 1、log4track提供了`LoggerFactoryProxy`，用来提供动态代理模式：
@@ -33,8 +29,6 @@ private static final Logger LOGGER = LoggerFactoryProxy.getLogger(XXX.class);
 ```
 
 2、针对lombok，其提供了 `@CustomLog` 模式，方便大家自定义Factory 
-
-
 
 ## 使用方式
 
@@ -56,8 +50,6 @@ private static final Logger logger = LoggerFactoryProxy.getLogger(XXX.class);
 
 其他正常使用即可，无需再在入参中进行toString序列化。LoggerFactoryProxy生成的Logger会在调用时自动生成代理对象。
 
-
-
 ### lombok方式
 
 通常，大家使用 @SLF4J 即可完成log的注册。
@@ -73,8 +65,6 @@ public class MyTest {
     }
 }
 ```
-
-
 
 **动态代理方式** 
 
@@ -101,7 +91,7 @@ import lombok.CustomLog;
 @CustomLog
 public class MyTest {
     private String txt = "我是测试";
- 
+
     public void test() {
         log.info("test:{}", new MyTest());
     }
@@ -123,10 +113,6 @@ public class MyTest {
 </dependency>
 ```
 
-
-
-
-
 # LoggerFactoryProxy源码解析
 
 ## 重要成员属性
@@ -140,8 +126,6 @@ private static final JsonMapper jsonMapper = MapperBuilder.create()
     .build();
 ```
 
-
-
 ## 构造方法
 
 在LoggerFactoryProxy中，将构造函数私有了，只能通过静态方法getLogger获取实例
@@ -150,8 +134,6 @@ private static final JsonMapper jsonMapper = MapperBuilder.create()
 private LoggerFactoryProxy() {
 }
 ```
-
-
 
 ## getLogger
 
@@ -170,8 +152,6 @@ public static Logger getLogger(Class<?> clazz) {
 }
 ```
 
-
-
 ## proxyLogger
 
 proxyLogger会为 logger 添加一层代理
@@ -184,8 +164,6 @@ private static Logger proxyLogger(Logger logger) {
     return handler.bind(logger);
 }
 ```
-
-
 
 ## ProxyHandler内部类
 
@@ -251,7 +229,7 @@ private static final class ProxyHandler implements InvocationHandler {
                 argsProxy[i] = proxyHandler.wrapperArg(args[i]);
             }
         }
-		// 将包装后的参数放入方法中执行
+        // 将包装后的参数放入方法中执行
         return method.invoke(proxyHandler.target, argsProxy);
     }
 
@@ -271,11 +249,9 @@ private static final class ProxyHandler implements InvocationHandler {
 
 小结：
 
--   参数对象的类型有三种：Marker，Object[]，Object（包含了String和Throwable）
--   第一个参数的类型一定是 Marker 或 String
--   Object[]需要作为一个整体传给方法，而不是将数组里的每个元素作为单独的整体
-
-
+- 参数对象的类型有三种：Marker，Object[]，Object（包含了String和Throwable）
+- 第一个参数的类型一定是 Marker 或 String
+- Object[]需要作为一个整体传给方法，而不是将数组里的每个元素作为单独的整体
 
 ## ToStringWrapper内部类
 
@@ -332,15 +308,11 @@ private static String serialize(Object obj) {
 }
 ```
 
-
-
 # 第一个参数为什么一定是Marker或者String？
 
 在对参数进行包装时，为什么说第一个参数的类型为什么一定是Marker或者String。这里需要查看Logger类（因为我们是给Logger添加的动态代理）
 
 ![image-20221109161920794](/Users/jianhang/Documents/learing/selfLearn/Untitled.assets/image-20221109161920794.png)
-
-
 
 # Marker是什么？
 
@@ -353,8 +325,6 @@ SLF4J提供了两项增强功能，这两项功能往往被低估。参数化日
 log4j和java.util等日志框架，都不支持Marker的日志记录，此时Marker数据将被默默忽略。（不输出也不报错）
 
 Marker为处理日志语句添加了一个具有无限可能值的新维度，与级别允许的五个值（即ERROR、WARN、INFO、DEBUG和TRACE）相比较。目前，只有logback支持标记数据。然而，没有什么可以阻止其他日志框架使用标记数据。
-
-
 
 **为什么slf4j没有fatal级别的方法**？
 
@@ -377,4 +347,3 @@ class Bar {
     }
 }
 ```
-

@@ -9,13 +9,9 @@ springBoot内嵌了服务器比如tomcat（默认）、Undertow、Jetty，提供
 
 自己不用管依赖的版本
 
-
-
 #### 环境准备
 
 jdk1.8+ 、 maven3.x
-
-
 
 #### HelloSpringBoot
 
@@ -23,9 +19,7 @@ jdk1.8+ 、 maven3.x
 
 创建SpringBoot项目时，只需要添加几个依赖即可完成搭建SSM项目的大部分工作。
 
-1. 
-
-   ```xml
+1. ```xml
    <parent>
        <groupId>org.springframework.boot</groupId>
        <artifactId>spring-boot-starter-parent</artifactId>
@@ -34,7 +28,7 @@ jdk1.8+ 、 maven3.x
    ```
 
 2. 添加starter依赖
-
+   
    ```xml
    <!-- starter  是众多依赖的集合 -->
    <dependencies>
@@ -47,7 +41,7 @@ jdk1.8+ 、 maven3.x
    ```
 
 3. 编写测试文件
-
+   
    ```java
    package controllers;
    
@@ -80,8 +74,6 @@ jdk1.8+ 、 maven3.x
 
 > tips：配置文件名必须为application
 
-
-
 ##### Spring Initializr
 
 idea有一种方式可以快速的创建spring项目，自动添加依赖，一些必要模块等。
@@ -92,31 +84,27 @@ idea有一种方式可以快速的创建spring项目，自动添加依赖，一�
 
 ![image-20201214162713944](SpringBoot学习.assets/image-20201214162713944.png)
 
-
-
 #### 启动配置
 
 1. 我们可以在配置文件中，对容器进行一些配置。
-
+   
    ```properties
    spring.main.banner-mode = off  #关闭logo
    spring.main.web-application-type = none # none表示java项目，servlet表示web项目，reactive表示react项目
    ```
 
 2. 在主类上面加入 `@ImportResource(locations = “路径”)` 注解可以导入xml文件的配置。
-
+   
    比如有个工程是要新老项目结合的，老项目用的是xml配置文件的方式，而新项目是使用注解的方式，那么可以使用该注解将老项目的配置文件导入进去。
 
 > spring.main.web-application-type 表示 spring项目的类型，有**三种**：none（java项目）、servlet（web项目）、reactive（react项目）
-
-
 
 #### 项目打包
 
 在SSM项目中，如果你要发布项目则需要将其打包成war包，而SpringBoot可以将其打包成jar包。步骤如下：
 
 1. 添加插件
-
+   
    ```XML
    <build>
        <plugins>
@@ -130,8 +118,6 @@ idea有一种方式可以快速的创建spring项目，自动添加依赖，一�
 
 2. 在项目根目录中使用`mvn clean package` 命令进行打包
 
-
-
 #### starter
 
 starter相当于一个**jar包**，需要使用时直接在maven中引入该starter坐标即可，**starter里面设置了一些默认的配置信息**，springboot启动时会自动的将该配置类中注册的bean放到IOC容器中，并且如果我们需要修改配置文件的内容可以在springboot的配置文件中进行修改。
@@ -141,8 +127,6 @@ starter相当于一个**jar包**，需要使用时直接在maven中引入该star
 > starter等价于 配置文件 + 自动注册bean
 
 官方所有的starter的命名都遵从`spring-boot-starter-*`，如果自定义starter建议使用`自定义名称-spring-boot-starter` 。
-
-
 
 #### 自定义starter
 
@@ -277,8 +261,6 @@ com.example.config.HelloAutoConfiguration
 
 ![image-20210816104531830](SpringBoot学习.assets/image-20210816104531830.png)
 
-
-
 #### 默认扫描器 basepackage
 
 在springMVC中，需要在配置文件中使用组件扫描器告诉MVC去哪些包创建controller。那我们SpringBoot项目啥都没做，为啥就可以访问到呢？
@@ -306,8 +288,6 @@ com
              +- OrderRepository.java
 ```
 
-
-
 #### 热部署
 
 在之前开发SSM项目时，只要你修改了代码，就需要重新手动重启服务器才可以看见改动的效果，很影响开发效率。在SpringBoot中提供了开发者工具`spring-boot-devtools`，可以让开发人员实现具有热部署功能的服务器.
@@ -315,7 +295,7 @@ com
 实现步骤：（IDEA编译器为例）
 
 1. 在`pom.xml`文件中加入相关的maven依赖
-
+   
    ```xml
    <dependencies>
        <dependency>
@@ -330,8 +310,6 @@ com
 
 3. 按`ctrl + shift + alt + /` ，选择`Registry`， 勾上`Compiler autoMake allow when app running` 
 
-
-
 开发者工具只有当`classpath`下的文件发生改变时，才会自动重启。当它以一个jar包形式启动项目的话，热部署会失效。
 
 在springboot中，重启技术是通过两个类加载器（classloader）来实现的，分别是`base classloader`和`restart classloader` .
@@ -344,13 +322,9 @@ com
 我们开发人员也可以手动指定哪些资源是不被加载到`restart classloader`中的，在配置文件中使用`spring.devtools.restart.exclude=目录` 代码来进行排除。
 
 > tips：
->
+> 
 > 1. 开发者工具包括一个嵌入式live load服务器，该服务器可用于在更改资源时触发浏览器刷新，即资源改变时浏览器会自动刷新。
 > 2. 静态资源放在resources目录下的static目录下。
-
-
-
-
 
 ### springboot项目部署方式
 
@@ -366,14 +340,12 @@ jar包跟war包的区别：
 
 - **war包**（Web Application Archive）：java web项目打包，web网站完成后，打成war包部署到服务器，以Tomcat来说，将war包放置在Tomcat\webapps\目录下，然后启动Tomcat，这个包就会自动解压，就相当于发布了。
 
-
-
 springboot项目部署有两种：**内置Tomcat启动（jar包）**和**外部tomcat启动（war包）**。
 
 - 内置Tomcat启动：直接通过内置Tomcat运行，不需要额外安装Tomcat。如需修改内置Tomcat的配置，只需要在SpringBoot的配置文件中配置。内置Tomcat没有自己的日志输出，全靠jar包应用输出日志。但是比较方便，快速，比较简单。
-
+  
   - 需要在pmo.xml中指定maven插件后才可以使用java -jar命令运行。
-
+    
     ```xml
     <plugin>
       <groupId>org.springframework.boot</groupId>
@@ -382,13 +354,13 @@ springboot项目部署有两种：**内置Tomcat启动（jar包）**和**外部t
     ```
 
 - 外部tomcat启动：传统的应用交付方式，需要安装Tomcat，然后放到wabapps目录下运行war包，可以灵活选择Tomcat版本，可以直接修改Tomcat的配置，有自己的Tomcat日志输出，可以灵活配置安全策略，相对打成jar包来说没那么快速方便。
-
+  
   - 启动类需要继承SpringBootServletInitializer类
-
+  
   - 修改**pom.xml**文件，添加`<packaging>war</packaging>` 节点
-
+  
   - 将内置Tomcat的作用范围修改成provided
-
+    
     ```xml
     <dependency>
        <groupId>org.springframework.boot</groupId>
@@ -397,8 +369,6 @@ springboot项目部署有两种：**内置Tomcat启动（jar包）**和**外部t
     </dependency>
     ```
 
-
-
 ### 为什么SpringBoot的jar包可以直接运行？
 
 原因：
@@ -406,7 +376,7 @@ springboot项目部署有两种：**内置Tomcat启动（jar包）**和**外部t
 1. springboot提供了一个spring-boot-maven-plugin插件用于把程序打包成一个jar包。
 
 2. SpringBoot打成的jar包叫做Fat jar（jar包中包含jar包），包含了应用依赖的jar包和SpringBoot 加载的相关类，目录如下：
-
+   
    ```java
    spring-boot-learn-0.0.1-SNAPSHOT
    ├── META-INF
@@ -424,7 +394,7 @@ springboot项目部署有两种：**内置Tomcat启动（jar包）**和**外部t
    ```
 
 3. java -jar会去找jar包中的manifest文件，在此文件中找到启动类。MANIFEST.MF文件内容如下：
-
+   
    ```java
    Manifest-Version: 1.0
    Implementation-Title: spring-learn
@@ -441,10 +411,8 @@ springboot项目部署有两种：**内置Tomcat启动（jar包）**和**外部t
 4. Fat jar的启动类是JarLauncher，它负责创建一个LaunchedURLClassLoader来加载/lib下面的jar包，并开启一个新线程启动应用的Main函数(Start-Class)。
 
 > **JarLauncher**通过加载BOOT-INF/classes目录及BOOT-INF/lib目录下jar文件，实现了fat jar的启动。
->
+> 
 > **WarLauncher**通过加载WEB-INF/classes目录及WEB-INF/lib和WEB-INF/lib-provided目录下的jar文件，实现了war文件的直接启动及web容器中的启动。
-
-
 
 ### 外部tomcat启动原理
 
@@ -455,9 +423,9 @@ springboot项目部署有两种：**内置Tomcat启动（jar包）**和**外部t
 ```java
 @Override
 public void onStartup(ServletContext servletContext) throws ServletException {
-    
+
    WebApplicationContext rootApplicationContext = createRootApplicationContext(servletContext);
-    
+
    if (rootApplicationContext != null) {
       servletContext.addListener(new SpringBootContextLoaderListener(rootApplicationContext, servletContext));
    }
@@ -476,9 +444,9 @@ protected WebApplicationContext createRootApplicationContext(ServletContext serv
    SpringApplicationBuilder builder = createSpringApplicationBuilder();
    // 指定继承了SpringBootServletInitializer的类作为主类
    builder.main(getClass());
-   
+
    ApplicationContext parent = getExistingRootWebApplicationContext(servletContext);
-    
+
    if (parent != null) {
       this.logger.info("Root context already created (using as parent).");
       servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, null);
@@ -486,32 +454,29 @@ protected WebApplicationContext createRootApplicationContext(ServletContext serv
    }
    builder.initializers(new ServletContextApplicationContextInitializer(servletContext));
    builder.contextFactory((webApplicationType) -> new AnnotationConfigServletWebServerApplicationContext());
- 
+
    // 配置应用程序，主要是获取主类上面的元信息
    builder = configure(builder);
    builder.listeners(new WebEnvironmentPropertySourceInitializer(servletContext));
- 
+
    // 熟悉的SpringApplication，项目中启动类main方法中也是用这个类调用run方法启动项目
    SpringApplication application = builder.build();
-    
+
    if (application.getAllSources().isEmpty()
          && MergedAnnotations.from(getClass(), SearchStrategy.TYPE_HIERARCHY).isPresent(Configuration.class)) {
       application.addPrimarySources(Collections.singleton(getClass()));
    }
-    
+
    // 调用SpringApplication.run方法启动项目。 
    return run(application);
 }
 ```
 
 > 为什么有的方式不用重写Configure方法，有些方式要重写呢？
->
+> 
 > 查看到builder.main(getClass());这行代码时可以发现，默认以继承SpringBootServletInitializer的类作为主类。所以你如果在SpringBoot的启动类上继承SpringBootServletInitializer的话就无需重写Configure，否则需要重写。
->
 
 onStartup方法主要是进行自动配置，创建Spring容器等操作。那么onStartup方法是什么时候回调的呢？
-
-
 
 为了可以不使用web.xml，servlet提供过了的`ServletContainerInitializer`接口，通过实现WebApplicationInitializer，在其中可以添加servlet，listener等，它通过SPI机制，当启动web容器的时候，会自动到项目所有jar包下找到`META-INF/services`下以**ServletContainerInitializer**的全路径名称命名的文件，它的内容是ServletContainerInitializer实现类的全路径，然后容器根据全路径名称将它们实例化。
 
@@ -528,7 +493,7 @@ onStartup方法主要是进行自动配置，创建Spring容器等操作。那�
 ```java
 @HandlesTypes(WebApplicationInitializer.class)
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
-    
+
    @Override
    public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
          throws ServletException {
@@ -554,8 +519,6 @@ WebApplicationInitializer接口的所有实现类如下图：
 
 所以说如果使用外部tomcat运行SpringBoot项目时，需要继承SpringBootServletInitializer。
 
-
-
 ### 自动配置流程
 
 springboot会基于你添加的jar包依赖，尝试自动配置你的spring项目。
@@ -563,12 +526,8 @@ springboot会基于你添加的jar包依赖，尝试自动配置你的spring项�
 springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器类`AutoConfigurationImportSelector` ，这个选择器会扫描所有在 `META-INF 下的 spring.factorites` ，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
 
 > 因为springboot的自动配置是spring的扩展功能，所以会在spring的BeanFactoryPostProcessor中实现。
->
+> 
 > springboot会将所有用到的自动配置类输出到一个总的配置文件中。
-
-
-
-
 
 ## 2. 属性配置文件
 
@@ -583,8 +542,6 @@ springboot启动时会扫描以下位置（**优先级由高到低**）的`appli
 
 springboot会从这四个位置加载配置文件。这四个位置的配置文件会进行互补配置，若出现相同的配置 高优先级 会覆盖 低优先级。
 
-
-
 如果想 自定义配置文件名 或 配置文件 的路径，可以这样做：（假设我的配置文件名为cf.properties）
 
 第一步：打开项目运行配置
@@ -594,8 +551,6 @@ springboot会从这四个位置加载配置文件。这四个位置的配置文�
 第二步：输入`--spring.config.name=配置文件名` 参数。如果想指定路径则使用`--spring.config.location=路径/配置文件名` 
 
 ![image-20201123174111772](SpringBoot学习.assets/image-20201123174111772.png)
-
-
 
 #### yml
 
@@ -607,8 +562,6 @@ yml是YAML语言的文件，以数据为中心。相比于xml少了一些结构�
 - 数组类型，可以是`[]`也可以是`-` 
 - 对象类型，类似于多层级。
 - 布尔类型、数值、日期的写法与不带引号的字符串一致。
-
-
 
 **案例**：
 
@@ -641,12 +594,10 @@ acme:
  host: ${acme.remote-address}:8080  # 192.168.0.110:8080
 ```
 
-
-
 #### @ConfigurationProperties属性绑定
 
 1. 添加所需依赖
-
+   
    ```xml
    <!--  使yml配置文件有提示  -->
    <dependency>
@@ -664,7 +615,7 @@ acme:
    ```
 
 2. 创建要绑定的bean
-
+   
    ```java
    package com.model;
    
@@ -680,7 +631,7 @@ acme:
        private String name;
        private int age;
        private School school = new School();
-       
+   
        // 如果有内部类，则内部类也要有@Data注解
        @Data
        class school{
@@ -690,7 +641,7 @@ acme:
    ```
 
 3. 编写配置文件
-
+   
    ```yml
    yml:
      t1:
@@ -699,7 +650,7 @@ acme:
    ```
 
 4. 编写tontroller
-
+   
    ```java
    package com.controller;
    
@@ -721,9 +672,9 @@ acme:
        }
    }
    ```
-   
-5. 编写启动类
 
+5. 编写启动类
+   
    ```java
    package com;
    
@@ -739,12 +690,10 @@ acme:
    ```
 
 > 1. 在属性类中，即在**ConfigurationProperties**的类，前缀不可以使用驼峰模式，只能用羊肉串模式（以 `-` 连接的），但是在xml中可以用驼峰模式。
->
+> 
 > 2. 所有具有**ConfigurationProperties**注解的类都会生成一个json文件，用于存放配置
->
+>    
 >    ![image-20201207200627356](SpringBoot学习.assets/image-20201207200627356.png)
-
-
 
 #### @EnableConfigurationProperties
 
@@ -801,7 +750,7 @@ public class MyController {
     public MyController(YmlModel ymlModel){
         this.ymlModel = ymlModel;
     }
-    
+
     @RequestMapping("/")
     YmlModel home() {
         return ymlModel;
@@ -810,8 +759,6 @@ public class MyController {
 ```
 
 两种方式效果一样，因为在springBoot源码中有使用这种方式来进行数据绑定，所以这里提一下。
-
-
 
 #### @Bean
 
@@ -833,8 +780,6 @@ public class YmlModel {
 }
 ```
 
-
-
 ```java
 package com.model;
 
@@ -851,8 +796,6 @@ public class YmlModelBean {
     }
 }
 ```
-
-
 
 ```java
 package com.controller;
@@ -875,14 +818,12 @@ public class MyController {
 }
 ```
 
-
-
 #### @Validated属性校验
 
 在进行属性绑定的同时我们还可以对绑定的值进行校验，如判空、设置最大值等。
 
 1. 加入maven依赖
-
+   
    ```xml
    <dependency>
        <groupId>org.hibernate</groupId>
@@ -892,9 +833,10 @@ public class MyController {
    ```
 
 2. 在类上加`@Validated`注解告诉springboot这个类为校验类。在需要校验的属性上加具体校验注解
-
-  ```java
-package com.model;
+   
+   ```java
+   package com.model;
+   ```
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -911,7 +853,7 @@ import javax.validation.constraints.NotNull;
 public class YmlModel {
     @NotNull
     private String name;
-    
+
     @Max(value = 32, message = "年龄太大了")
     private int age;
     
@@ -924,16 +866,17 @@ public class YmlModel {
         @NotNull
         private String addr;
     }
-}
-  ```
 
+}
+
+```
 其实`@Valid` 和 `@Validated` 的作用差不多，只不过`@Validated`不能够作用在属性上。
 
 ***
 
 常用注解如下：
+```
 
-  ```
 @AssertFalse 校验false
 @AssertTrue 校验true
 @DecimalMax(value=, inclusive=) 最大值为value，inclusive=true表示可以等于
@@ -944,10 +887,8 @@ public class YmlModel {
 @Past  检查日期
 @Email 检查邮箱地址
 @Pattern(regex=,flag=)  正则
+
 ```
-
-
-
 #### @Value作用于数据绑定
 
 之前使用的`@ConfigurationProperties`注释是一次性对全部属性进行绑定。而`@Value`注解则是作用于单个属性。**该属性的类型不能是复杂类型**，比如List、引用类型。另外，**`@Value`注解绑定的属性无法进行校验**。但其支持 使用SpEL表达式赋值。
@@ -982,8 +923,6 @@ public class ValueModel {
 
 }
 ```
-
-
 
 #### 不同环境的配置文件
 
@@ -1020,7 +959,7 @@ spring:
 激活某一块的配置有几种方式：
 
 1. 在配置文件中直接指定
-
+   
    ```yml
    spring:
      profiles:
@@ -1032,9 +971,9 @@ spring:
    ```
 
 2. 参数形式（优先级高）：打开项目配置 ===》输入命令`-Dspring.profiles.active=名字` 
-
+   
    ![image-20201210181248375](SpringBoot学习.assets/image-20201210181248375.png)
-
+   
    ![image-20201210181353268](SpringBoot学习.assets/image-20201210181353268.png)
 
 ***
@@ -1068,25 +1007,6 @@ yml:
     School:
       addr: 黑盒红
 ```
-
-
-
-#### @Conditional 的派生注解
-
-**@Conditional** 注解的作用：必须满足其指定的条件，才会在容器中添加其对应的组件，配置里面的内容才会生效。
-
-| @Conditional 的派生注解       | 作用                                           |
-| ----------------------------- | ---------------------------------------------- |
-| @ConditionalOnJava            | 系统的java版本是否符合要求                     |
-| @ConditionalOnBean            | 容器中存在指定Bean                             |
-| @ConditionalOnMissingBean     | 容器中不存在指定Bean                           |
-| @ConditionalOnExpression      | 满足spEL表达式                                 |
-| @ConditionalOnProperty        | 指定的属性是否有指定的值                       |
-| @ConditionalOnResource        | 类路径下是否有资源文件                         |
-| @ConditionalOnWebapplication  | 当前是否为web环境                              |
-| @ConditionalOnSingleCandidate | 容器中只存在一个指定的bean，或这个bean是首选的 |
-
-
 
 ## 3.springboot数据源自动配置
 
@@ -1133,14 +1053,12 @@ spring:
 </dependency>
 ```
 
-
-
 #### 敏感信息加密 jasypt
 
 资源文件中的内容通常情况下是明文显示，安全性就比较低一些。比如mysql登陆密码，redis登陆密码以及第三方的密钥等等。而我们可以使用**jasypt**加解密组件，提高一些属性配置的安全性。
 
 1. pom文件中增加依赖：
-
+   
    ```xml
    <!--  加密依赖  -->
    <dependency>
@@ -1151,7 +1069,7 @@ spring:
    ```
 
 2. 在配置文件中设置密钥
-
+   
    ```yml
    jasypt:
      encryptor:
@@ -1160,7 +1078,7 @@ spring:
    ```
 
 3. 编写测试类生成加密后的文字
-
+   
    ```java
    @RestController
    public class IndexController {
@@ -1183,7 +1101,7 @@ spring:
    ```
 
 4. 将加密的结果替换配置文件中的敏感字段(这里以数据库密码为例)：
-
+   
    ```yml
    spring:
      datasource:
@@ -1192,12 +1110,10 @@ spring:
        username: root
        password: ENC(刚才加密的结果)
    ```
-
-   上面的 ENC()是固定写法，()里面是加密后的信息。当然我们可以自定义固定写法。
-
-   ![image-20201215115322061](SpringBoot学习.assets/image-20201215115322061.png)
-
    
+   上面的 ENC()是固定写法，()里面是加密后的信息。当然我们可以自定义固定写法。
+   
+   ![image-20201215115322061](SpringBoot学习.assets/image-20201215115322061.png)
 
 #### 配置druid数据源
 
@@ -1206,7 +1122,7 @@ spring:
 配置方式跟上一节的差不多：
 
 1. 导入相关依赖：
-
+   
    ```xml
    <!-- druid依赖 -->
    <dependency>
@@ -1222,7 +1138,7 @@ spring:
    ```
 
 2. 编写配置文件
-
+   
    ```yml
    spring:
      datasource:
@@ -1234,7 +1150,7 @@ spring:
    ```
 
 3. 编写测试类：
-
+   
    ```java
    package com.controller;
    
@@ -1260,16 +1176,12 @@ Debug查看datasource：
 
 ![image-20201213095801170](SpringBoot学习.assets/image-20201213095801170.png)
 
-
-
-
-
 ## 4. mybatis自动配置
 
 #### 注解方式
 
 1. 加入依赖
-
+   
    ```xml
    <!-- mybatis依赖 -->
    <dependency>
@@ -1280,7 +1192,7 @@ Debug查看datasource：
    ```
 
 2. 配置数据源
-
+   
    ```yml
    spring:
      datasource:
@@ -1292,7 +1204,7 @@ Debug查看datasource：
    ```
 
 3. 编写mapper文件：使用`@mapper` 注解告知容器这个文件为mapper文件
-
+   
    ```java
    package com.mapper;
    
@@ -1320,7 +1232,7 @@ Debug查看datasource：
    ```
 
 4. 测试
-
+   
    ```java
    package com.controller;
    
@@ -1340,7 +1252,7 @@ Debug查看datasource：
        public Person selectOne(){
            return userMapper.SelectById(1);
        }
-       
+   
        @RequestMapping("/insert")
        public int insert(){
            Person person = new Person("1111", "555");
@@ -1366,8 +1278,6 @@ class test {
     }
 }
 ```
-
-
 
 #### xml文件方式
 
@@ -1419,10 +1329,6 @@ mybatis:
   type-aliases-package: com.entity  # 别名
 ```
 
-
-
-
-
 ## 5. CROS请求跨域
 
 #### 跨域请求
@@ -1466,8 +1372,6 @@ public class MyConfig {
 }
 ```
 
-
-
 #### 访问静态资源
 
 SpringBoot默认静态资源目录位于classpath下且目录名符合如下规则：
@@ -1486,8 +1390,6 @@ spring:
         classpath:/staticXXX
 ```
 
-
-
 ## 6. 自定义配置类
 
 如果我们要修改自动配置类的功能的时候可以创建自定义配置类，然后把它放到bean容器中，步骤如下：
@@ -1503,7 +1405,7 @@ spring:
 1. 创建Filter
 
 2. 在自定义类中实现如下代码
-
+   
    ```java
    import org.springframework.boot.web.servlet.FilterRegistrationBean;
    import org.springframework.context.annotation.Bean;
@@ -1521,14 +1423,12 @@ spring:
    }
    ```
 
-
-
 #### 配置拦截器
 
 1. 编写一个拦截器类
 
 2. 实现以下代码
-
+   
    ```java
    @Bean
    public WebMvcConfigurer crosConfig(){
@@ -1542,8 +1442,6 @@ spring:
        };
    }
    ```
-
-
 
 #### 错误码统一跳转
 
@@ -1561,8 +1459,6 @@ public WebServerFactoryCustomizer<ConfigurableWebServerFactory> WebServerFactory
 }
 ```
 
-
-
 ## 7. 配置https请求
 
 #### JDK工具生成证书
@@ -1570,17 +1466,17 @@ public WebServerFactoryCustomizer<ConfigurableWebServerFactory> WebServerFactory
 1. 进入jdk的bin目录，打开命令行
 
 2. 输入命令 `keytool -genkey -keyalg RSA -keystore 证书名.jks` 生成证书，生成的时候它会要求你输入口令跟一些信息。
-
+   
    ![image-20201217205722009](SpringBoot学习.assets/image-20201217205722009.png)
 
 3. 输入命令`keytool -importkeystore -srckeystore 证书名.jks -destkeystore 证书名.pkcs12 -deststoretype pkcs12` 将jks类型的证书转换成pkcs12类型。
-
+   
    ![image-20201217210037172](SpringBoot学习.assets/image-20201217210037172.png)
 
 4. 将生成的**server.pkcs12**放入项目的**resources**目录下。
 
 5. 编写配置文件
-
+   
    ```yml
    server:
      port: 8443
@@ -1590,13 +1486,9 @@ public WebServerFactoryCustomizer<ConfigurableWebServerFactory> WebServerFactory
        key-store-type: pkcs12  # 证书类型
    ```
 
-
-
 使用keytool工具生成的证书类型为**jks**，该类型只能java使用。我们可以将其转为**pkcs12**类型，该类型为多语言通用。
 
 生成证书的另一种方式为`openssl` ，该方式要在linux环境下，可自行百度。
-
-
 
 #### 同时配置http跟https
 
@@ -1647,16 +1539,14 @@ public class MyConfig {
 }
 ```
 
-
-
 ## 8. 全局异常统一处理
 
 1. 编写全局异常处理类
 
 2. 加上`@ControllerAdvice` 注解指定捕获的异常
-
+   
    **指定包的方式** 
-
+   
    ```java
    package com.handler;
    
@@ -1685,9 +1575,9 @@ public class MyConfig {
        }
    }
    ```
-
+   
    指定注解的方式
-
+   
    ```java
    package com.handler;
    
@@ -1715,8 +1605,6 @@ public class MyConfig {
        }
    }
    ```
-
-
 
 ## 9. Swagger
 
@@ -1825,33 +1713,31 @@ public class SwaggerConfig {
 ![image-20210106094416591](SpringBoot学习.assets/image-20210106094416591.png)
 
 > `org.springframework.context.ApplicationContextException: Failed to start bean 'documentationPluginsBootstrapper'; nested exception is java.lang.NullPointerException`
->
+> 
 > 如果报了这个空指针异常，多添加一个**注解 @EnableWebMvc** 
 
 ***
 
 Swagger中常用注解的解释：
 
-|        注解        |                             作用                             |
-| :----------------: | :----------------------------------------------------------: |
-|        @Api        |                        说明该类的作用                        |
-|   @ApiOperation    |                       说明该方法的作用                       |
-| @ApiImplicitParams |       用在方法上，说明一组参数的详细信息。它是一个数组       |
-| @ApiImplicitParam  |         用在@ApiImplicitParams中，详细说明参数信息。         |
+| 注解                 | 作用                                                                                                            |
+|:------------------:|:-------------------------------------------------------------------------------------------------------------:|
+| @Api               | 说明该类的作用                                                                                                       |
+| @ApiOperation      | 说明该方法的作用                                                                                                      |
+| @ApiImplicitParams | 用在方法上，说明一组参数的详细信息。它是一个数组                                                                                      |
+| @ApiImplicitParam  | 用在@ApiImplicitParams中，详细说明参数信息。                                                                               |
 |                    | paramType：说明参数在那个地方。<br>Path表示参数使用@PathVariable接收<br/>query表示参数使用@RequestParam接收<br/>body表示参数使用@RequestBody接收 |
-|                    |                         name：参数名                         |
-|                    |                      dataType：参数类型                      |
-|                    |                      value：参数的意思                       |
-|                    |                      required：是否必传                      |
-|                    |                  defaultValue：参数的默认值                  |
-|   @ApiResponses    |                   用在方法上，表示一组响应                   |
-|    @ApiResponse    |     用在@ApiResponses中，一般用于表达一个错误的响应信息      |
-|                    |                    code：整数型，例如400                     |
-|                    |                   message：code对应的信息                    |
-|     @ApiModel      |                     描述一个model的信息                      |
-| @ApiModelProperty  |                     描述一个model的属性                      |
-
-
+|                    | name：参数名                                                                                                      |
+|                    | dataType：参数类型                                                                                                 |
+|                    | value：参数的意思                                                                                                   |
+|                    | required：是否必传                                                                                                 |
+|                    | defaultValue：参数的默认值                                                                                           |
+| @ApiResponses      | 用在方法上，表示一组响应                                                                                                  |
+| @ApiResponse       | 用在@ApiResponses中，一般用于表达一个错误的响应信息                                                                              |
+|                    | code：整数型，例如400                                                                                                |
+|                    | message：code对应的信息                                                                                             |
+| @ApiModel          | 描述一个model的信息                                                                                                  |
+| @ApiModelProperty  | 描述一个model的属性                                                                                                  |
 
 ## 10. 整合Mybatis-Plus （最新）
 
@@ -1866,7 +1752,7 @@ Mybatis-Plus（简称MP）是一个 Mybatis 的增强工具，在 Mybatis 的基
 springboot整合mybatis-plus步骤：
 
 1. 加入依赖
-
+   
    ```xml
    <dependency>
        <groupId>com.baomidou</groupId>
@@ -1874,15 +1760,15 @@ springboot整合mybatis-plus步骤：
        <version>3.4.1</version>
    </dependency>
    ```
-
+   
    【注意】
-
+   
    一、mybatis依赖跟mybatis-plus依赖不用同时加，防止避免冲突。
-
+   
    二、还需要加入数据库等驱动，就像配置mybatis时一样
 
 2. 创建mapper接口，继承MP提供的父类BaseMapper\<T> T是你要操作的bean对象
-
+   
    ```java
    package com.mapper;
    
@@ -1901,7 +1787,7 @@ springboot整合mybatis-plus步骤：
    ```
 
 3. 指定mapper扫描器后进行使用
-
+   
    ```java
    @Autowired
    private UserMapperPlus userMapperPlus;
@@ -1912,14 +1798,12 @@ springboot整合mybatis-plus步骤：
        return userMapperPlus.selectList(null);
    }
    ```
-
+   
    ![image-20210106220954853](SpringBoot学习.assets/image-20210106220954853.png)
 
 > sql日志输出：
->
+> 
 > 在配置文件中加上`mybatis-plus.configuration.log-impl = org.apache.ibatis.logging.stdout.StdOutImpl` 
-
-
 
 ### 主键生成策略
 
@@ -1929,27 +1813,19 @@ springboot整合mybatis-plus步骤：
 
 > 全局生效：`mybatis-plus.global-config.db-config.id-type = auto` 
 
-
-
 #### ASSIGN_ID（雪花算法）
 
 如果不设置 **type** 值，**默认**则使用 **IdType.ASSIGN_ID** 策略生成全局唯一**64位**id。该策略会使用雪花算法自动生成主键 **ID**，主键类型为 **Long** 或 **String**（分别对应 **MySQL** 的表字段为 **BIGINT** 和 **VARCHAR**）
 
 > 雪花算法（**SnowFlake**）是 **Twitter** 开源的分布式 **id** 生成算法。其核心思想就是：使用一个 41 bit 作为毫秒数，10bit作为机器ID（5bit数据中心，5bit机器ID），12bit作为毫秒内的流水号，最后还有一个符号位，永远为0
 
-
-
 #### ASSIGN_UUID（不含中划线的UUID）
 
 如果使用 **IdType.ASSIGN_UUID** 策略，则会自动生成不含中划线的 **UUID** 作为主键。主键类型为 **String**，对应 **MySQL** 的表字段为 **VARCHAR(32)** 
 
-
-
 #### AUTO（数据库 ID 自增）
 
 跟数据库提供的自动递增的策略一样，但**前提**是**数据库中的表中要设置id为自增的**
-
-
 
 #### INPUT（手动给ID值）
 
@@ -1961,21 +1837,15 @@ person.setPwd("123");
 return userMapperPlus.insert(person);
 ```
 
-
-
 #### NONE（无状态）
 
 声明该表无主键
 
-
-
 >  附：全局策略配置
->
+> 
 >  假设我们希望默认全部都使用 **AUTO** 策略（数据库 **ID** 自增），那么可以在 **application.properties** 中添加如下配置进行修改：
->
+> 
 >  `mybatis-plus.global-config.db-config.id-type=auto`
-
-
 
 ### 更新操作
 
@@ -1994,8 +1864,6 @@ public int update(){
 
 ![image-20210107172320318](SpringBoot学习.assets/image-20210107172320318.png)
 
-
-
 ### 自动填充
 
 在项目开发中，很多时候需要记录创建跟修改字段的时间，实现的方式有多种，但MP提供的方式会更好更方便一点。
@@ -2003,7 +1871,7 @@ public int update(){
 实现步骤：
 
 1. 实体类的属性上添加 **@TableField** 注解，告诉MP该属性要进行填充
-
+   
    ```java
    @Data
    public class Person {
@@ -2011,20 +1879,20 @@ public int update(){
        private Long id;
        private String name;
        private String pwd;
-       
+   
        @TableField(fill = FieldFill.INSERT)
        private Date createTime;
        @TableField(fill = FieldFill.INSERT_UPDATE)
        private Date updateTime;
    }
    ```
-
+   
    ![image-20210107185730921](SpringBoot学习.assets/image-20210107185730921.png)
 
 2. 编写处理器来处理此注解.
-
+   
    处理器需要继承**MetaObjectHandler** 并实现其**insertFill**跟**updateFill** 方法
-
+   
    ```java
    // 将这个处理器加入IOC容器中
    @Component
@@ -2043,15 +1911,13 @@ public int update(){
        }
    }
    ```
-
+   
    【注意】因为updateTime是插入及更新时都要填充，所以它在两个方法中都要**setFieldValByName** 
-
-
 
 ### 乐观锁
 
 > 乐观锁：顾名思义十分乐观，它总是认为不会出现问题，无论干什么都不会去上锁。如果出现了问题，再次更新值测试
->
+> 
 > 悲观锁：顾名思义十分悲观，它总是认为会出现问题，无论干什么都会去上锁。
 
 乐观锁实现机制：
@@ -2068,18 +1934,18 @@ public int update(){
 在项目中使用乐观锁步骤：
 
 1. 在数据库中创建类似于version作用的字段
-
+   
    ![image-20210107192908651](SpringBoot学习.assets/image-20210107192908651.png)
 
 2. 在实体类该属性的方面加上**@Version**注解
-
+   
    ```java
    @Version
    private Integer version;
    ```
 
 3. 自定义配置类中注册乐观锁插件
-
+   
    ```java
    @Configuration
    public class MybatisPlusConfig {
@@ -2091,11 +1957,11 @@ public int update(){
        }
    }
    ```
-
-   >注意旧版本的OptimisticLockerInnerInterceptor方式需要修改成以上的新方式
+   
+   > 注意旧版本的OptimisticLockerInnerInterceptor方式需要修改成以上的新方式
 
 4. 测试
-
+   
    ```java
    @RequestMapping("/update")
    public int update(){
@@ -2106,8 +1972,6 @@ public int update(){
        return userMapperPlus.updateById(person);
    }
    ```
-
-
 
 ### 查询操作
 
@@ -2135,14 +1999,12 @@ selectCount：通过条件构造器查询满足条件的记录数量
 
 selectPage：通过MP封装好的Page对象跟条件构造器进行分页查询
 
-
-
 ### 分页查询
 
 实现步骤：
 
 1. 在自定义配置类中注册分页插件
-
+   
    ```java
    @Bean
    public MybatisPlusInterceptor mybatisPlusInterceptor(){
@@ -2153,7 +2015,7 @@ selectPage：通过MP封装好的Page对象跟条件构造器进行分页查询
    ```
 
 2. 直接使用MP封装好的Page对象
-
+   
    ```java
    @RequestMapping("/page")
    public Page<Person> page(){
@@ -2161,35 +2023,33 @@ selectPage：通过MP封装好的Page对象跟条件构造器进行分页查询
        return userMapperPlus.selectPage(page, null);
    }
    ```
-
+   
    此时你会看到，它返回的是一个json数据：（经过处理得下图）
-
+   
    ![image-20210107203928888](SpringBoot学习.assets/image-20210107203928888.png)
-
+   
    包含了很多信息，我们可以通过page对象来使用这些信息
-
+   
    ```java
    @RequestMapping("/page")
    public void page(){
        // 第一个参数为当前页，第二个参数为页面大小
        Page<Person> page = new Page<>(1, 2);
        userMapperPlus.selectPage(page, null);
-       
+   
        System.out.println("查询到的数据：");
        page.getRecords().forEach(System.out::println); // 查询到的数据 page.getRecords()
    
        System.out.println("查询到数据的数量：" + page.getTotal());
    }
    ```
-
+   
    ![image-20210107203746007](SpringBoot学习.assets/image-20210107203746007.png)
-
-
 
 ### 逻辑删除
 
 > 物理删除：直接从数据库的表中删除记录。
->
+> 
 > 逻辑删除：在数据库的表中多加一个字段，用1来代表该数据已经被删除。
 
 在实际项目中一般不会使用物理删除，而会使用逻辑删除，这样可以防止一些用户错删，同时也可以保护数据。
@@ -2199,18 +2059,18 @@ selectPage：通过MP封装好的Page对象跟条件构造器进行分页查询
 MP实现逻辑删除步骤：
 
 1. 在数据库中添加一个字段，表示该记录是否被删除
-
+   
    ![image-20210107204453466](SpringBoot学习.assets/image-20210107204453466.png)
 
 2. 在实体类中增加 **@TableLogic** 注解
-
+   
    ```java
    @TableLogic
    private Integer deleted;
    ```
 
 3. 注册逻辑删除插件
-
+   
    ```java
    @Bean
    public MybatisPlusInterceptor mybatisPlusInterceptor(){
@@ -2221,7 +2081,7 @@ MP实现逻辑删除步骤：
    ```
 
 4. 在**配置文件**中设置逻辑删除的值
-
+   
    ```yml
    mybatis-plus:
      global-config:
@@ -2231,7 +2091,7 @@ MP实现逻辑删除步骤：
    ```
 
 5. 测试删除
-
+   
    ```java
    @RequestMapping("/delete")
    public int delete(){
@@ -2244,15 +2104,11 @@ MP实现逻辑删除步骤：
 
 看执行的sql，**它并不是直接的执行delete语句，而是执行update将deleted字段设置为1**。
 
-
-
 ### 条件构造器
 
 > 条件构造器：用于生成 sql 的 where 条件, entity 属性也用于生成 sql 的 where 条件
 
 MP只是帮我们封装了一些简单的CRUD，而对于复杂一点的我们可以使用条件构造器来对where语句进行复杂一点的行为。
-
-
 
 **简单使用** 
 
@@ -2262,12 +2118,10 @@ public Person wrapper(){
     QueryWrapper<Person> wrapper = new QueryWrapper<>();
     // 第一个参数为列名，第二个参数为要查找的值
     wrapper .eq("name", "aaa")
-        	.eq("pwd", "ss");
+            .eq("pwd", "ss");
     return userMapperPlus.selectOne(wrapper);
 }
 ```
-
-
 
 ![image-20210107205725636](SpringBoot学习.assets/image-20210107205725636.png)
 
@@ -2281,14 +2135,12 @@ public Person wrapper(){
     QueryWrapper<Person> wrapper = new QueryWrapper<>();
     // 第一个参数为列名，第二个参数为要查找的值
     wrapper QueryWrapper<Person> wrapper = new QueryWrapper<>();
-	wrapper.like("name", "a");
+    wrapper.like("name", "a");
     return userMapperPlus.selectList(wrapper);
 }
 ```
 
 ![image-20210107210130804](SpringBoot学习.assets/image-20210107210130804.png)
-
-
 
 ```java
 @RequestMapping("/wrapper")
@@ -2308,53 +2160,53 @@ wrapper包括了QueryWrapper跟UpdateWrapper。执行**查询**操作就用Query
 条件构造器各API详解：
 
 1. allEq：全部eq(或个别isNull)
-
+   
    例1: `allEq({id:1,name:"老王",age:null})`--->`id = 1 and name = '老王' and age is null`
-
+   
    例2: `allEq({id:1,name:"老王",age:null}, false)`--->`id = 1 and name = '老王'`
 
 2. eq：等于、ne：不等于、gt：大于、ge：大于等于、lt：小于、le：小于等于
-
+   
    `eq("name", "老王") ` ---> ` name = '老王'`
 
 3. bwtween、notBetween
-
+   
     `between("age", 18, 30)`--->`age between 18 and 30` 
 
 4. like、likeLeft、LifeRight、notLike （**left则说明百分号在左边**）
 
 5. isNull、isNotNull
-
+   
    `isNull("name") ` ---> `name is null`
 
 6. in、notIn
-
+   
    `in("age",{1,2,3}) `---> `age in (1,2,3)` 
 
 7. inSql、notInSql  子查询
-
+   
    例: `inSql("id", "select id from table where id < 3")`--->`id in (select id from table where id < 3)` 
 
 8. groupBy
-
+   
    例: `groupBy("id", "name")`--->`group by id,name`
 
 9. orderByAsc、orderByDesc
-
+   
    例: `orderByAsc("id", "name")`--->`order by id ASC,name ASC`
 
 10. orderBy  
-
+    
     例: `orderBy(true, false, "id", "name")`--->`order by id ASC,name DESC` 
 
 11. having
-
+    
     例1: `having("sum(age) > 10")`--->`having sum(age) > 10`
-
+    
     例2: `having("sum(age) > {0}", 11)`--->`having sum(age) > 11`
 
 12. or：主动调用`or`表示紧接着下一个**方法**不是用`and`连接!(不调用`or`则默认为使用`and`连接)
-
+    
     例: `eq("id",1).or().eq("name","老王")`--->`id = 1 or name = '老王'` 
 
 13. and：默认就是and进行拼接。一般用于优先级，比如查询“名字带有n” 并且“年龄等于18或id大于30”，`like("n").and(i -> i.le("age", 18).or().gt("id", 30))` 
@@ -2362,10 +2214,6 @@ wrapper包括了QueryWrapper跟UpdateWrapper。执行**查询**操作就用Query
 14. exists、notExists
 
 15. select：指定查询的字段。例：`select("id", "name")` 
-
-     
-
-
 
 ### 代码生成器
 
@@ -2376,9 +2224,9 @@ AutoGenerator 是 MyBatis-Plus 的代码生成器，通过 AutoGenerator 可以�
 实现步骤：
 
 1. 添加代码生成器 和 模板引擎依赖
-
+   
    MyBatis-Plus 从 `3.0.3` 之后移除了代码生成器与模板引擎的默认依赖，需要手动添加相关依赖；MyBatis-Plus 支持 **Velocity（默认）**、Freemarker、Beetl，用户可以选择自己熟悉的模板引擎，如果都不满足您的要求，可以采用自定义模板引擎。
-
+   
    ```xml
    <dependency>
        <groupId>com.baomidou</groupId>
@@ -2393,22 +2241,22 @@ AutoGenerator 是 MyBatis-Plus 的代码生成器，通过 AutoGenerator 可以�
    ```
 
 2. 编写配置
-
-  ```java
-  @SpringBootApplication
-  @MapperScan("com.mapper")
-  class test {
-  
+   
+   ```java
+   @SpringBootApplication
+   @MapperScan("com.mapper")
+   class test {
+   
       public static void main(String[] args){
           autoGenerator();
           SpringApplication.run(test.class, args);
-  
+   
       }
-  
+   
       public static void autoGenerator(){
           // 1. 构造 代码自动生成器 对象
           AutoGenerator generator = new AutoGenerator();
-  
+   
           // 2. 配置策略
           GlobalConfig gc = new GlobalConfig();
           //  2.1 全局配置
@@ -2459,19 +2307,16 @@ AutoGenerator 是 MyBatis-Plus 的代码生成器，通过 AutoGenerator 可以�
           sc.setTableFillList(fillList); // 设置填充自动与规则
           sc.setVersionFieldName("version"); // 设置乐观锁
           generator.setStrategy(sc);
-  
+   
           // 执行代码生器
           generator.execute();
       }
-  
-  }
-  ```
-
-  结果如下：
-
-  ![image-20210108095501593](SpringBoot学习.assets/image-20210108095501593.png)
-
-  ![image-20210108095535416](SpringBoot学习.assets/image-20210108095535416.png)
-
-  
-
+   
+   }
+   ```
+   
+   结果如下：
+   
+   ![image-20210108095501593](SpringBoot学习.assets/image-20210108095501593.png)
+   
+   ![image-20210108095535416](SpringBoot学习.assets/image-20210108095535416.png)

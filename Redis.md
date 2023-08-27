@@ -9,8 +9,6 @@ Redis6
 
 分布式系统就是把所有的程序、功能拆分成不同的子系统，部署在多台不同的服务器上，这些子系统之间相互协作共同对外提供服务，而对用户而言他并不知道后台是多个子系统和多台服务器在提供服务，在使用上和集中式系统一样；
 
-
-
 NoSQL介绍
 ---
 
@@ -19,8 +17,6 @@ NoSQL(Not Only SQL)，意即“不仅仅是SQL”，泛指非关系型的数据�
 NoSQL 不依赖业务逻辑方式存储，而以简单的key-value模式存储。因此大大的增加了数据库的扩展能力。
 
 在对数据高并发、海量数据的读写的场景下有很高的性能。但是它不遵循sql标准，也不支持ACID。
-
-
 
 ### 解决CPU及内存压力
 
@@ -35,13 +31,9 @@ NoSQL 不依赖业务逻辑方式存储，而以简单的key-value模式存储�
 3. 保存在缓存数据库中
    - 数据在内存中，速度快，存储结构简单
 
-
-
 ### 解决数据库的IO压力
 
 在数据量很大的时候，可以把经常用到的查询的数据放到缓存数据库中，减少对数据库的IO读操作。
-
-
 
 Redis介绍
 ---
@@ -63,8 +55,6 @@ Redis是一个开源的key-value存储系统。它支持存储的value类型相�
 1. 配合关系型数据库做高速缓存，降低数据库IO
 2. 分布式架构中，做session共享
 3. 使用结构存储持久化数据
-
-
 
 基本操作
 ---
@@ -90,8 +80,6 @@ Redis是一个开源的key-value存储系统。它支持存储的value类型相�
 - unlink key：非阻塞方式删除指定的key的数据。先将key从keyspace元数据中删除，真正的删除在后续的异步操作。
 - expire key t：为给定的key设置过期时间，单位为秒
 - ttl key：查看还有多少秒过期。**-1表示永不过期，-2表示已过期**
-
-
 
 五大数据类型
 ---
@@ -126,8 +114,6 @@ string的数据结构：
 
 1. 计数器
 2. **分布式锁**
-
-
 
 ### 列表 list
 
@@ -172,16 +158,14 @@ Redis 列表是简单的**字符串列表**。你可以在列表的头部（左�
 1. 推送消息
 2. 关注列表
 
-
-
 ### 集合 set
 
 set是string类型的集合，具有自动排序去重功能，当你需要存储一个列表数据，又不希望出现重复数据时，set是一个很好的选择，并且set可以判断某个成员是否在该set里，这个是list所不能提供的。
 
 > set的数据结构：
->
+> 
 > - 如果是数字，则使用数组，查找的时候二分查找，但插入的复杂度是O(N)
->
+> 
 > - 否则使用一个value为null的hash表，此时添加，删除，查找的复杂度都是O(1)
 
 - `sadd k v1 v2 .....`：将一个或多个元素加入到集合 key 中，已经存在的元素将被忽略
@@ -201,8 +185,6 @@ set是string类型的集合，具有自动排序去重功能，当你需要存�
 
 1. 抽奖活动
 2. 共同关注
-
-
 
 ### 哈希 hash
 
@@ -226,8 +208,6 @@ hash类型对应的数据结构是两种：**ziplist，hashtable**。当field-va
 1. 存放对象
 2. 购物车
 3. 收藏
-
-
 
 ### 有序集合 zset
 
@@ -257,11 +237,11 @@ zset类似于TreeMap，内部成员member会按照评分score进行排序。因�
 zset底层使用了两个数据结构
 
 1. ziplist：第一个节点保存 member，第二个节点保存 score。ziplist 内的集合元素按 score 从小到大排序。
-
+   
    ![image-20210709093008848](Redis.assets/image-20210709093008848.png)
 
 2. skiplist：在member个数大于等于128时，使用skiplist存储数据。由hash表跟跳跃表实现。
-
+   
    - 跳表的每个节点包含了 层高、score、指针（指向member在hashtable中地址）
    - 跳表按 score 从小到大保存所有集合元素
 
@@ -273,8 +253,6 @@ zset底层使用了两个数据结构
 - 查询的时间复杂度为O(logn)
 - 插入，删除时间复杂度均为O(logn)，最坏情况下时间复杂度为O(n)
 - 插入节点时需要记录每一层是从哪个节点下来的，方便新元素更新层高
-
-
 
 新数据类型
 ---
@@ -292,44 +270,44 @@ Bitmaps本身不是一种数据类型， 实际上它就是字符串，它可以
 Bitmaps常用于**信息状态的统计**，比如用户每天签到的记录，用户访问量等。
 
 - `setbit key offset value`：将offset的位置设为value
-
+  
   - `setbit users 9 1` 
   - 在第一次初始化Bitmaps时，如果偏移量非常大，那么整个初始化过程执行会比较慢，可能会造成Redis阻塞。默认值为0
 
 - `getbit key offset`：获取offset位置的值
-
+  
   - `getbit user 9`
 
 - `bitcount key [start] [end]`：计算指定范围内的offset位置值的和。
-
+  
   【注意】start跟end表示的是下标，并不是位。
-
+  
   offset【01000001 01000000  00000000 00100001】对应下标【0，1，2，3】
-
+  
   `bitcount k 0 1`：计算的是 01000001 01000000，返回3
 
 - `bitop and(or/not/xor) destKey key1 [key2...]`：对指定key按位进行交、并、非、异或操作并将结果保存在destkey中。
-
+  
   - 比如2020-11-03 日访问网站的userid=0,1,4,9。
-
+    
     ```cmd
     setbit users:20201103 0 1
     setbit users:20201103 1 1
     setbit users:20201103 4 1
     setbit users:20201103 9 1
     ```
-
+    
     2020-11-04 日访问网站的userid=1,2,5,9。
-
+    
     ```cmd
     setbit users:20201104 1 1
     setbit users:20201104 2 1
     setbit users:20201104 5 1
     setbit users:20201104 9 1
     ```
-
+    
     然后计算出两天都访问过网站的用户数量
-
+    
     ```cmd
     bitop and users:0403 users:20201103 users:20201104
     ```
@@ -344,8 +322,6 @@ Bitmaps与set对比
 
 可以看出bitmaps所占用的内存小很多。但bitmaps需要把每个用户都存储下来。所以当该网站每天访问的用户很少时，Bitmaps就有点不合时宜了
 
-
-
 ### HyperLogLog
 
 HyperLogLog 是用来做基数统计的算法，其优点是：在输入元素的数量或者体积非常非常大时，计算基数所需的空间总是固定的、并且是很小的。
@@ -353,7 +329,7 @@ HyperLogLog 是用来做基数统计的算法，其优点是：在输入元素�
 每个 HyperLogLog 键只需要花费 12 KB 内存，就可以计算接近 2^64 个不同元素的基数。这和计算基数时，元素越多耗费内存就越多的集合形成鲜明对比。需要注意的是，这里计算的基数是有误差的，不过误差在可以接受的范围内。
 
 > 何为基数？
->
+> 
 > 比如数据集 {1, 3, 5, 7, 5, 7, 8}， 那么这个数据集的基数集为 {1, 3, 5 ,7, 8}, 基数(不重复元素)为5。
 
 但是，因为 HyperLogLog 只会根据输入元素来计算基数，而**不会储存输入元素本身**，所以 HyperLogLog 不能像集合那样返回输入的各个元素。
@@ -366,8 +342,6 @@ HyperLogLog 是用来做基数统计的算法，其优点是：在输入元素�
 
 ![image-20210709174411766](Redis.assets/image-20210709174411766.png)
 
-
-
 ### Geospatial
 
 Redis 3.2 中增加了对GEO类型的支持。GEO，Geographic，地理信息的缩写。该类型，就是元素的2维坐标，在地图上就是经纬度。redis基于该类型，提供了经纬度设置，查询，范围查询，距离查询，经纬度Hash等常见操作。
@@ -376,8 +350,6 @@ Redis 3.2 中增加了对GEO类型的支持。GEO，Geographic，地理信息的
 - `geopos key member1 [member2 ...]`：获取元素的坐标点
 - `geodist key member1 member2 [m|km|ft|mi]`：计算坐标点的直线距离。可指定单位：m米（默认值）、km千米 、mi英里 、ft英尺。
 - `georadius key 经度 纬度 r m|km|ft|mi [withcoord] [withdist] [count count]`：以给定的经纬度为中心，找出 半径r 内的元素。
-
-
 
 配置文件
 ---
@@ -429,19 +401,17 @@ dbfilename dump.rdb # rbd默认的文件名
 dir ./ # rdb文件保存的目录
 ```
 
-
-
 <p style="text-align:center;">### SECURITY ###</p>
 安全设置
 
 设置密码
 
 1. 手动修改配置文件：添加`requirepass 密码`
-
+   
    ![image-20210709225421211](Redis.assets/image-20210709225421211.png)
 
 2. 命令的方式
-
+   
    ```bash
    config set requirepass 123456
    config rewrite # 写入配置文件中，不然重启就没了
@@ -464,10 +434,6 @@ maxmemory-policy noeviction # 内存满了之后执行淘汰策略
 
 - [ ] 哪个命令可以查看内存情况？`info memory` 
 
-
-
-
-
 发布和订阅
 ---
 
@@ -483,9 +449,7 @@ Redis 发布订阅 (pub/sub) 是一种消息通信模式：发送者 (pub) 发�
 - `unsubscribe channel`：退订一个或者多个频道；
 - `publish channel mes`：向通道发送消息；
 
-
-
- Jedis
+Jedis
 ---
 
 jedis就是集成了redis的一些命令操作，封装了redis的java客户端，提供了连接池管理。
@@ -526,30 +490,28 @@ public class demo {
 
 ![image-20210709205916154](Redis.assets/image-20210709205916154.png)
 
-
-
 整合springboot
 ---
 
-1.  在pom.xml文件中引入redis相关依赖
-
+1. 在pom.xml文件中引入redis相关依赖
+   
    ```xml
    <!-- redis -->
    <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-data-redis</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
    </dependency>
    
    <!-- spring2.X集成redis所需common-pool2-->
    <dependency>
-       <groupId>org.apache.commons</groupId>
-       <artifactId>commons-pool2</artifactId>
-       <version>2.6.0</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-pool2</artifactId>
+      <version>2.6.0</version>
    </dependency>
    ```
 
 2. application.properties 配置redis配置
-
+   
    ```properties
    # Redis服务器地址
    spring.redis.host=IP地址
@@ -570,7 +532,7 @@ public class demo {
    ```
 
 3. 添加redis配置类
-
+   
    ```java
    @EnableCaching
    @Configuration
@@ -586,11 +548,11 @@ public class demo {
            om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
            jackson2JsonRedisSerializer.setObjectMapper(om);
            template.setConnectionFactory(factory);
-   		// key序列化方式
+           // key序列化方式
            template.setKeySerializer(redisSerializer);
-   		// value序列化
+           // value序列化
            template.setValueSerializer(jackson2JsonRedisSerializer);
-   		// value hashmap序列化
+           // value hashmap序列化
            template.setHashValueSerializer(jackson2JsonRedisSerializer);
            return template;
        }
@@ -599,15 +561,15 @@ public class demo {
        public CacheManager cacheManager(RedisConnectionFactory factory) {
            RedisSerializer<String> redisSerializer = new StringRedisSerializer();
            Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
-   		// 解决查询缓存转换异常的问题
+           // 解决查询缓存转换异常的问题
            ObjectMapper om = new ObjectMapper();
            om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
            om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
            jackson2JsonRedisSerializer.setObjectMapper(om);
-   		// 配置序列化（解决乱码的问题）,过期时间600秒
+           // 配置序列化（解决乱码的问题）,过期时间600秒
            RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                    .entryTtl(Duration.ofSeconds(600))
-                
+   
               .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(redisSerializer))           
                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer))
                    .disableCachingNullValues();
@@ -620,7 +582,7 @@ public class demo {
    ```
 
 4. 测试使用：使用`redisTemplate.opsForValue()`来操作redis
-
+   
    ```java
    @RestController
    @RequestMapping("/redisTest")
@@ -638,10 +600,6 @@ public class demo {
        }
    }
    ```
-
-   
-
-
 
 事务
 ---
@@ -732,16 +690,14 @@ QUEUED
 127.0.0.1:6379>
 ```
 
-
-
 ### 事务失败处理
 
 事务失败分两种情况：
 
 1. 语法错误（编译器错误），在开启事务后，某个命令出现了语法错误，最终导致事务提交失败，此时队列中的所有命令都会被取消。
-
+   
    ![image-20210710100431961](Redis.assets/image-20210710100431961.png)
-
+   
    ```cmd
    127.0.0.1:6379> set k1 v1
    OK
@@ -763,9 +719,9 @@ QUEUED
    ```
 
 2. 类型错误（运行时错误），如果执行阶段某个命令报出了错误，则只有报错的命令不会被执行，而其他的命令都会正常执行，不会回滚。
-
+   
    ![image-20210710100703833](Redis.assets/image-20210710100703833.png)
-
+   
    ```cmd
    127.0.0.1:6379> set k1 v1
    OK
@@ -790,8 +746,6 @@ QUEUED
    127.0.0.1:6379>
    ```
 
-
-
 持久化
 ---
 
@@ -799,8 +753,6 @@ Redis 提供了2个不同形式的持久化方式。
 
 - RDB（Redis DataBase）：根据配置的规则定时将内存中的数据持久化到硬盘上。
 - AOF（Append Of File）：在每次执行**写**命令之后将命令记录到文件。
-
-
 
 ### RDB
 
@@ -819,8 +771,6 @@ Redis默认会将快照文件存储在Redis当前进程的工作目录的dump.rd
 1. 内存中的数据被克隆了一份，需要2倍的内存
 2. 存在数据丢失的情况
 
-
-
 #### 快照执行的过程
 
 1. Redis使用fork函数复制一份当前进程（父进程）的副本（子进程）；
@@ -828,8 +778,6 @@ Redis默认会将快照文件存储在Redis当前进程的工作目录的dump.rd
 3. 当子进程写完所有的数据后，用该临时文件替换旧的RDB文件，至此，一次快照操作完成。
 
 > fork创建的新进程被称为子进程，拥有父进程数据空间、堆、栈等资源的副本。因此RDB文件存储的是执行fork操作那一刻的内存数据，而fork之后修改的数据不会写进RDB文件。==所以RDB方式存在数据丢失的情况==。
-
-
 
 #### 执行快照的场景
 
@@ -841,8 +789,6 @@ Redis默认会将快照文件存储在Redis当前进程的工作目录的dump.rd
 3. 执行FLUSHALL命令
 4. 执行复制
 
-
-
 ### AOF
 
 在使用Redis存储非临时数据时，一般都需要打开AOF持久化来降低数据丢失，AOF可以将Redis执行的每一条**写**命令追加到硬盘文件中。redis 重启的话就根据日志文件的内容将写指令从前到后执行一次以完成数据的恢复工作。
@@ -853,16 +799,12 @@ AOF文件保存路径和RDB文件路径是一致的，都是通过dir参数配�
 
 >  AOF和RDB同时开启，系统默认取 **AOF** 的数据。
 
-
-
 #### AOF持久化流程
 
 1. 客户端的请求**写**命令会被append追加到AOF缓冲区内；
 2. AOF缓冲区根据AOF持久化策略[always, everysec, no] 将操作同步到磁盘的AOF文件中； 
 3. AOF文件大小超过重写策略或手动重写时，会对AOF文件rewrite重写，压缩AOF文件容量；
 4. Redis服务重启时，会重新加载AOF文件中的写操作达到数据恢复的目的；
-
-
 
 #### AOF持久化策略
 
@@ -871,8 +813,6 @@ AOF持久化策略（同步机制）需要在配置文件中进行设置：`appe
 - always：始终同步，每次Redis的写入都会立刻记入日志；性能较差但数据完整性比较好。
 - everysec：每秒同步，每秒记入日志一次，如果宕机，本秒的数据可能丢失。
 - no：redis不主动进行同步，把同步时机交给操作系统。对大多数Linux操作系统，是每30秒进行一次fsync，将缓冲区中的数据写到磁盘上。
-
-
 
 #### AOF重写
 
@@ -900,13 +840,9 @@ auto-aof-rewrite-min-size 64mb # 阈值
 3. 当子进程完成对新AOF文件重写之后通知父进程，父进程就将重写空间中的命令写入到新AOF文件中。
 4. 父进程将新AOF文件替换旧的AOF文件并重命名，后续的命令追加到新的AOF文件中。
 
-
-
 #### 文件损坏恢复
 
 遇到AOF文件损坏，通过redis目录下的`redis-check-aof` 的工具，使用命令`redis-check-aof --fix 文件名称` 进行修复。需要重启redis。
-
-
 
 ### 用哪个好
 
@@ -918,16 +854,12 @@ auto-aof-rewrite-min-size 64mb # 阈值
 
 不建议单独用 AOF，因为可能会出现Bug。
 
-
-
 主从复制
 ---
 
 主机master数据更新后根据配置和策略自动同步到从机slave，**Master**以**写**为主，**Slave**以**读**为主。
 
 主从刚刚连接的时候，进行全量同步；全量同步结束后，进行增量同步。当然，如果有需要，slave 在任何时候都可以发起全量同步。redis 策略是首先会尝试进行增量同步，如不成功，要求从机进行全量同步。
-
-
 
 好处：
 
@@ -937,8 +869,6 @@ auto-aof-rewrite-min-size 64mb # 阈值
 
 ![image-20210710192938290](Redis.assets/image-20210710192938290.png)
 
-
-
 ### 复制原理
 
 1. Slave启动成功连接到master后会发送一个sync命令
@@ -946,13 +876,9 @@ auto-aof-rewrite-min-size 64mb # 阈值
 3. **增量同步**：全量同步之后，Master将新的所有收集到的修改命令依次传给slave，完成增量同步。
 4. 如果有slave断线，重启之后不会自动连上matser，此时自己为master。手动变成从机之后，会发送sync请求和主机全量同步。
 
-
-
 从机也可以有自己的从机，但自己断线之后，自己的从机们都无法接收到主机的数据。假设从机2归属于从机1，此时如果从机1断线了，那么从机2将无法获取到主机的数据。
 
 ![preview](Redis.assets/v2-4ee05a9055425a213ac4c93d37057e80_r.jpg)
-
-
 
 ### QA
 
@@ -971,34 +897,32 @@ Q：主机会将数据保存在rdb文件中然后发送给slave服务器，但�
 A：master直接开启一个socket将rdb文件发送给slave服务器。
 ```
 
-
-
 ### 搭建主从复制
 
 1. Appendonly 关掉或者在每个配置文件中修改 appendfilename 
 
 2. 新建多个配置文件（每个配置文件相当于一台机器），每次文件编写以下配置。
-
+   
    如redis6379.conf
-
+   
    ```cmd
    include /myredis/redis.conf # 固定
    pidfile /var/run/redis_6379.pid # redis_XXX修改成跟配置文件名一样
    port 6379 # 每个配置文件的端口号
    dbfilename dump6379.rdb  # dumpXXX.rdb修改成跟配置文件名一样
    ```
-
+   
    redis6380.conf
-
+   
    ```cmd
    include /myredis/redis.conf # 固定
    pidfile /var/run/redis_6380.pid # redis_XXX修改成跟配置文件名一样
    port 6380 # 每个配置文件的端口号
    dbfilename dump6380.rdb  # dumpXXX.rdb修改成跟配置文件名一样
    ```
-
+   
    redis6381.conf
-
+   
    ```cmd
    include /myredis/redis.conf # 固定
    pidfile /var/run/redis_6381.pid # redis_XXX修改成跟配置文件名一样
@@ -1007,18 +931,16 @@ A：master直接开启一个socket将rdb文件发送给slave服务器。
    ```
 
 3. 启动三台redis服务器
-
+   
    ![image-20210710203241308](Redis.assets/image-20210710203241308.png)
-
+   
    可以使用`info replication`命令打印主从复制的相关信息
 
 4. 配置从机：`slaveof ip port` 
-
+   
    在6380 和 6381上执行: `slaveof 127.0.0.1 6379` 此时这两台主机变成6379的从机
 
 5. 搭建完成。
-
-
 
 ## 哨兵模式
 
@@ -1031,8 +953,6 @@ Redis主从复制的作用有数据热备、负载均衡、故障恢复等；但
 一个哨兵进程对Redis服务器进行监控，可能会出现问题，为此，我们可以使用多个哨兵对Redis服务器进行监控。各个哨兵之间还会进行监控，这样就形成了多哨兵模式。
 
 ![多哨兵模式](Redis.assets/11320039-3f40b17c0412116c.webp)
-
-
 
 哨兵模式下，主从服务器的切换过程：
 
@@ -1048,8 +968,6 @@ Redis主从复制的作用有数据热备、负载均衡、故障恢复等；但
 2. 选择偏移量最大(获得原主机数据最全的)的 slave 节点，如果存在则返回，不存在则继续
 3. 选择runId最小的slave节点(启动最早的节点)
 
-
-
 集群Cluster
 ---
 
@@ -1058,14 +976,12 @@ Redis主从复制的作用有数据热备、负载均衡、故障恢复等；但
 Redis 集群实现了对Redis的水平扩容，即启动N个redis节点，将整个数据库分布存储在这N个节点中，每个节点存储总数据的1/N。即使集群中有一部分节点失效或者无法进行通讯， 集群也可以继续处理命令请求。
 
 > 使用集群时需要在配置文件中做如下配置：
->
+> 
 > ```cmd
 > cluster-enabled yes  # 打开集群模式
 > cluster-config-file nodes-6379.conf # 设定节点配置文件名
 > cluster-node-timeout 15000 # 设定节点失联时间，超过该时间（毫秒），集群自动进行主从切换
 > ```
-
-
 
 集群的工作方式
 
@@ -1080,15 +996,13 @@ Redis 集群实现了对Redis的水平扩容，即启动N个redis节点，将整
 好处：
 
 1. 支持动态扩缩容
-3. 无中心配置相对简单
+2. 无中心配置相对简单
 
 缺点：
 
 1. **多键操作是不被支持的** 
 2. key迁移时阻塞的，效率低下
 3. Redis每个节点存储Slot-Key关系占用较多内存
-
-
 
 ## RedisProxy
 
@@ -1106,8 +1020,6 @@ Redis 集群实现了对Redis的水平扩容，即启动N个redis节点，将整
 
 1. Proxy中转存在性能损耗
 
-
-
 ## RedisClientProxy
 
 跟RedisProxy类似，只不过路由表放在了客户端，Client存储Key-slot的路由表， 访问Key前会通过路由表查询Key所在的目标分片。
@@ -1121,8 +1033,6 @@ Redis 集群实现了对Redis的水平扩容，即启动N个redis节点，将整
 
 劣势：需要SDK支持
 
-
-
 ## 缓存经典问题
 
 ### DB故障的处理
@@ -1130,8 +1040,6 @@ Redis 集群实现了对Redis的水平扩容，即启动N个redis节点，将整
 当DB出现故障时，应该先把写请求先写入到队列，然后再从队列中获取数据更新到缓存以及DB中。
 
 ![image-20220728153023120](Redis.assets/image-20220728153023120.png)
-
-
 
 ### 缓存不一致
 
@@ -1143,22 +1051,18 @@ Redis 集群实现了对Redis的水平扩容，即启动N个redis节点，将整
 2. 过期时间调短
 3. 写入队列，随后获取数据尝试写入
 
-
-
 # Qunar的redis架构
 
 Qunar使用RedisClientProxy来实现redis高可用架构
 
 ![image-20220728155106122](Redis.assets/image-20220728155106122.png)
 
-| Redis集群    | - Master负责读写请求<br/>- Slave负责持久化、备份和高可用     |
-| ------------ | ------------------------------------------------------------ |
-| 配置中心     | - 存储Key-slot的路由信息<br/>- 存储MasterSlave节点信息       |
-| Zookeeper    | - SDK服务注册中心<br/>- Redis实例变更通知中心                |
-| Client/SDK   | - 缓存Key-slot的路由信息<br/>- 节点故障/迁移之后，Client从配置中心获取链接信息 |
-| Sentinel集群 | - 负责每个节点的高可用<br/>- 负责故障之后更新Zookeeper和配置中心 |
-
-
+| Redis集群    | - Master负责读写请求<br/>- Slave负责持久化、备份和高可用              |
+| ---------- | --------------------------------------------------- |
+| 配置中心       | - 存储Key-slot的路由信息<br/>- 存储MasterSlave节点信息           |
+| Zookeeper  | - SDK服务注册中心<br/>- Redis实例变更通知中心                     |
+| Client/SDK | - 缓存Key-slot的路由信息<br/>- 节点故障/迁移之后，Client从配置中心获取链接信息 |
+| Sentinel集群 | - 负责每个节点的高可用<br/>- 负责故障之后更新Zookeeper和配置中心           |
 
 # 常见异常分析
 
@@ -1169,8 +1073,6 @@ Qunar使用RedisClientProxy来实现redis高可用架构
 - 没有正确使用连接池，如使用后没有进行释放
 - clientcipher错误，日志中有“JedisDataException: ERR invalid  password”
 
-
-
 **异常2**：Read timed out 
 
 - 客户端配置的超时时间太短了，可以调大到1000ms
@@ -1178,8 +1080,6 @@ Qunar使用RedisClientProxy来实现redis高可用架构
 - Redis实例所在服务器压力较大，如CPU使用率、磁盘IO、NetIO 等
 - 指令本身慢，操作Redis Server自身发生堵塞
 - 机房网络抖动
-
-
 
 面试题
 ===
@@ -1190,8 +1090,6 @@ redis为什么这么快？
 1. 所有数据都在缓存中操作
 2. 采用IO多路复用机制
 3. 使用单线程，避免了多线程频繁的上下文切换
-
-
 
 redis6.0的改进
 ---
@@ -1209,8 +1107,6 @@ redis6.0的改进
 流程示意图：
 
 ![image-20210906105858760](Redis.assets/image-20210906105858760.png)
-
-
 
 bigkey的危害，如何处理？
 ---
@@ -1233,8 +1129,6 @@ bigkey的危害：
 
 > 删除bigkey的时候不要直接删除，需要遍历元素批量删除，避免出现阻塞请求的情况。
 
-
-
 如何设计一个秒杀项目
 ---
 
@@ -1248,16 +1142,12 @@ bigkey的危害：
 
 库存预热（提前将秒杀商品信息加入到缓存）
 
-
-
 如何保证 redis 的高并发和高可用？
 ---
 
 redis 实现高并发主要依靠主从架构，一主多从，主机负责写，多个从机负责读的操作。如果想要在实现高并发的同时，可以容纳大量的数据，那么就需要 redis 集群，把数据分布在多个服务器上。
 
 redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后可以及时自动的切换。
-
-
 
 淘汰策略跟回收策略
 ---
@@ -1288,8 +1178,6 @@ redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后�
 - 惰性删除：当访问一个key时，判断其是否过期，若过期直接删除
 - 定期删除：定期主动删除已过期的key
 
-
-
 缓存穿透
 ---
 
@@ -1302,8 +1190,6 @@ redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后�
 1. **对空值缓存**：如果一个查询返回的数据为空（不管key是否存在），我们仍然把这个空结果（null）进行缓存，设置空结果的过期时间会很短，最长不超过五分钟
 2. **采用布隆过滤器**：将所有存在的key哈希到一个足够大的bitmaps中，一个一定不存在的数据会被 这个bitmaps拦截掉，从而避免了对底层存储系统的查询压力。
    - 查询一个key时，将key映射到bitmaps上，只要映射的位置有一个bit为0，说明此key肯定不存在。
-
-
 
 缓存击穿
 ---
@@ -1318,8 +1204,6 @@ redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后�
 2. **过期前先去获取数据**：在热门数据过期前，先去数据库中获取数据放入缓存中。
 3. **使用锁**：缓存失效后重新获取缓存时进行上锁。
 
-
-
 缓存雪崩
 ---
 
@@ -1329,8 +1213,6 @@ redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后�
 
 1. **构建多级缓存架构**：nginx缓存 + redis缓存 +其他缓存
 2. **将缓存失效时间分散开**：在原有的失效时间基础上增加一个随机失效时间，比如1-5分钟随机，这样每一个缓存的过期时间的重复率就会降低，就很难引发集体失效的事件。
-
-
 
 分布式锁
 ---
@@ -1352,16 +1234,18 @@ Java中的锁，只能保证在同一个JVM进程内中执行。如果在分布�
 生成锁：`SET lock_key random_value nx px t` 
 
 - lock_key：锁的名字
+
 - random_value：锁的值。最好弄成随机的，例如uuid，不然会造成锁的误删。
+
 - nx：相当于setnx。只在键不存在时，才对键进行设置操作。
+
 - px t：设置过期时间，t的单位是**毫秒**。
 
 - [x] 问题来了：
-
-
 1. 为什么要设置过期时间？**防止锁一直不释放**。
 
 2. 为什么不直接使用setnx的方式？**因为setnx跟expire t是两个操作，并不是一个原子操作，多线程下会出错**。
+
 3. 为什么要锁的值最好要设为uuid？如果不判断锁的value直接解锁的话，当这台服务器卡住了之后，并且锁的过期时间到了，此时这把锁被其他服务器的线程获取，接着这台服务器恢复了，继续操作，操作完释放锁，此时释放的是其他服务器的线程的锁，因为没有对锁的value进行判断，所以所有请求使用的锁都是同一把。
 
 使用：
@@ -1388,15 +1272,13 @@ public void testLock() {
 
 还有一种极端的情况就是，在第10行或者删除key的过程中（此时key还没删掉），电脑卡机了，然后到了过期时间，这把锁被其他线程获取了，接着电脑好了，继续执行删除key的操作。此时就会出现删错key的情况。虽然这种情况很极端，也很少出现，但是存在。
 
-解决方案是 在key没有被主动del的情况下，开启一个线程定时的给key加过期时间。该方法可以用lua脚本实现，==redisson这个框架已经帮我们封装好了，可以直接像lock一样直接加锁解锁即可==。
+解决方案是 在key没有被主动del的情况下，开启一个定时任务给key加过期时间。==redisson这个框架已经帮我们封装好了，可以直接像lock一样直接加锁解锁即可==。
 
 ```java
 redisson.lock();
 // 业务逻辑
 redisson.unlock();
 ```
-
-
 
 多路复用原理
 ---
@@ -1418,4 +1300,3 @@ poll本质上和select没有区别，它将用户传入的数组拷贝到内核�
 不同于无差别轮询，epoll会把哪个流发生了怎样的I/O事件通知我们。所以epoll实际上是**事件驱动（每个事件关联上fd）**的，此时我们对这些流的操作都是有意义的。
 
 select，poll，epoll都是IO多路复用的机制。I/O多路复用就是通过一种机制，可以监视多个描述符，一旦某个描述符就绪（一般是读就绪或者写就绪），能够通知程序进行相应的读写操作。**但select，poll，epoll本质上都是同步I/O，因为他们都需要在读写事件就绪后自己负责进行读写，也就是说这个读写过程是阻塞的**。
-
