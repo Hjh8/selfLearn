@@ -726,14 +726,14 @@ Synchronized和Lock区别
 5. Synchronized是可重入锁、非公平；lock也是可重入锁，但是可以设置使用公平锁或者非公平锁。
 6. Synchronized只能绑定一个锁对象，而lock可以绑定多个Condition对象。
 
-> **不可中断**是指获取到锁之后其他线程会一直等待或阻塞下去。
+> **不可中断**是指获取到锁的线程不会其他线程中断，其他线程会一直等待或阻塞下去。
 
 AQS
 ---
 
-AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是java并发包的基础类，很多API都是基于AQS来实现加锁和释放锁的功能。其内部维护了state跟node节点等变量来实现锁的功能。
+AQS，全称为 **AbstractQueuedSynchronizer，抽象队列同步器**。AQS是一个多线程访问共享资源的同步器框架，实现了线程挂起和唤醒功能，定义了线程抢锁和释放锁的抽象，具体抢锁和释放锁的逻辑交给子类实现，并且将 上锁acquire 和 释放锁release 流程封装成固定模板方法。
 
-比如ReentrantLock的属性中就包括了AQS子类：
+很多API都是基于AQS来实现加锁和释放锁的功能，其内部维护了state跟node节点等变量来实现锁的功能。比如ReentrantLock、Semaphore、ReentrantReadWriteLock的属性中就包括了AQS子类：
 
 ![image-20210717191817092](JUC学习.assets/image-20210717191817092.png)
 
@@ -777,17 +777,16 @@ private transient volatile Node head;
 private transient volatile Node tail;
 
 /**
- * The synchronization state.
+ * 状态
  */
 private volatile int state;
 ```
 
 - state表示是否有线程加锁，0表示没有，非0表示有线程正在使用锁。
-- Node其实是双向链表的节点，包含了前后指针、Thread（等待使用锁的线程）。多个Node节点形成的双向链表，我们称之为等待队列。
+- Node其实是双向链表的节点，包含了前后指针、thread（本节点所属的线程）。多个Node节点形成的双向链表，我们称之为等待队列。
   - 队列的第一个节点是正在使用锁的线程，第二个节点是第一个等待锁的线程。
-- ownerThread表示当前正在使用锁的线程对象。（**ownerThread在AbstractOwnableSynchronizer中定义**）
-
-> 公平锁和非公平锁利用**等待队列**来实现。
+- head跟tail节点记录了队列的头节点跟尾结点，方便出队跟入队操作。head节点始终指向空node，空node后续的节点才是等待队列中的节点。
+- 除此之外还有exclusiveOwnerThread表示当前正在使用锁的线程对象。（**exclusiveOwnerThread在AbstractOwnableSynchronizer中定义**）只有独占模式下才有OwnerThread
 
 ![image-20220320200509807](JUC学习.assets/image-20220320200509807.png)
 
@@ -805,7 +804,7 @@ private volatile int state;
    }
    ```
 
-2. 如果修改失败说明当前有线程正在使用该锁，此时这个线程会 <u>判断这个ownerThread自己</u>，是的话允许加锁，然后state值加一；**这也是可重入锁的实现。** 若不是属于自己，则该线程使用 <u>CAS操作进入到等待队列</u>中。
+2. 如果修改失败说明当前有线程正在使用该锁，此时这个线程会 <u>判断这个ownerThread自己</u>，是的话允许加锁，然后state值加一；**这是可重入锁的实现。** 若不是属于自己，则该线程使用 <u>CAS操作进入到等待队列</u>中。
    
    ```java
    public final void acquire(int arg) {
@@ -868,7 +867,7 @@ private volatile int state;
    private Node enq(final Node node) {
        for (;;) {
            Node t = tail;
-           if (t == null) { // 初始化
+           if (t == null) { // 初始化，注意头节点始终指向空node
                if (compareAndSetHead(new Node()))
                    tail = head;
            } else { // 进入队列
@@ -883,7 +882,7 @@ private volatile int state;
    }
    ```
 
-4. 进入等待队列后会再次尝试获取锁对象，当尝试获取行不通时，会将前一个节点的状态**waitStatus**改成**SIGNAL(-1)，**只有设置了**SIGNAL**，该节点后面的节点才可以被唤醒。
+4. 进入等待队列后会再次尝试获取锁对象，当尝试获取行不通时，会将前一个节点的状态**waitStatus**改成**SIGNAL(-1)。如果一个节点设置了**SIGNAL**，那么该节点释放锁的时候会唤醒它的next节点。
    
    ![image-20220727162651335](JUC学习.assets/image-20220727162651335.png)
    
@@ -1011,6 +1010,8 @@ private volatile int state;
 
 ### 为什么要从后往前遍历呢？
 
+有两个原因，一个是链表的遍历是
+
 原因是因为enq方法中需要将当前节点置于尾部，虽然使用了CAS来保证线程安全，但cas是保证当前节点可以指向上一个尾节点，以及保证tail字段可以指向当前节点。但不能保证上一个尾节点的next指针指向当前节点，如下图所示：
 
 ![image-20220727163011410](JUC学习.assets/image-20220727163011410.png)
@@ -1027,9 +1028,9 @@ park跟unPark的顺序则没有硬性要求，unpark可以在park之前，且执
 
 ### 公平和非公平锁的原理
 
-**非公平锁的表现仅仅在于刚进来的线程可以跟第一个等待）的节点进行竞争，但队列中等待的节点都是依次被唤醒的**。而公平锁是不管刚进来或者队列中的节点都是依次被唤醒的。
+**非公平锁的表现仅仅在于刚进来的线程可以跟第一个等待的节点进行竞争，但队列中等待的节点都是依次被唤醒的**。而公平锁是不管刚进来或者队列中的节点都是依次被唤醒的。
 
-这两者的实现是靠AQS的**阻塞队列**。使用公平锁的情况下，线程获取锁的时候会先判断队列中给的第一个等待的节点是不是自己，是的话才尝试获取锁，不是的话就继续阻塞。
+使用公平锁的情况下，线程获取锁的时候会先判断队列中给的第一个等待的节点是不是自己，是的话才尝试获取锁，不是的话就继续阻塞。
 
 ```java
 protected final boolean tryAcquire(int acquires) {

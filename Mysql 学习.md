@@ -1109,7 +1109,7 @@ Mysql面试
 char(10) 跟 varchar(10)的区别
 ---
 
-**CHAR(10)**会**固定分配10个字符**（无论英文或汉字）的空间。即若输入数据的长度小于10B，则系统自动在其后添加空格来填满设定好的空间；
+**CHAR(10)**会**固定分配10个字符**（无论英文或汉字）的空间。但字符包括英文和汉字，汉字占用的字节比较大，如UTF8格式下，一个汉字占3个字节，所以char10会固定分配30个字节，即若输入数据的长度小于30B，则系统自动在其后添加空格来填满设定好的空间；
 
 而**VARCHAR(10)**的存储长度为**实际数值的长度**，但最多会存储10个字符。
 
@@ -1120,11 +1120,22 @@ char(10) 跟 varchar(10)的区别
 > - ASCII 码中，一个英文字母为一个字节，一个中文汉字为**两个**字节。
 > - Unicode 编码中，一个英文为一个字节，一个中文为**两个**字节。
 > - UTF-8 编码中，一个英文字为一个字节，一个中文为**三个**字节。
+> - UTF-8mb4 编码中，所以字符统一**4个**字节。
 
 比如：UTF-8编码中
 
 - 存储英文‘a’：`char(1)` 跟 `carchar(1)` 都占用1个字节
 - 存储中文‘我’：`char(1)` 跟 `carchar(1)` 都占用3个字节
+
+综上所述，在不同的编码下CHAR(10)分配的字符数都一致，但字节数不一致。
+
+可以使用一下sql查询表的每个字段分配的字符数（CHARACTER_MAXIMUM_LENGTH），字节数（CHARACTER_OCTET_LENGTH）：
+
+```sql
+SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_OCTET_LENGTH  
+FROM INFORMATION_SCHEMA.COLUMNS  
+WHERE TABLE_SCHEMA = 'car_manage' AND TABLE_NAME = 'car';
+```
 
 ## utf8字符集和utf8mb4字符集的区别
 
@@ -1205,9 +1216,9 @@ for select id from B
 not in 和not exists
 ---
 
-如果字段中**没有**null值，则两者效率差不多。 
+1. 对于NOT EXISTS查询，内表存在空值对查询结果没有影响；对于NOT IN查询，内表存在空值将导致最终的查询结果为空。
 
-如果字段中**存在**null值，则使用`not in`时，索引失效，内外表都进行全表扫描；而`not exists`的子查询依然能用到表上的索引。
+2. 对于NOT EXISTS查询，外表存在空值，存在空值的那条记录最终会输出；对于NOT IN查询，外表存在空值，存在空值的那条记录，最终将被过滤，其他数据不受影响
 
 Mysql基础架构
 ---

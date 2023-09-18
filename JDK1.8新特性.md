@@ -9,15 +9,13 @@ JDK1.8新特性
 
 > jdk1.8还有一些改动，例如将永久代替换成元空间，永久代处于堆中，而元空间处于本地内存中，并且将运行时常量池中的字符串常量池部分从元空间移到了堆中。
 
-
-
 Lambda 表达式
 ---
 
 Lambda表达式相当于一个没有名字的“快餐”函数，跟匿名内部类差不多，只在定义处使用，不过Lambda表达式要比匿名内部类更加简洁，高效。另外Lambda不会生成额外的class文件。
 
 > 好处：
->
+> 
 > 1. 代码简洁
 > 2. 减少匿名内部类的使用，减少了类的加载。
 
@@ -33,8 +31,8 @@ public class test {
     public static void main(String[] args) {
         // 定义字符串数组
         String[] books = new String[]{"java基础", "python程序设计", "C语言", "C++编程设计"};
-		// 使用Lambda表达式排序，参数可以不写类型
-		Arrays.sort(books, (s1, s2) -> s1.length() - s2.length());
+        // 使用Lambda表达式排序，参数可以不写类型
+        Arrays.sort(books, (s1, s2) -> s1.length() - s2.length());
         System.out.println(Arrays.toString(books));
         // 结果：[C语言, java基础, C++编程设计, python程序设计]
     }
@@ -50,8 +48,6 @@ public class test {
     return s1.length() - s2.length()
 }
 ```
-
-
 
 函数式接口
 ---
@@ -75,7 +71,7 @@ Arrays.sort(books, c);
 
 ```java
 public interface Comparator<T> {
-	int compare(T o1, T o2);
+    int compare(T o1, T o2);
 }
 ```
 
@@ -104,8 +100,6 @@ Comparator<String>() {
 
 1. 是一个 **接口** 
 2. 只包含 **一个公共抽象方法** 
-
-
 
 ### 自定义函数式接口
 
@@ -139,8 +133,6 @@ public class test {
 
 使用lambda时就是创建了一个接口实现类的对象，接口实现类的方法为lambda中的方法。
 
-
-
 ### 自带的函数式接口
 
 自定义函数式接口虽简洁，但不要大量使用，因为每个类就那几行代码，一旦大量使用就会使得源码膨胀。
@@ -149,12 +141,12 @@ public class test {
 
 系统自带的函数式接口都位于`java.util.function`包中
 
-|           接口           | 参数 | 返回值  | 未实现的方法 |            实例             |
-| :----------------------: | :--: | :-----: | :----------: | :-------------------------: |
-| Consumer\<T> 消费型接口  |  T   |  void   | accept\<T t> |    接收一个参数,无返回值    |
-| Supplier\<T> 供给型接口  | None |    T    |  get\<T t>   |    无参数，返回一个参值     |
-| Function<T,R> 函数型接口 |  T   |    R    | apply\<T t>  |   接收一个参数,返回一个值   |
-| Predicate\<T> 断言型接口 |  T   | Boolean |  test\<T t>  | 接收一个参数,返回一个布尔值 |
+| 接口                  | 参数   | 返回值     | 未实现的方法       | 实例             |
+|:-------------------:|:----:|:-------:|:------------:|:--------------:|
+| Consumer\<T> 消费型接口  | T    | void    | accept\<T t> | 接收一个参数,无返回值    |
+| Supplier\<T> 供给型接口  | None | T       | get\<T t>    | 无参数，返回一个参值     |
+| Function<T,R> 函数型接口 | T    | R       | apply\<T t>  | 接收一个参数,返回一个值   |
+| Predicate\<T> 断言型接口 | T    | Boolean | test\<T t>   | 接收一个参数,返回一个布尔值 |
 
 消费型接口：输出数组中的元素
 
@@ -201,8 +193,6 @@ for (String book: books){
 
 ![image-20210719194534363](JDK1.8新特性.assets/image-20210719194534363.png)
 
-
-
 方法引用
 ---
 
@@ -227,7 +217,7 @@ books.forEach(System.out::println);
 常见的五种方法引用格式：
 
 - 对象方法引用：`对象::实例方法` ，如 `System.out::println` 
-
+  
   - `this::实例方法` 调用自身已有的方法
   - `super::实例方法` 调用父类已有的方法
 
@@ -236,17 +226,17 @@ books.forEach(System.out::println);
 - 实例方法引用：`类::实例方法` ，如 `String::compareTo` 
 
 - 构造方法引用：
-
+  
   - `类::new` 调用某类构造函数（单个对象）
-
+    
     ```java
     Supplier<Person> s = Person::new; // 无参构造
     Person p = s.get();
     System.out.println(p.toString());
     ```
-
+  
   - `类[]::new` 调用某类的构造函数（数组对象）
-
+    
     ```java
     Function<Integer, Person[]> s = Person[]::new;
     Person[] pa = s.apply(5);  // 等价于 new Person[5];
@@ -258,10 +248,6 @@ books.forEach(System.out::println);
 `对象::实例方法` 跟 `类::实例方法` 的区别：
 
 `类::实例方法` 的**第一个参数** 作为**方法的执行者**，例如上面的`String::compareTo` 的第一个参数就是方法的执行体，第二个参数作为方法的形参。
-
-
-
-
 
 Stream
 ---
@@ -282,33 +268,29 @@ Stream
 - 不会改变源对象，而是返回一个持有结果的新Stream。 
 - Stream操作是延迟执行的，即等到需要结果的时候才执行。
 
-
-
 ### 创建流
 
 创建流的方式有以下几种：
 
 1. Collection接口类.stream() 或 Collection接口类.parallelStream()
-
+   
    ```java
    List<String> list = Arrays.asList("a", "b", "c");
    Stream stream = list.stream();
    ```
 
 2. Arrays.stream(T[] array)
-
+   
    ```java
    String [] strArray = new String[] {"a", "b", "c"};
    Stream stream = Arrays.stream(strArray);
    ```
 
 3. Stream.generate(Supplier\<T> s)：创建无限流
-
+   
    ```java
    Stream stream = Stream.generate(() -> Math.random());
    ```
-
-
 
 ### 中间操作
 
@@ -316,16 +298,16 @@ Stream
 
 筛选与切片
 
-|        方法         |                     描述                     |
-| :-----------------: | :------------------------------------------: |
-| filter(Predicate p) |                   过滤元素                   |
-|     distinct()      | 根据元素的hashCode() 和 equals()去除重复元素 |
-|  limit(long size)   |                获取size个元素                |
-|    skip(long n)     |            跳过n个元素后开始获取             |
+| 方法                  | 描述                               |
+|:-------------------:|:--------------------------------:|
+| filter(Predicate p) | 过滤元素                             |
+| distinct()          | 根据元素的hashCode() 和 equals()去除重复元素 |
+| limit(long size)    | 获取size个元素                        |
+| skip(long n)        | 跳过n个元素后开始获取                      |
 
 ```java
 Stream<Integer> stream = Stream.of(6, 4, 6, 7, 3, 9, 8, 10, 12, 14, 14);
- 
+
 Stream<Integer> newStream = stream.filter(s -> s > 5) // 6 6 7 9 8 10 12 14 14
         .distinct() // 6 7 9 8 10 12 14
         .skip(2) // 9 8 10 12 14
@@ -333,22 +315,20 @@ Stream<Integer> newStream = stream.filter(s -> s > 5) // 6 6 7 9 8 10 12 14 14
 newStream.forEach(System.out::println);
 ```
 
-
-
 映射
 
-|        方法         |                  描述                  |
-| :-----------------: | :------------------------------------: |
-|   map(Function f)   | 接收一个函数，该函数会被应用到每个元素 |
-| flatMap(Function f) |    每个元素返回流，然后汇总成一个流    |
+| 方法                  | 描述                  |
+|:-------------------:|:-------------------:|
+| map(Function f)     | 接收一个函数，该函数会被应用到每个元素 |
+| flatMap(Function f) | 每个元素返回流，然后汇总成一个流    |
 
 ```java
 List<String> list = Arrays.asList("a,b,c", "1,2,3");
 // 将每个元素转成一个新的且不带逗号的元素
 list.stream()
     .map(s -> s.replaceAll(",", ""))
-	.forEach(System.out::println); // [abc 123]
- 
+    .forEach(System.out::println); // [abc 123]
+
 Stream<String> s3 = list.stream().flatMap(s -> {
     String[] split = s.split(",");
     // 将每个元素转换成一个stream
@@ -358,15 +338,11 @@ Stream<String> s3 = list.stream().flatMap(s -> {
 s3.forEach(System.out::print); // [abc123]
 ```
 
-
-
 排序
 
-|         方法         |            描述            |
-| :------------------: | :------------------------: |
+| 方法                   | 描述            |
+|:--------------------:|:-------------:|
 | sorted(Comparator c) | 按比较器顺序排序，默认升序 |
-
-
 
 ### 终止操作
 
@@ -375,14 +351,14 @@ s3.forEach(System.out::print); // [abc123]
 查找与匹配类方法：
 
 - allMatch(Predicate p)：是否匹配所有元素
-
+  
   ```java
   List<Integer> list = Arrays.asList(1, 2, 3, 4, 5);
   boolean m1 = list.stream().allMatch(e -> e > 3); //false
   ```
 
 - anyMatch(Predicate p)：是否匹配任一元素
-
+  
   ```java
   boolean m2 = list.stream().anyMatch(e -> e > 3); //true
   ```
@@ -394,7 +370,7 @@ s3.forEach(System.out::print); // [abc123]
 - count()：返回流中元素总数
 
 - max(Comparator c)：流中最大值
-
+  
   ```java
   Integer max = list.stream().max(Integer::compareTo).get();
   ```
@@ -410,7 +386,7 @@ s3.forEach(System.out::print); // [abc123]
 - reduce(BinaryOperatorb)：
 
 - collect(Collector c)：将流中元素收集成另外一个数据结构，如list、set
-
+  
   ```java
   // 将元素转成list存储
   List<Integer> ages = list
@@ -418,7 +394,7 @@ s3.forEach(System.out::print); // [abc123]
       .map(Student::getAge)
       .collect(Collectors.toList());
   ```
-
+  
   ```java
   // 字符串分隔符连接
   String joinName = list
@@ -426,10 +402,3 @@ s3.forEach(System.out::print); // [abc123]
       .map(Student::getName)
       .collect(Collectors.joining(",", "(", ")")); // (aa,bb,cc)
   ```
-
-
-
-
-
-
-

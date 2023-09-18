@@ -8,14 +8,12 @@ HttpClient不仅使客户端发送Http请求变得更加容易，而且也方便
 
 目前主流的SpringCloud框架，服务与服务之间的调用也全部是基于HttpClient来实现的。因此，系统的学习一下HttpClient，还是非常有必要的。
 
-
-
 ### HttpClient使用步骤
 
 使用HttpClient来发送请求、接收响应通常有以下步骤：
 
 - 引入依赖：项目中通过Maven等形式引入`HttpClient`依赖类库。
-
+  
   ```xml
   <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -25,19 +23,19 @@ HttpClient不仅使客户端发送Http请求变得更加容易，而且也方便
   ```
 
 - 创建`HttpClient`对象。
-
+  
   ```jav
   HttpClient client = HttpClients.createDefault();
   ```
 
 - 创建请求方法实例：GET请求创建`HttpGet`对象，POST请求创建`HttpPost`对象，并在对象构建时指定请求URL。
-
+  
   ```java
   HttpPost httpPost = new HttpPost(url);
   ```
 
 - 设置请求参数：调用`HttpGet`、`HttpPost`共同的`setParams(HetpParams params)`方法来添加请求参数；`HttpPost`也可调用`setEntity(HttpEntity entity)`方法来设置请求参数。
-
+  
   ```java
   // 转换成json形式
   StringEntity entity = new StringEntity(jsonParam, ContentType.APPLICATION_JSON);
@@ -45,21 +43,21 @@ HttpClient不仅使客户端发送Http请求变得更加容易，而且也方便
   ```
 
 - 发送请求：调用`HttpClient`对象的`execute(HttpUriRequest request)`发送请求，该方法返回一个`HttpResponse`。
-
+  
   ```java
   HttpResponse response = client.execute(httpPost);
   ```
 
 - 获取响应结果：调用`HttpResponse`的`getEntity()`方法可获取`HttpEntity`对象，该对象包装了服务器的响应内容。
-
+  
   ```java
   if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
-  	res = EntityUtils.toString(response.getEntity(), "UTF-8");
+      res = EntityUtils.toString(response.getEntity(), "UTF-8");
   }
   ```
 
 - 释放连接：无论执行方法是否成功，都必须释放连接。
-
+  
   ```java
   if (response != null) {
     try {
@@ -80,8 +78,6 @@ HttpClient不仅使客户端发送Http请求变得更加容易，而且也方便
 **如果response没有被close，则连接不会被关闭，此时导致线程一直在等待**。
 
 Tips: 如果不想手动的关闭资源，可以使用`CloseableHttpClient`跟`CloseableHttpResponse` ，会自动的进行关闭资源。
-
-
 
 ## HttpClient超时配置
 
@@ -106,23 +102,17 @@ http三个超时时间相关参数：
 
 默认值是-1，无限长等待。建议设置500ms即可，不要设置太大，这样可以使连接池连接不够时不用等待太久去获取连接，不要让大量请求堆积在获取连接处，尽快抛出异常，发现问题。
 
-
-
 **connectTimeout**
 
 连接上服务器(握手成功)的时间，超出该时间抛出connecttimeout
 
 设置建议：根据网络情况，内网、外网等，可设置连接超时时间为2秒，具体根据业务调整。
 
-
-
 **socketTimeout**
 
 服务器返回数据(response)的时间，超过该时间抛出read timeout。
 
 设置建议：需要根据具体请求的业务而定，如请求的API接口从接到请求到返回数据的平均处理时间为1秒，那么读超时时间可以设置为2秒，考虑并发量较大的情况，也可以通过性能测试得到一个相对靠谱的值。socketTimeout有默认值，也可以针对每个请求单独设置。
-
-
 
 ## HttpClient工具类封装
 
@@ -165,7 +155,7 @@ public class HttpClientUtils {
   public static String doGet(String url, Map<String, String> param) {
     // 创建Httpclient对象
     CloseableHttpClient httpClient = HttpClients.createDefault();
-    
+
     String resultString = "";
     CloseableHttpResponse response = null;
     try {
@@ -203,11 +193,11 @@ public class HttpClientUtils {
     }
     return resultString;
   }
-  
+
   public static String doGet(String url) {
     return doGet(url, null);
   }
-  
+
      public static String doPostJson(String url, String jsonParam, Map<String, String> headers){
         String res = "";
         CloseableHttpClient client = HttpClients.createDefault();
@@ -236,8 +226,6 @@ public class HttpClientUtils {
     }
 }
 ```
-
-
 
 ## httpclient连接池的使用
 
