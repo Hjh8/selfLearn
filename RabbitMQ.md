@@ -8,16 +8,12 @@ MQ的相关概念
 
 MQ消息队列(message queue)，从字面意思上看，本质是个队列，FIFO 先入先出，只不过队列中存放的内容是message 而已，它是一种**跨进程的通信机制**，用于上下游传递消息。在互联网架构中，MQ 是一种非常常见的上下游“逻辑解耦+物理解耦”的消息通信服务。使用了 MQ 之后，消息发送上游只需要依赖 MQ，不用依赖其他服务。
 
-
-
 ### MQ的作用
 
 1. **流量消峰**：当流量过载时，将过载流量放入消息队列，当服务器在承受范围内可以处理时才将请求从消息队列移到服务器处理。
 2. **应用解耦**：往往一个主系统的完成需要依赖多个子系统，当主系统发生故障而子系统还没有处理完，此时系统间的调用会出现错误（比如数据不匹配）。
 3. **异步处理**：A调用B时，B的处理需要花费大量时间，此时A不用等待，当B处理完成之后发消息给MQ，MQ再告诉A可以去拿结果。
 4. **顺序保证**：在大多使用场景下，数据处理的顺序都很重要。大部分MQ本来就是排序的，并且能保证数据会按照特定的顺序来处理
-
-
 
 ### MQ的分类
 
@@ -36,8 +32,6 @@ MQ的选择：
 - Kafka：适合大数据，日志采集。
 - RocketMQ：金融方面，可靠性强，比如订单。
 - RabbitMQ：性能好，社区活跃度高，数据量不是很大的话，优先选。
-
-
 
 RabbitMQWeb管理界面及授权操作
 -----------------------------
@@ -74,8 +68,6 @@ rabbitmqctl set_permissions -p / 用户名 ".*" ".*" ".*"
 - `policymaker`：策略制定者；登录控制台指定策略
 - `managment`：普通管理员；登录控制
 
-
-
 四大核心概念
 ---
 
@@ -87,13 +79,11 @@ rabbitmqctl set_permissions -p / 用户名 ".*" ".*" ".*"
 
 **消费者**：接收消息的程序。很多时候生产者，消费者和消息中间件并不在同一机器上。同一个应用程序既可以是生产者又是可以是消费者。
 
-
-
 MQ案例
 ---
 
 1. 创建maven项目，引入坐标：
-
+   
    ```java
    <dependencies>
        <dependency>
@@ -105,7 +95,7 @@ MQ案例
    ```
 
 2. 编写MQ连接代码：
-
+   
    ```java
    package org.example.Utils;
    
@@ -128,7 +118,7 @@ MQ案例
    ```
 
 3. 编写生产者代码：
-
+   
    ```java
    package org.example.first;
    
@@ -138,7 +128,7 @@ MQ案例
    
    public class producer {
        public static final String QUEUE_NAME = "hello";
-       
+   
        public static void main(String[] args) throws Exception {
            // 获取连接
            Connection connection = MQUtils.getConnection();
@@ -166,7 +156,7 @@ MQ案例
    ```
 
 4. 编写消费者代码：
-
+   
    ```java
    package org.example.first;
    
@@ -206,8 +196,6 @@ MQ案例
    }
    ```
 
-
-
 六大模式
 ---
 
@@ -218,15 +206,11 @@ MQ案例
 1. 生产者将消息放入队列
 2. 消费者监听(while) 消息队列，如果队列中有消息就消费掉，消息被拿走后，自动从队列中删除。
 
-
-
 ### 模式2-Work Queues
 
 工作队列(又称任务队列)就是多个消费者版本的helloworld模式，消息**轮询**的发送给这些消费者，避免长时间等待资源密集型任务的完成。==多个消费者之间是竞争关系==。
 
 ![工作队列](RabbitMQ.assets/20181221114036231.png)
-
-
 
 #### 不公平分发
 
@@ -234,15 +218,13 @@ MQ案例
 
 消费者中设置不公平分发：`channel.basicQos(1);` 
 
-
-
 #### 预取值
 
-由于消息的发送就是异步发送的，所以每个channel就存在一个未确认的消息缓冲区，一旦消息被确认就将该消息移出这个缓冲区，而每个通道的预取值就是设置该通道的缓冲区大小。
+由于消息的发送就是异步发送的，所以每个channel就存在一个未确认的消息缓冲区（实际就是等待处理的消息的缓冲区），一旦消息被确认就将该消息移出这个缓冲区，而每个通道的预取值就是设置该通道的缓冲区大小。
 
 依然是通过 `channel.basicQos(prefetch);` 来设置，prefetch表示缓冲区大小。
 
-
+prefetch为0时表示公平分发，为1时表示不公平分发，大于1时表示未确认消息缓冲区的大小。
 
 ### 消息确认机制 - 消费者确认
 
@@ -301,10 +283,7 @@ public class consumer {
         );
     }
 }
-
 ```
-
-
 
 ### 消息确认机制 - 发布者确认
 
@@ -325,8 +304,6 @@ channel.confirmSelect();
 
 发布确认的策略有三种：**单个确认**、**批量确认**、**异步确认**。
 
-
-
 #### 单个确认
 
 这是一种**同步确认**的方式，也就是发布一个消息之后只有等它被确认发布，后续的消息才能继续发布，这种确认方式有一个最大的缺点就是：**发布速度特别的慢**，因为如果没有确认发布的消息就会阻塞后续所有消息的发布，这种方式最多提供每秒不超过数百条发布消息的吞吐量。
@@ -345,8 +322,6 @@ for (int i = 0; i < MESSAGE_COUNT; i++) {
     }
 }
 ```
-
-
 
 #### 批量确认
 
@@ -374,8 +349,6 @@ if (outstandingMessageCount > 0) {
 }
 ```
 
-
-
 #### 异步确认
 
 ```java
@@ -383,8 +356,8 @@ if (outstandingMessageCount > 0) {
 channel.confirmSelect();
 /**
  * 确认收到消息的一个回调
- * 	 1.消息序列号
- * 	 2.是否是批处理
+ *      1.消息序列号
+ *      2.是否是批处理
  */
 ConfirmCallback ackCallback = (sequenceNumber, multiple) -> {
     System.out.println("消息"+message+"被确认，序列号"+sequenceNumber);
@@ -406,8 +379,6 @@ for (int i = 0; i < 10; i++) {
 如何处理异步未确认消息?
 
 - 最好的解决的解决方案就是把未确认的消息放到一个基于内存的能被发布线程访问的map，比如说用 ConcurrentSkipListMap, 利用这个map记录所有发出去的消息，然后在成功回调方法里remove成功发送的消息，剩下的就是未成功发送的。
-
-
 
 ### 回退机制
 
@@ -435,21 +406,17 @@ channel.addReturnListener(new ReturnListener() {
 });
 ```
 
-
-
-### 消息持久化
+### 消息和队列持久化
 
 消息应答时处理任务不丢失的情况，但是要如何保障当 RabbitMQ 服务停掉以后消息生产者发送过来的消息不丢失。默认情况下 RabbitMQ 退出或由于某种原因崩溃时，自动忽视队列和消息，除非告知它不要这样做。确保消息不会丢失需要 **将队列和消息都标记为持久化**。
 
 - **队列持久化**：在生产者中设置durable为true，`channel.queueDeclare(QUEUE_NAME, durable, false, false, null);` 
 
 > 但是需要注意的就是如果之前声明的队列不是持久化的，需要把原先队列先删除，或者重新创建一个持久化的队列，不然就会出现错误
->
+> 
 > ![image-20211025103316430](RabbitMQ.assets/image-20211025103316430.png)
 
 - **消息持久化**：在生产者中设置props为MessageProperties.PERSISTENT_TEXT_PLAIN，`channel.basicPublish("", QUEUE_NAME, props, "你好MQ".getBytes());`
-
-
 
 ### 交换机
 
@@ -459,13 +426,11 @@ channel.addReturnListener(new ReturnListener() {
 
 不同类型的交换机处理消息的方式也不同，交换机总共有以下类型：
 
-- 默认 (“”)，直接放到队列
-- 直接 (direct)，一对一，一个信息只能通过routingKey发送到一个队列
+- 默认 (“”)，routingKey默认是队列名称，直接将消息放到对应的队列
+- 直接 /路由(direct)，一对一，一个信息只能通过routingKey发送到一个队列
 - 扇出 (fanout)，一对多，类似广播，一个消息可以发送到与该交换机绑定的全部队列。
 - 主题 (topic) ，既可以一对一也可以一对多
 - 标题 (headers) ，比较少用
-
-
 
 ### 模式3-Pub/Sub
 
@@ -538,15 +503,11 @@ public class ConsumerEmailFanout {
 
 > 代码补充， **channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "");** 中第三个参数置为空，可以接收到生产者所有的消息
 
-
-
 ### 模式4-Routing
 
 routing路由模式，采用的交换机是direct，交换机会根据routingKey将消息发送给对应的消费者。当所有routingKey都一样时，此时变成发布订阅模式。
 
 ![路由模式](RabbitMQ.assets/20181221114420299.png)
-
-
 
 ### 模式5-Topic
 
@@ -573,10 +534,8 @@ topic 交换机的消息的 routingKey 不能随意写，必须满足一定的�
 - lazy.orange.male.rabbit 是四个单词但匹配 Q2
 
 > 当一个队列绑定键是`#`，那么这个队列将接收所有数据，就有点像 **fanout**
->
+> 
 > 如果队列绑定键当中没有`#`和`*`出现，那么该队列绑定类型就是 **direct**
-
-
 
 ## 死信队列
 
@@ -592,14 +551,12 @@ topic 交换机的消息的 routingKey 不能随意写，必须满足一定的�
 
 需要在普通队列中设置死信队列一些信息，当满足条件时该队列中的消息就会进入死信队列。
 
-
-
 ### TTL 过期
 
 ttl过期可以在生产者中设置也可以在消费者中设置，两者设置方式不同：生产者是针对每个消息设置ttl，更加灵活，每个消息的ttl都可以不同；而消费者是针对一个队列中的所有消息设置ttl。
 
 > 死信队列有个**缺陷**就是如果前面的消息的ttl时间较长，而后面消息的ttl比较短，此时后面消息不会先出队被执行，而是会到等前面的消息被执行才出队。
->
+> 
 > 比如死信队列中的第一个消息ttl为3秒，第二个消息的ttl为1秒，那么第二个消息会在3秒后被处理。
 
 生产者代码：
@@ -607,7 +564,7 @@ ttl过期可以在生产者中设置也可以在消费者中设置，两者设�
 ```java
 public class Producer {
     private static final String NORMAL_EXCHANGE = "normal_exchange";
-    
+
     public static void main(String[] args) throws Exception {
         try (Channel channel = RabbitMqUtils.getChannel()) {
             // 直接交换机
@@ -615,7 +572,7 @@ public class Producer {
             // 设置消息的 TTL 时间
             AMQP.BasicProperties properties = new 
                 AMQP.BasicProperties().builder().expiration("10000").build();
-            
+
             for (int i = 1; i <11 ; i++) {
                 String message="info"+i;
                 channel.basicPublish(NORMAL_EXCHANGE, "zhangsan", properties,  message.getBytes());
@@ -634,18 +591,18 @@ public class Consumer01 {
     private static final String NORMAL_EXCHANGE = "normal_exchange";
     //死信交换机名称
     private static final String DEAD_EXCHANGE = "dead_exchange";
-    
+
     public static void main(String[] args) throws Exception {
         Channel channel = RabbitUtils.getChannel();
         // 声明死信和普通交换机 类型为 direct
         channel.exchangeDeclare(DEAD_EXCHANGE, BuiltinExchangeType.DIRECT);
         channel.exchangeDeclare(NORMAL_EXCHANGE, BuiltinExchangeType.DIRECT);
-        
+
         // 声明死信队列
         String deadQueue = "dead-queue";
         channel.queueDeclare(deadQueue, false, false, false, null);
         channel.queueBind(deadQueue, DEAD_EXCHANGE, "dead");
-        
+
         // 正常队列绑定死信队列信息
         Map<String, Object> params = new HashMap<>();
         // 正常队列设置死信交换机 参数 key 是固定值
@@ -657,7 +614,7 @@ public class Consumer01 {
         String normalQueue = "normal-queue";
         channel.queueDeclare(normalQueue, false, false, false, params);
         channel.queueBind(normalQueue, NORMAL_EXCHANGE, "normal");
-        
+
         // 消费消息
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
@@ -670,13 +627,9 @@ public class Consumer01 {
 
 > 如果需要消费者中设置ttl：`params.put("x-message-ttl", 过期时间);` 
 
-
-
 ### 队列达到最大长度
 
 需要在消费者中设置参数 `params.put("x-max-length", 长度);` 
-
-
 
 ### 消息被拒
 
@@ -687,15 +640,13 @@ public class Consumer01 {
 channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
 ```
 
-
-
 整合Springboot
 --------------
 
 1. 创建Springboot项目
 
 2. 添加RabbitMQ依赖
-
+   
    ```xml
    <!--RabbitMQ 依赖-->
    <dependency>
@@ -705,7 +656,7 @@ channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
    ```
 
 3. 在application.properties文件当中引入RabbitMQ基本的配置信息
-
+   
    ```properties
    #对于rabbitMQ的支持
    spring.rabbitmq.host=127.0.0.1
@@ -715,25 +666,25 @@ channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
    ```
 
 4. 编写RabbitConfig类，在这里进行队列、交换机的声明、队列与交换机的绑定
-
+   
    ```java
    @Configuration
    public class RabbitConfig {
-    
+   
        public static final String EXCHANGE_A = "EXCHANGE_A";
        public static final String QUEUE_A = "QUEUE_A";
        public static final String ROUTINGKEY_A = "routingKey_A";
-       
+   
        public static final String EXCHANGE_D = "EXCHANGE_D";
        public static final String QUEUE_D = "QUEUE_D";
        public static final String ROUTINGKEY_D = "routingKey_D";
-    
+   
        // 声明 aExchange 为直接交换机
        @Bean
        public DirectExchange aExchange(){
            return new DirectExchange(EXCHANGE_A);
        }
-       
+   
        // 声明队列 并设置参数
        @Bean("queueA")
        public Queue queueA(){
@@ -746,26 +697,26 @@ channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
            args.put("x-message-ttl", 3000);
            return QueueBuilder.durable(QUEUE_A).withArguments(args).build();
        }
-       
+   
        // 队列与交换机进行绑定
        @Bean
        public Binding queueaBindingX(@Qualifier("queueA") Queue queueA,
                                      @Qualifier("aExchange") DirectExchange aExchange){
            return BindingBuilder.bind(queueA).to(aExchange).with(ROUTINGKEY_A);
        }
-       
+   
        // 声明死信交换机
        @Bean(
        public DirectExchange dExchange(){
            return new DirectExchange(EXCHANGE_D);
        }
-           
+   
        // 声明死信队列
        @Bean
        public Queue queueD(){
            return new Queue(QUEUE_D);
        }
-       
+   
         // 队列与交换机进行绑定
        @Bean
        public Binding deadLetterBindingQAD(@Qualifier("queueD") Queue queueD,
@@ -776,14 +727,14 @@ channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
    ```
 
 5. 生产者代码：
-
+   
    ```java
    @RequestMapping("mq")
    @RestController
    public class SendMsgController {
        @Autowired
        private RabbitTemplate rabbitTemplate;
-       
+   
        @GetMapping("sendMsg/{message}")
        public void sendMsg(@PathVariable String message){
            rabbitTemplate.convertAndSend("EXCHANGE_A", "routingKey_A",  message);
@@ -792,11 +743,11 @@ channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
    ```
 
 6. 消费者代码：
-
+   
    ```java
    @Component
    public class QueueConsumer {
-       
+   
        @RabbitListener(queues = "QUEUE_A")
        public void receives(Message message, Channel channel) throws IOException {
            String msg = new String(message.getBody());
@@ -817,10 +768,6 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
     });
 }
 ```
-
-
-
-
 
 延迟队列
 --------
@@ -852,11 +799,11 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
 1. 安装一个插件即可：https://www.rabbitmq.com/community-plugins.html ，下载rabbitmq_delayed_message_exchange插件，然后解压放置到RabbitMQ的插件目录。
 
 2. 接下来，进入RabbitMQ的安装目录下的sbin目录，执行下面命令让该插件生效，然后重启RabbitMQ。
-
+   
    `rabbitmq-plugins enable rabbitmq_delayed_message_exchange` 
 
 3. 在项目中声明插件的交换机
-
+   
    ```java
    @Bean
    public Queue immediateQueue() {
@@ -877,20 +824,18 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
    }
    ```
 
-
-
 发布确认整合springboot
 ----------------------
 
 1. 在配置文件中指定发布确认的类型：
-
+   
    ```properties
    # none表示禁止，correlated表示异步，simple表示单个确认
    spring.rabbitmq.publisher-confirm-type=correlated
    ```
 
 2. 编写回调接口
-
+   
    ```java
    @Component
    public class MyCallBack implements RabbitTemplate.ConfirmCallback {
@@ -913,25 +858,25 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
    ```
 
 3. 在生产者中进行绑定
-
+   
    ```java
    @RestController
    @RequestMapping("/confirm")
    public class Producer {
        public static final String EXCHANGE_NAME = "confirm.exchange";
-       
+   
        @Autowired
        private RabbitTemplate rabbitTemplate;
-       
+   
        @Autowired
        private MyCallBack myCallBack;
-       
+   
        // 依赖注入 rabbitTemplate 之后再设置它的回调对象
        @PostConstruct
        public void init(){
            rabbitTemplate.setConfirmCallback(myCallBack);
        }
-       
+   
        @GetMapping("sendMessage/{message}")
        public void sendMessage(@PathVariable String message){
            // 指定消息 id 为 1
@@ -942,15 +887,11 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
    }
    ```
 
-
-
-
-
 回退机制整合springboot
 ----------------------
 
 1. 编写回调接口
-
+   
    ```java
    @Component
    @Slf4j
@@ -964,15 +905,56 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
     } 
    }
    ```
-   
-2. 在生产者中进行绑定
 
+2. 在生产者中进行绑定
+   
    ```java
    @PostConstruct
    private void init() {
        rabbitTemplate.setReturnCallback(myCallBack);
        rabbitTemplate.setMandatory(true);
    }
+   ```
+
+## 如何保证mq的可靠性
+
+那么消息会在哪些环节丢失呢，列出可能出现消息丢失的场景有：
+
+1. **生产者将消息发送到 RabbitMQ Server 异常**：可能因为网络问题造成 RabbitMQ 服务端无法收到消息，造成生产者发送消息丢失场景。解决方式：**开启生产者确认机制**。
+   
+   ```java
+   connection.setPublicherConfirms(true);
+   // 设置确认回调
+   rabbitTemplate.setConfirmCallback();
+   ```
+
+2. **RabbitMQ Server 中消息在交换机中无法路由到指定队列**：可能由于代码层面或配置层面错误导致消息路由到指定队列失败，造成生产者发送消息丢失场景。解决方式：**消息投递失败之后回调**
+   
+   ```java
+   connection.setMandatory(true);
+   // 设置返回回调
+   rabbitTemplate.setReturnCallback();
+   ```
+
+3. **RabbitMQ Server 中存储的消息丢失**：可能因为 RabbitMQ Server 宕机导致消息未完全持久化或队列丢失导致消息丢失等持久化问题，造成 RabbitMQ Server 存储的消息丢失场景。解决方式：**持久化消息和队列**。
+   
+   ```java
+       @Bean
+       public DirectExchange directExchange() {
+           // 三个构造参数：name durable autoDelete
+           return new DirectExchange("directExchange", false, false);
+       }
+    
+       @Bean
+       public Queue erduo() {
+           return new Queue("erduo", true);
+       }
+   ```
+
+4. **消费者消费消息异常**：可能在消费者接收到消息后，还没来得及消费消息，消费者宕机或故障等问题，造成消费者无法消费消息导致消息丢失的场景。解决方式：**开启消费者确认机制**，消费者开启监听器。
+   
+   ```java
+   
    ```
 
 
@@ -985,6 +967,8 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
 如何避免消息的重复消费问题？
 
 - `全局唯一ID + Redis`：生产者在发送消息时，为每条消息设置一个全局唯一的messageId，消费者拿到消息后，使用setnx命令，将messageId作为key放到redis中：setnx(messageId,1)，若返回1，说明之前没有消费过，正常消费；若返回0，说明这条消息之前已消费过，抛弃。
+- 消息去重表：使用mysql记录所处理的消息的信息，包括全局唯一id。
+- 乐观锁：加一个版本号
 
 
 
@@ -1001,7 +985,3 @@ channel.basicPublish("", QUEUE_NAME, properties, msg.getBytes());
 ```
 
 我们也可以限制优先级的最大值：`params.put("x-max-priority", 10);` 此时优先级最大为10；
-
-
-
-

@@ -2345,7 +2345,7 @@ Spring bean的作用域
 
 作用：懒加载bean，即容器创建时不创建对象，而是第一次获取bean的时候才创建对象并初始化。一般只针对单例对象，因为单例对象在容器启动时就会创建对象。
 
-##@Conditional 的派生注解
+@Conditional 的派生注解
 
 作用：必须满足其指定的条件，才会在spring容器中添加其对应的bean，配置里面的内容才会生效。**如果需要自定义Conditional，需要实现Conditional接口**。
 
@@ -2450,6 +2450,8 @@ public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegi
 ```
 
 ### FactoryBean
+
+FactoryBean是一个工厂Bean，可以生成某一个类型Bean实例，它最大的一个作用是：可以让我们自定义Bean的创建过程。FactoryBean本质就是用来给我们实例化、或者动态的注入一些比较复杂的Bean，比如 **生成AOP代理对象ProxyFactoryBean** 、**生成mapper代理对象的MapperFactoryBean** 
 
 ```java
 public class ColorFactoryBean implements FactoryBean<Color> {
@@ -2615,9 +2617,7 @@ private static BeanDefinition registerOrEscalateApcAsRequired(Class<?> cls, Bean
 从上图AnnotationAwareAspectJAutoProxyCreator的关系图中可以看出，其实现了`BeanFactoryAware`、`BeanPostProcessor` 接口。
 
 - BeanFactoryAware可以拿到BeanFactory对象
-- BeanPostProcessor可以在bean初始化的前后进行自定义操作
-
-所以AnnotationAwareAspectJAutoProxyCreator得作用是：对bean初始化前后进行自定义操作。到底做了什么操作继续往下看。
+- BeanPostProcessor可以在bean初始化的前创建代理对象
 
 因为AnnotationAwareAspectJAutoProxyCreator实际是一个BeanPostProcessor，所以会被spring统一注册BeanPostProcessor的时候创建并放入容器中，即调用`this.registerBeanPostProcessors(beanFactory);` 
 
@@ -2641,11 +2641,11 @@ private static BeanDefinition registerOrEscalateApcAsRequired(Class<?> cls, Bean
 
 在具体深入了解之前先了解一下这三个接口的含义和关系。
 
-Advice：与通知相关的接口，其子类也实现了拦截器接口（使用拦截器实现aop切面），所以具体的增强动作会在拦截器的的invoke方法中实现。另外，通知的具体增强行为会存储在Advice子类的属性中。实际上所有的后置通知都实现了拦截器接口，例如@After注解对应着AspectJAfterAdvice类，而AspectJAfterAdvice实现了拦截器接口。但是前置通知则没有实现拦截器接口，而是再对其再进行了一层封装，使封装后的对象具有拦截器功能，例如@Before注解对应着AspectJBeforeAdvice类，然后将其封装成MethodBeforeAdviceInterceptor（组合了AspectJBeforeAdvice），然后MethodBeforeAdviceInterceptor实现了拦截器接口。
+Advice：与通知相关的接口，其子类也实现了拦截器接口（使用拦截器实现aop切面），所以具体的增强动作会在拦截器的invoke方法中实现。另外，通知的具体增强行为会存储在Advice子类的属性中。实际上所有的后置通知都实现了拦截器接口，例如@After注解对应着AspectJAfterAdvice类，而AspectJAfterAdvice实现了拦截器接口。但是前置通知则没有实现拦截器接口，而是再对其再进行了一层封装，使封装后的对象具有拦截器功能，例如@Before注解对应着AspectJBeforeAdvice类，然后将其封装成MethodBeforeAdviceInterceptor（组合了AspectJBeforeAdvice），然后MethodBeforeAdviceInterceptor实现了拦截器接口。
 
 Pointcut：对通知中的表达式进行匹配的接口，即使用Pointcut来判断这个类是否要进行通知。例如AspectJExpressionPointcut就是使用表达式来匹配目标方法。
 
-Advisor：组合了Advice和Pointcut，便于后续的操作。例如一个普通bean的方法需要进行增强时，会每每个方法符合的通知和表达式都封装成一个个的advisor，然后放入代理对象的属性中，从而形成这个代理对象的增强器。
+Advisor：组合了Advice和Pointcut，便于后续的操作。例如一个普通bean的方法需要进行增强时，会给每个方法符合的通知和表达式都封装成一个个的advisor，然后放入代理对象的属性中，从而形成这个代理对象的增强器。
 
 ### InstantiationAwareBeanPostProcessor
 
@@ -2653,9 +2653,9 @@ Advisor：组合了Advice和Pointcut，便于后续的操作。例如一个普�
 
 1. 每一个bean创建之前，调用`postProcessBeforeInstantiation()`；
    
-   1. 判断当前bean是否在`advisedBeans`中（`advisedBeans`保存了所有需要增强的bean）
+   1. 判断当前bean是否在`advisedBeans`中（`advisedBeans`保存了所有的切面类）
    
-   2. 调用`isInfrastructureClass()`判断当前Bean是否是基础类型 或者 带有`@Aspect`注解的bean，aop相关基础设施类型的bean 以及切面 不应该被动态代理。
+   2. 调用`isInfrastructureClass()`判断当前Bean是否是基础类型 或者 带有`@Aspect`注解的bean，aop相关基础设施类型的bean 以及切面 不应该被动态代理。如果是以上这些bean会放如入advisedBeans中
       
       - ```java
         boolean retVal = Advice.class.isAssignableFrom(beanClass) ||
@@ -3128,7 +3128,7 @@ public class SomeServiceImpl implements SomeService {
 BeanFactory和ApplicationContext的区别
 ---
 
-BeanFactory是比较原始的API，其定义DI容器的基本操作。**ApplicationContext是BeanFactory的子接口**，对其进行了许多扩展：
+BeanFactory和ApplicationContext都是容器，其定义DI容器的基本操作。**ApplicationContext是BeanFactory的子接口**，对其进行了许多扩展：
 
 1. 继承MessageSource，支持国际化
 2. 统一的资源文件访问方式
@@ -3136,7 +3136,7 @@ BeanFactory是比较原始的API，其定义DI容器的基本操作。**Applicat
 
 区别：
 
-1. **BeanFactory**通过**懒加载**的方式注入bean，**ApplicationContext**是在容器启动时就**加载了全部**的bean，所以可以在容器启动时就发现存在的配置问题。
+1. **BeanFactory**通过**懒加载**的方式注入bean，如通过getBean的时候才会创建bean。而**ApplicationContext**是在容器启动时就**加载了全部**的bean，所以可以在容器启动时就发现存在的配置问题。ApplicationContext有两个属性scanner，reader，通过scanner会通过classloader加载classpath路径下的配置还有一些类，然后通过reader解析成bean定义信息，ApplicationContext在创建bean之后放入BeanFactory容器中。
 2. BeanFactory 和 ApplicationContext都支持 BeanPostProcessor、BeanFactoryPostProcessor的使用，但两者之间的区别是：BeanFactory需要**手动注册**，而Applicationcontext则是**自动注册**。
 
 依赖注入的两种方式
