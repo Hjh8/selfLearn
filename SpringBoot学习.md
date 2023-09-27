@@ -484,9 +484,11 @@ onStartup方法主要是进行自动配置，创建Spring容器等操作。那�
 
 > 这也是为什么SpringBoot项目要引入spring-web依赖的原因。
 
-![img](SpringBoot学习.assets/20180306223233482)
+![](/Users/jianhang/Library/Application%20Support/marktext/images/2023-09-27-15-27-35-image.png)
 
-![img](SpringBoot学习.assets/20180306223353595)
+![](/Users/jianhang/Library/Application%20Support/marktext/images/2023-09-27-15-27-49-image.png)
+
+
 
 进入SpringServletContainerInitializer类后可看到：
 
@@ -518,6 +520,8 @@ WebApplicationInitializer接口的所有实现类如下图：
 至此，SpringBoot甚至是Spring的启动过程都明白了。tomcat启动web项目时，会通过SPI机制，加载spring-web包的ServletContainerInitializer的实现类，然后该实现类中会加载所有WebApplicationInitializer的实现类，并过滤掉无效的实现类，对他们排序后一次调用他们的onStartup，在此方法中会进行各自的操作，比如创建Spring容器、SpringMVC的中央调度器、以及完成自动装配等操作。
 
 所以说如果使用外部tomcat运行SpringBoot项目时，需要继承SpringBootServletInitializer。
+
+![](/Users/jianhang/Library/Application%20Support/marktext/images/2023-09-27-15-28-22-image.png)
 
 ### 自动配置流程
 

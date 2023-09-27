@@ -1680,6 +1680,8 @@ void uniquePaths(int m, int n) {
 
 ## 窗口滑动
 
+右边界一直移动，左边界满足条件移动，直到条件不满足。结果跟着右边界一直计算。
+
 ```c++
 int lengthOfLongestSubstring(string s) {
     map<char, int> ma;
@@ -1698,9 +1700,13 @@ int lengthOfLongestSubstring(string s) {
 }
 ```
 
-伸缩窗口：[3. 无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/) 
+伸缩窗口：
 
-收缩窗口：[力扣（LeetCode）官网 - 全球极客挚爱的技术成长平台](https://leetcode.cn/problems/container-with-most-water/description/)
+[3. 无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/) 、[1004. 最大连续1的个数 III](https://leetcode.cn/problems/max-consecutive-ones-iii/) 、
+
+收缩窗口（前后指针）：[LCR 018. 验证回文串](https://leetcode.cn/problems/XltzEq/)、[盛最多水的容器](https://leetcode.cn/problems/container-with-most-water/)
+
+
 
 ```java
 class Solution {
