@@ -1700,13 +1700,9 @@ int lengthOfLongestSubstring(string s) {
 }
 ```
 
-伸缩窗口：
-
-[3. 无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/) 、[1004. 最大连续1的个数 III](https://leetcode.cn/problems/max-consecutive-ones-iii/) 、
+伸缩窗口：[3. 无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/) 、[1004. 最大连续1的个数 III](https://leetcode.cn/problems/max-consecutive-ones-iii/) 、[209. 长度最小的子数组](https://leetcode.cn/problems/minimum-size-subarray-sum/) 
 
 收缩窗口（前后指针）：[LCR 018. 验证回文串](https://leetcode.cn/problems/XltzEq/)、[盛最多水的容器](https://leetcode.cn/problems/container-with-most-water/)
-
-
 
 ```java
 class Solution {

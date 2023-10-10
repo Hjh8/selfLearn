@@ -488,8 +488,6 @@ onStartup方法主要是进行自动配置，创建Spring容器等操作。那�
 
 ![](/Users/jianhang/Library/Application%20Support/marktext/images/2023-09-27-15-27-49-image.png)
 
-
-
 进入SpringServletContainerInitializer类后可看到：
 
 ```java
@@ -529,9 +527,11 @@ springboot会基于你添加的jar包依赖，尝试自动配置你的spring项�
 
 springboot会加载`@EnableAutoConfiguration` 下的配置，而此注解import了选择器类`AutoConfigurationImportSelector` ，这个选择器会扫描所有在 `META-INF 下的 spring.factorites` ，所有的自动配置类都在这里，只有符合`@ConditionalOnXxx` 条件的才会被加载，形成beandefinition，然后被创建放入到IOC容器中，形成一个个的bean对象。
 
-> 因为springboot的自动配置是spring的扩展功能，所以会在spring的BeanFactoryPostProcessor中实现。
+> 由于是使用的@Import注解来导入的selecter，所以会在spring的BeanFactoryPostProcessor中实现。
 > 
-> springboot会将所有用到的自动配置类输出到一个总的配置文件中。
+> 为什么使用@Import导入selecter，而不是使用@Import的其他方式呢？因为@Import导入selecter更加灵活，可以通过读取配置来加载所需要的配置类，并且可以根据配置类的一些条件来判断是否进行加载，具体配置的内容由开发者实现，可以达到简单易用的效果。
+> 
+> 如果使用@Import(xx.class)的话就不能灵活的添加配置了。如果使用@Import register的话会增加配置的复杂性。
 
 ## 2. 属性配置文件
 
