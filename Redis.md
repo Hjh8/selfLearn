@@ -217,7 +217,7 @@ hash类型对应的数据结构是两种：**ziplist，hashtable**。当field-va
 
 zset类似于TreeMap，内部成员member会按照评分score进行排序。因此可以得到每个member的名次，还可以通过score的范围来获取member。
 
-- `zadd k score1 mem1 score2 mem2 …`：将一个或多个 member 元素及其 score 值加入到有序集 k 当中。
+- `zadd k score1 mem1 score2 mem2 …`：将一个或多个 member 元素及其 score 值加入到有序集 k 当中。如果有相同的score，则会按照member的顺序排序。
 - `zrange k s e [WITHSCORES]`：返回有序集 k 中，**排名**在[s, e]之间的member。带WITHSCORES，则分数一起返回。
 - `zrangebyscore k min max [withscores] [limit offset count]`：返回有序集 k 中，所有 score 值介于 [min, max] 的成员。有序集成员按 **score** 值递增。 
   - 可通过`(`指定开区间：`zrangebyscore k (1 5` 返回k中的1 < score <= 5 的成员
@@ -242,10 +242,43 @@ zset底层使用了两个数据结构
 
 2. skiplist：在member个数**大于等于128**时，使用skiplist存储数据。由hash表跟跳跃表实现。
    
-   - 跳表的每个节点包含了 层高、score、指针（指向member在hashtable中地址）
+   - 跳表的每个节点包含了 层高数组、score、后退指针，member对象指针（指向member在hashtable中地址）
    - 跳表按 score 从小到大保存所有集合元素
 
 跳跃表结构：
+
+```c
+/*
+ * 跳跃表
+ */
+typedef struct zskiplist {
+    // 头节点，尾节点
+    struct zskiplistNode *header, *tail;
+    // 节点数量
+    unsigned long length;
+    // 目前表内节点的最大层数
+    int level;
+} zskiplist;
+
+/*
+ * 跳跃表节点
+ */
+typedef struct zskiplistNode {
+    // member 对象
+    robj *obj;
+    // 分值
+    double score;
+    // 后退指针
+    struct zskiplistNode *backward;
+    // 层
+    struct zskiplistLevel {
+        // 前进指针
+        struct zskiplistNode *forward;
+        // 这个层跨越的节点数量
+        unsigned int span;
+    } level[];
+} zskiplistNode;
+```
 
 ![image-20210709093803448](Redis.assets/image-20210709093803448.png)
 
