@@ -399,7 +399,7 @@ springboot项目部署有两种：**内置Tomcat启动（jar包）**和**外部t
    Manifest-Version: 1.0
    Implementation-Title: spring-learn
    Implementation-Version: 0.0.1-SNAPSHOT
-   Start-Class: com.tulingxueyuan.Application  // 自己应用的Main函数
+   Start-Class: com.test.Application  // 自己应用的Main函数
    Spring-Boot-Classes: BOOT-INF/classes/
    Spring-Boot-Lib: BOOT-INF/lib/
    Build-Jdk-Spec: 1.8
@@ -478,9 +478,9 @@ protected WebApplicationContext createRootApplicationContext(ServletContext serv
 
 onStartup方法主要是进行自动配置，创建Spring容器等操作。那么onStartup方法是什么时候回调的呢？
 
-为了可以不使用web.xml，servlet提供过了的`ServletContainerInitializer`接口，通过实现WebApplicationInitializer，在其中可以添加servlet，listener等，它通过SPI机制，当启动web容器的时候，会自动到项目所有jar包下找到`META-INF/services`下以**ServletContainerInitializer**的全路径名称命名的文件，它的内容是ServletContainerInitializer实现类的全路径，然后容器根据全路径名称将它们实例化。
+为了可以不使用web.xml，servlet提供了`ServletContainerInitializer`接口，通过实现WebApplicationInitializer，在其中可以添加servlet，listener等，它通过SPI机制，当servlet容器(例如tomcat)启动web容器的时候，会自动到项目所有jar包下找到`META-INF/services`下以**ServletContainerInitializer**的全路径名称命名的文件，它的内容是ServletContainerInitializer实现类的全路径，然后容器根据全路径名称将它们实例化。
 
-例如Spring项目启动时会加载spring-web的`META-INF/services`下的ServletContainerInitializer的实现类：
+例如加载spring-web的`META-INF/services`下的ServletContainerInitializer的实现类从而创建Spring容器并启动：
 
 > 这也是为什么SpringBoot项目要引入spring-web依赖的原因。
 

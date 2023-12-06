@@ -658,6 +658,29 @@ ExecutorService threadPool = new ThreadPoolExecutor(
 );
 ```
 
+
+
+## 线程池的线程数设置多少合适？
+
+以下出现的N为CPU数量
+
+在常规情况下，**对于执行CPU密集型任务的线程池来说，核心线程数应该设置成N+1；对于IO密集型的线程池来说，核心线程数应该设置成2N**。对于CPU密集的任务来说，尽量要减少CPU在线程之间的切换次数，而专心的执行计算逻辑即可，设置多一个核心线程数是为了防止某个线程出现某种原因终止了。而对于IO密集型来说主要的耗时是等待io操作，所以可以在等待期间去执行其他线程的任务。
+
+对于要求比较高的线程池来说，有一个公式：`线程数=N*U*(1+W/C)`
+
+- N=CPU数量（可以理解为cpU核数，即同一时刻能并行处理线程的数量）
+- U=目标CPU使用率(0-1区间范围内)
+- W=线程等待执行时间（可以理解为从start到run方法之间等待的时间）
+- C=线程执行时间（不包含等待时间）
+
+对于CPU密集型任务来说，理想状态是U为100%，W为0，所以代入公式可得线程数为N，为了应对特殊情况，多加了一个线程数，即N+1
+
+对于IO密集型任务来说，理想状态是U为100%，W跟C的比值最好为1，因为第一个任务刚好执行完的时候，第二个任务就等待结束了，就可以无缝衔接执行第二个任务。因此，代入公式得线程数=2*N。
+
+但是在实际情况，CPU使用率不能达到100%，达到70%左右就差不多了，因为其他程序也需要占用CPU，以及应对突增流量的情况，所以CPU使用率一般处于70%左右是最佳的。
+
+
+
 多线程面试
 ===
 
@@ -1145,3 +1168,236 @@ public class BlockQueue<T> {
 
 }
 ```
+
+## 实现生产者消费者模型
+
+实现此模型的思路主要是完成资源访问(添加或删除)的互斥，以及资源充足与不足时的生产与消费线程的通信。
+
+- 资源访问的互斥：可以使用同步手段实现，如lock，synchorned，信号量等。
+
+- 线程的通信：可以使用condition，wait/notify，信号量等。
+
+其中，存放资源的容器如果本身就是线程安全的，则第一步可以省略，例如使用阻塞队列来存放资源。其实阻塞队列内部就是使用锁来实现同步的，实际还是使用锁了。
+
+### 锁实现
+
+```java
+public class Buffer {
+
+    private List<Integer> resourceData;
+
+    private int maxSize;
+
+    private Lock lock;
+
+    private Condition producerMutex;
+
+    private Condition consumerMutex;
+
+    public Buffer(int size) {
+        this.lock = new ReentrantLock();
+        this.producerMutex = lock.newCondition();
+        this.consumerMutex = lock.newCondition();
+        this.resourceData = new ArrayList<>(size);
+        this.maxSize = size;
+    }
+
+    public void produce(int newData) throws InterruptedException {
+        lock.lock();
+        try{
+            while (resourceData.size() >= maxSize){
+                System.out.println(Thread.currentThread().getName() + "队列满了");
+                producerMutex.await();
+            }
+            resourceData.add(newData);
+            consumerMutex.signalAll();
+        }catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public int consume() throws InterruptedException {
+        Integer consumeDate = -1;
+        lock.lock();
+        try{
+            while (resourceData.size() <= 0){
+                System.out.println(Thread.currentThread().getName() + "队列空了");
+                consumerMutex.await();
+            }
+            consumeDate = resourceData.remove(0);
+            producerMutex.signalAll();
+        }catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+        return consumeDate;
+    }
+}
+```
+
+`
+
+```java
+package org.productconsumer.lock;
+
+/**
+ * @author jianhang
+ * @date 2023/11/13 20:14
+ */
+public class Consumer extends Thread {
+    private Buffer buffer;
+
+    public Consumer(Buffer buffer) {
+        this.buffer = buffer;
+    }
+
+    public void run() {
+        try {
+            for (int i = 0; i < 200; i++) {
+                int consumedData = buffer.consume();
+                System.out.println("Consumed: " + consumedData);
+                Thread.sleep((int)(Math.random()*100));
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+```java
+package org.productconsumer.lock;
+
+/**
+ * @author jianhang
+ * @date 2023/11/13 20:14
+ */
+public class Consumer extends Thread {
+    private Buffer buffer;
+
+    public Consumer(Buffer buffer) {
+        this.buffer = buffer;
+    }
+
+    public void run() {
+        try {
+            for (int i = 0; i < 200; i++) {
+                int consumedData = buffer.consume();
+                System.out.println("Consumed: " + consumedData);
+                Thread.sleep((int)(Math.random()*100));
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+```java
+package org.productconsumer.lock;
+
+/**
+ * @author jianhang
+ * @date 2023/11/13 20:14
+ */
+public class Producer extends Thread {
+    private Buffer buffer;
+
+    public Producer(Buffer buffer) {
+        this.buffer = buffer;
+    }
+
+    public void run() {
+        try {
+            for (int i = 0; i < 200; i++) {
+                buffer.produce(i);
+                System.out.println("Produced: " + i);
+                Thread.sleep((int)(Math.random()*100));
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+```java
+package org.productconsumer.lock;
+
+/**
+ * @author jianhang
+ * @date 2023/11/13 20:15
+ */
+public class Test {
+    public static void main(String[] args) {
+        Buffer buffer = new Buffer(100);
+        for (int i=0; i<3; i++){
+            Producer producer = new Producer(buffer);
+            producer.setName("thread-producer-" + i);
+            producer.start();
+        }
+        Consumer consumer = new Consumer(buffer);
+        consumer.start();
+    }
+}
+```
+
+### wait/notify实现
+
+在produce和consume方法加个synchorned关键字，然后生产者中如果队列满了则用wait()让线程等待。消费者中如果队列空了则使用notify唤醒线程。
+
+### 信号量实现
+
+由于信号量本身可以指定令牌数，所以可以让productMutex初始化时拿到最大资源数量的令牌。
+
+```java
+package org.productconsumer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Semaphore;
+
+/**
+ * @author jianhang
+ * @date 2023/11/13 20:13
+ */
+public class Buffer {
+
+    private List<Integer> resourceData;
+
+    private Semaphore syncMutex;
+
+    private Semaphore productMutex;
+
+    private Semaphore consumerMutex;
+
+    public Buffer(int size) {
+        this.productMutex = new Semaphore(size);
+        this.syncMutex = new Semaphore(1);
+        this.consumerMutex = new Semaphore(0);
+        this.resourceData = new ArrayList<>(size);
+    }
+
+    public void produce(int newData) throws InterruptedException {
+        this.productMutex.acquire();
+        this.syncMutex.acquire();
+        this.resourceData.add(newData);
+        this.syncMutex.release();
+        this.consumerMutex.release();
+    }
+
+    public int consume() throws InterruptedException {
+        this.consumerMutex.acquire();
+        this.syncMutex.acquire();
+        int consumedData = this.resourceData.remove(0);
+        this.syncMutex.release();
+        this.productMutex.release();
+        return consumedData;
+    }
+}
+```
+
+### 阻塞队列实现

@@ -1195,7 +1195,7 @@ Map<Object,Object> selectStudentToMap(int id);
 ## 6.8 常见错误
 
 - 我们在使用动态sql使用`#{xxx}`引入参数.会抛异常`There is no getter for property named 'XXX' in 'class java.lang.String'` ，此时可能因为你没有使用命名参数。
-- `if`判断中的坑，如判断**不是**String类型，**不要**加`!=‘’`的条件，否则判断为 false
+- `if`判断中的坑，因为mybatis使用ognl表达式，用单引号的话会解析成字符，需要加个toString()。如`'1'.toString()` 
 - 对于集合类型的返回值，如果没有查找到相关的内容，并不会返回null，而是返回空的集合，但是对于自定义的对象，没有查找到信息时直接返回一个null
 - 使用`where id in ()`进行查询，没有内容会报错，需要判空同时size大于0
 - 自定义对象的基本属性用包装类型，防止查询、更新异常
@@ -1261,7 +1261,7 @@ Mybatis系统中有两级缓存：`一级缓存`跟`二级缓存`。
    </mapper>
    ```
 
-3. `javabean`要实现序列化接口。（因为保证缓存的安全，mybatis使用了序列化跟反序列化的57技术）
+3. `javabean`要实现序列化接口。（因为保证缓存的安全，mybatis使用了序列化跟反序列化的技术）
    
    `public class Student implements Serializable` 
 
@@ -1661,7 +1661,7 @@ spring结合mybatis后，一级缓存作用：
 
 一级缓存失效原因：mybatis和spring结合使用的时候，将原本的DefaultSqlSession替换成了**SqlSessionTemplate**，并且在SqlSessionTemplate将sqlSession替换成了**sqlSessionProxy**代理对象，当代理对象执行方法时会被**SqlSessionInterceptor**拦截执行invoke()方法，在invoke方法里获取sqlSession以及一些事务的操作。
 
-在invoke方法里，首先会getSqlSession。getSqlSession中如果有事务，则会根据从ThreadLocal中获取 “创建SqlSession相关的资源”(由该资源创建同一个SqlSession)，否则创建新的SqlSession。
+在invoke方法里，首先会getSqlSession。getSqlSession中如果有事务（使用spring事务管理器判断），则会根据SqlSessionFactory从ThreadLocal中获取 SqlSessionHolder。其次在执行完sql之后会如果该sqlSession存在事务则不会开启强制提交。
 
 ![image-20211001211603252](Mybatis学习日记.assets/image-20211001211603252.png)
 

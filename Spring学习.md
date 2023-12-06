@@ -3062,6 +3062,30 @@ Spring bean的生命周期
 > 
 > BeanPostProcessor：是一个接口，可用于bean对象初始化前后进行逻辑增强。
 
+
+
+## Spring销毁对象过程
+
+在bean初始化之后，有一个步骤是去注册DisposableBean，即将需要调用销毁方法的bean收集起来。具体做法是判断该Bean是否需要执行销毁方法，对需要销毁的Bean，封装成DisposableBeanAdapter对象，最后调用registerDisposableBean()方法将DisposableBeanAdapter对象放入**disposableBeans**中，**当Spring容器关闭的时候，可以直接从该map中取出定义了销毁逻辑的Bean，执行它们销毁的方法**；
+那么spring是如何判断bean是否需要执行销毁方法呢？
+
+```java
+protected boolean requiresDestruction(Object bean, RootBeanDefinition mbd) {
+	// 判断当前bean在销毁时候,有没有定义有关销毁的某些方法
+	return (bean.getClass() != NullBean.class && (DisposableBeanAdapter.hasDestroyMethod(bean, mbd) ||
+			(hasDestructionAwareBeanPostProcessors() && DisposableBeanAdapter.hasApplicableProcessors(
+					bean, getBeanPostProcessorCache().destructionAware))));
+}
+```
+
+1. 如果当前bean实现了DisposableBean或AutoCloseable接口
+
+2. 是否有 @PreDestroy 修饰，该注解的处理就是在InitDestroyAnnotationBeanPostProcessor类中完成
+
+
+
+
+
 BeanFactory和FactoryBean区别
 ---
 

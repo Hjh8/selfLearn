@@ -908,8 +908,8 @@ auto-aof-rewrite-min-size 64mb # 阈值
 ### 复制原理
 
 1. Slave启动成功连接到master后会发送一个sync命令
-2. Master接到命令开始执行BGSAVE命令生成RDB文件 并 使用缓冲区记录此后执行的所有写命令，BGSAVE命令执行完之后，master将快照文件传送到slave。slave服务在接收到数据库文件后，将其存盘并加载到内存中。此过程称为**全量同步**。
-3. **增量同步**：全量同步之后，Master将新的所有收集到的修改命令依次传给slave，完成增量同步。
+2. Master接到命令开始执行BGSAVE命令生成RDB文件 并 使用backlog缓冲区记录此后执行的所有写命令，BGSAVE命令执行完之后，master将快照文件传送到slave。slave服务在接收到数据库文件后，将其存盘并加载到内存中。此过程称为**全量同步**。
+3. **增量同步**：全量同步之后，Master会与salve保持长连接，当backlog缓冲区有新内容时会把数据传输给slave，完成增量同步。
 4. 如果有slave断线，重启之后不会自动连上matser，此时自己为master。手动变成从机之后，会发送sync请求和主机全量同步。
 
 从机也可以有自己的从机，但自己断线之后，自己的从机们都无法接收到主机的数据。假设从机2归属于从机1，此时如果从机1断线了，那么从机2将无法获取到主机的数据。
@@ -1168,6 +1168,61 @@ bigkey的危害：
 
 > 删除bigkey的时候不要直接删除，需要遍历元素批量删除，避免出现阻塞请求的情况。
 
+## hash的底层数据结构
+
+hash的底层结构为dict字典，字典包含了两个hash表，一般使用的是第一个hash表，第二个是rehash的时候使用的。
+
+```c
+typedef struct dict {
+    dictType *type;
+    void *privdata;
+    dictht ht[2]; /* hash表 */
+    long rehashidx; /* rehash下标，如果不处于rehash状态则为-1 */
+    unsigned long iterators;
+} dict;
+
+
+typedef struct dictht {
+    dictEntry **table; /* hash节点 */
+    unsigned long size; /* hash表大小 */
+    unsigned long sizemask; /* 掩码，用于计算下标 */
+    unsigned long used; /* 元素个数 */
+} dictht;
+
+typedef struct dictEntry {
+    void *key;
+    union {
+        void *val;
+        uint64_t u64;
+        int64_t s64;
+        double d;
+    } v;
+    struct dictEntry *next; //指向下一个节点，形成链表
+} dictEntry;
+```
+
+## rehash
+
+在扩容和收缩的时候，如果哈希字典中有很多元素，一次性将这些键全部rehash到ht[1]的话，可能会导致服务器在一段时间内停止服务。所以，采用渐进式rehash的方式，详细步骤如下：
+
+1. 为ht[1]分配空间，让字典同时持有ht[0]和ht[1]两个哈希表
+
+2. 将rehashindex的值设置为0，表示rehash工作正式开始。
+
+3. 在rehash期间，每次对字典执行增删改查操作是，程序除了执行指定的操作以外，还会顺带将ht[0]哈希表在rehashindex索引上的所有键值对rehash到ht[1]，当rehash工作完成以后，rehashindex的值+1
+
+4. 随着字典操作的不断执行，最终会在某一时间段上ht[0]的所有键值对都会被rehash到ht[1]。
+
+5. rehash完成的时候，将rehashindex的值设置为-1，并且将ht[0]的指针指向ht[1]，ht[1]置为空。
+
+需要注意的是，在rehash过程中，两个hash表都可以被访问到，下标小于rehashindex的或者大于旧数组长度的会去ht[1]中查找，否则去ht[0]中查找。
+
+扩容时机：负载因子>=1，扩大2倍。
+
+缩容时机：负载因子<=0.1，缩小到满足现有数量的最大2的n方。例如，当前有3个，则会缩小到4.
+
+负载因子=used/size。
+
 如何保证 redis 的高并发和高可用？
 ---
 
@@ -1187,11 +1242,11 @@ redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后�
 淘汰策略：
 
 - volatile-lru：在设置了过期时间的键中，使用 **LRU算法** 移除key
-- allkeys-lru：在所有集合key中，使用 **LRU算法** 移除key（最近**最少使用**）
+- allkeys-lru：在所有集合key中，使用 **LRU算法** 移除key（最近**最少使用** 最长一段时间没有使用的）
 - volatile-random：在设置了过期时间的键中，随机移除key
 - allkeys-random：在所有集合key中，随机移除key
 - volatile-lfu：在设置了过期时间的键中使用 **lfu算法** 移除key
-- allkeys-lfu：在所有键中使用 **lfu算法** 移除key（使用**频率**最少）
+- allkeys-lfu：在所有键中使用 **lfu算法** 移除key（使用**频率**最少，一段时间内，使用次数最少的）
 - volatile-ttl：移除最近要过期的key
 - noeviction：不进行移除。
 
@@ -1201,7 +1256,7 @@ redis 实现高可用主要依靠的是哨兵模式，在服务器断线之后�
 
 回收策略（删除策略）：
 
-- 惰性删除：当访问一个key时，判断其是否过期，若过期直接删除
+- 惰性删除：当访问一个key时，判断其是否过期，若过期直接删除，然后返回null
 - 定期删除：定期主动删除已过期的key
 
 缓存穿透
@@ -1340,4 +1395,4 @@ poll和select同属第一阶段，因为它们处理问题的思路基本相同�
 
 - 大量的fd(即连接)需要在用户态和内核态互相拷贝
 
-而epoll就是在内核开辟了一个空间，客户端直接操作从这个空间中取就绪的文件描述符即可。这样就减少了数据的重复拷贝
+而epoll就是在内核开辟了一个空间（mmap技术），客户端直接操作从这个空间中取就绪的文件描述符即可。这样就减少了数据的重复拷贝

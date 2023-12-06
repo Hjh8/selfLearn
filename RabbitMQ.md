@@ -13,7 +13,6 @@ MQ消息队列(message queue)，从字面意思上看，本质是个队列，FIF
 1. **流量消峰**：当流量过载时，将过载流量放入消息队列，当服务器在承受范围内可以处理时才将请求从消息队列移到服务器处理。
 2. **应用解耦**：往往一个主系统的完成需要依赖多个子系统，当主系统发生故障而子系统还没有处理完，此时系统间的调用会出现错误（比如数据不匹配）。
 3. **异步处理**：A调用B时，B的处理需要花费大量时间，此时A不用等待，当B处理完成之后发消息给MQ，MQ再告诉A可以去拿结果。
-4. **顺序保证**：在大多使用场景下，数据处理的顺序都很重要。大部分MQ本来就是排序的，并且能保证数据会按照特定的顺序来处理
 
 ### MQ的分类
 
@@ -916,7 +915,9 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
    }
    ```
 
-## 如何保证mq的可靠性
+# 面试题
+
+## 如何保证mq的可靠性/一致性
 
 那么消息会在哪些环节丢失呢，列出可能出现消息丢失的场景有：
 
@@ -944,7 +945,7 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
            // 三个构造参数：name durable autoDelete
            return new DirectExchange("directExchange", false, false);
        }
-    
+   
        @Bean
        public Queue erduo() {
            return new Queue("erduo", true);
@@ -957,9 +958,31 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
    
    ```
 
+# 如何保证mq的高可用
 
+普通集群模式：多台MQ上启动多个RabbitMQ的实例，你使用的queue只会在某一个RabbitMQ的实例上，但是每个实例都会去同步queue的元数据（RabbitMQ 的配置数据，通过元数据就可以找到queue所对应的rabbitmq实例）。如果你消费的时候，如果连接了其他实例（没有queue数据的实例），那么当前实例就通过元数据，找到对应的实例中的queue然后进行拉取数据到本台实例。
 
-幂等性
+- 优点：提高了吞吐量 
+
+- 缺点：不能保证高可用性，当 放queue的实例挂掉后，就会造成数据丢失。
+
+镜像集群模式：RabbitMQ 的高可用模式。跟普通集群模式不一样的是，创建的 queue，无论元数据 (元数据指 RabbitMQ 的配置数据) 还是 queue 里的消息都会存在于多个实例上。然后每次写消息到 queue 的时候，都会自动把消息到多个实例的 queue 里进行消息同步。
+
+- 在同步数据的时候，会依次同步给每个实例，最后同步回主机，此时说明同步完成。
+
+优点：**实现了高可用**  
+缺点：因为会将所有数据进行同步，如果一个queue过大，同步的性能消耗也会过高。
+
+## 如何保证消息的顺序性
+
+场景1：我们需要根据mysql的binlog日志同步一个数据库的数据到另一个库中，如果在binlog中对同一条数据做了insert，update，delete操作，我们往MQ顺序写入了insert，update，delete操作的三条消息，然后有多个消费者进行消费，由于消费速度不一致，导致这三条消息不是按照insert，update，delete顺序被消费，而是按照delete，insert，update的顺序被消费，这就导致了数据错乱了。
+解决办法：让需要保证顺序的消息处于同一个队列，然后交给同一个消费者进行消费。
+
+场景2：场景1的基础上，将多个消费者改成一个消费者，但是这个消费者内部使用多线程进行消费，导致最终结果不一致。
+
+解决办法：可以使用同步操作保证多线程消费消息的顺序性，例如Semaphere，CircleBarrier，锁。
+
+如何保证幂等性
 ------
 
 所谓的幂等性其实就是**保证同一条消息不会重复或者重复消费了也不会对系统数据造成异常**。
@@ -970,12 +993,77 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
 - 消息去重表：使用mysql记录所处理的消息的信息，包括全局唯一id。
 - 乐观锁：加一个版本号
 
+## 消息积压该如何处理
 
+如果是突发情况，直接做法是先临时扩容消费者机器。然后排查消费过程是否有什么阻塞行为。例如，将同步操作变成异步操作。最后可以排查生产端的生产逻辑，是否可以加一些过滤条件来减少消息的生产。
+
+## 事务消息
+
+rabbitmq事务消息与数据库的事务类似，只是MQ的消息是要保证消息是否会全部发送成功，防止消息丢失的一种策略。
+
+事务机制的缺点：
+
+- 使用事务机制的话会降低RabbitMQ的性能。：会导致生产者和RabbitMq之间产生同步(等待确认)，这也违背了我们使用RabbitMq的初衷，**所以一般很少采用**。
+
+RabbitMQ有两种策略来解决这个问题：
+
+1. 通过AMQP的事务机制实现
+
+2. 使用发送者确认模式(消息确认机制)实现
+
+两者的区别：RabbitMQ的事务机制可以保证一组消息的操作是原子性的，要么全部发送成功，要么全部失败。在存在一组消息的情况下，发生错误，可以通过事务机制进行回滚，来保证消息的原子性。而消息确认机制是针对单个消息的，保证的是单个消息可靠性。
+
+生产者使用事务，通过对信道的设置实现
+
+- channel.txSelect()：通知服务器开启事务模式；服务端会返回Tx.Select-Ok
+
+- channel.basicPublish()：发送消息，可以是多条，可以是消费消息提交ack
+
+- channel.txCommit()：提交事务；
+
+- channel.txRollback()：回滚事务；
+
+消费者使用事务：
+
+1. autoAck=false：手动应对的时候是支持事务的，以事务提交或回滚为主，也就是说如果你手动确认现在之后，又回滚了事务，那么已事务回滚为主，此条消息会重新放回队列；
+
+2. autoAck=true：如果自动确认为true的情况是不支持事务的，也就是说你即使在收到消息之后在回滚事务也是于事无补的，队列已经把消息移除了；
+
+在事务中如果其中任意一个环节出现问题，就会抛出IoException异常，用户可以拦截异常进行事务回滚，或决定要不要重复消息。
+
+```java
+// 创建连接
+ConnectionFactory factory = new ConnectionFactory();
+factory.setUsername(config.UserName);
+factory.setPassword(config.Password);
+factory.setVirtualHost(config.VHost);
+factory.setHost(config.Host);
+factory.setPort(config.Port);    
+Connection conn = factory.newConnection();
+// 创建信道
+Channel channel = conn.createChannel();
+// 声明队列
+channel.queueDeclare(_queueName, true, false, false, null);
+String message = String.format("时间 => %s", new Date().getTime());
+try {
+    channel.txSelect(); // 声明事务
+    // 发送消息
+    channel.basicPublish("", _queueName, MessageProperties.PERSISTENT_TEXT_PLAIN, message.getBytes("UTF-8"));
+    channel.txCommit(); // 提交事务
+} catch (Exception e) {
+    channel.txRollback();
+} finally {
+    channel.close();
+    conn.close();
+}
+```
+
+事务原理：RabbitMQ事务的原理是基于AMQP协议的，事务通道实际上是一个AMQP通道。RabbitMQ事务实际上是保证一组消息的原子性。当我们使用事务通道发送消息时，在消息还未真正提交到队列之前，这些消息都是存在于**内存**中的。只有提交了之后才会在内存中移除。如果在未提交的情况下宕机了，那么这些消息可能会丢失。
 
 优先队列
 ----------
 
-优先队列就是按照消息的优先级来进行消费。官网默认的优先级是0-255，越大的优先级越高。
+优先队列就是按照消息的优先级来进行消费。官网默认的优先级是0-255，值越大的优先级越高。
 
 指定优先级：
 
@@ -985,3 +1073,11 @@ channel.basicPublish("", QUEUE_NAME, properties, msg.getBytes());
 ```
 
 我们也可以限制优先级的最大值：`params.put("x-max-priority", 10);` 此时优先级最大为10；
+
+## 交换器无法根据自身类型和路由键找到符合条件队列时，会如何处理？
+
+我们对交换机设置参数的时候，有一个标志叫做 mandatory。如果 exchange 根据自身类型和消息 routingKey 无法找到一个合适的 queue 存储消息：
+
+- 当 mandatory 标志位设置为 true 时：那么 broker 就会调用 basic.return 方法将消息返还给生产者
+
+- 当 mandatory 设置为 false 时：broker 会直接将消息丢弃

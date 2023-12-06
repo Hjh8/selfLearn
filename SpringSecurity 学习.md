@@ -1,8 +1,6 @@
 SpringSecurity 学习
 ===================
 
-
-
 SpringSecurity框架简介
 ----------------------
 
@@ -12,8 +10,6 @@ Spring Security 重要核心功能主要是“**认证**”和“**授权**”�
 
 - **认证** ：用户认证就是判断一个用户的身份是否合法的过程，用户去访问系统资源时系统要求验证用户的身份信息，身份合法方可继续访问，不合法则拒绝访问。常见的用户身份认证方式有：用户名密码登录，二维码登录，手机短信登录，指纹认证等方式。 
 - **授权**： 授权是用户认证通过后根据用户的权限来控制用户访问资源的过程，拥有资源的访问权限则正常访问，没有 权限则拒绝访问。
-
-
 
 授权的数据模型
 --------------
@@ -42,14 +38,10 @@ How，权限/许可（Permission），规定了用户对资源的操作许可，
 
 ![image-20211129212307536](SpringSecurity 学习.assets/image-20211129212307536.png)
 
-
-
 RBAC
 ----
 
 如何实现授权？业界通常基于RBAC实现授权，即**基于角色的访问控制**或**基于资源的访问控制**。
-
-
 
 ### 基于角色的访问控制
 
@@ -69,8 +61,6 @@ if(用户.hasRole("总经理角色id") || 主体.hasRole("部门经理角色id")
 }
 ```
 
-
-
 ### 基于资源的访问控制
 
 RBAC基于资源的访问控制（Resource-Based Access Control）是按资源（或权限）进行授权，比如：用户必须具有查询工资权限才可以查询员工工资信息等，访问控制流程如下：
@@ -83,34 +73,34 @@ if(用户hasPermission("查询工资权限标识")){
 
 优点：系统设计时定义好查询工资的权限标识，即使查询工资所需要的角色变化为总经理和部门经理也不需要修改授权代码，系统可扩展性强。 
 
-
-
 SpringSecurity 与 Shiro
 -----------------------
 
 SpringSecurity 特点：
 
 - 和 Spring 无缝整合。
+
 - 全面的权限控制。
+
 - 专门为 Web 开发而设计。旧版本不能脱离 Web 环境使用。新版本对整个框架进行了分层抽取，分成了核心模块和 Web 模块。
 
 - 重量级。
-
- Shiro特点：
+  
+  Shiro特点：
 
 - 轻量级。Shiro 主张的理念是把复杂的事情变简单。针对对性能有更高要求的互联网应用有更好表现。
+
 - 不局限于 Web 环境，可以脱离 Web 环境使用。
+
 - 在 Web 环境下一些特定的需求需要手动编写代码定制
 
 自从有了 Spring Boot 之后，Spring Boot 对于 Spring Security 提供了自动化配置方案，可以使用更少的配置来使用 Spring Security
-
-
 
 入门案例
 --------
 
 1. 创建springboot项目，添加依赖
-
+   
    ```xml
    <!-- spring security依赖 -->
    <dependency>
@@ -121,7 +111,7 @@ SpringSecurity 特点：
    ```
 
 2. 自定义配置
-
+   
    ```java
    @Configuration
    public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -137,14 +127,12 @@ SpringSecurity 特点：
    ```
 
 3. 编写controller测试并启动容器，并访问地址，此时需要密码。
-
+   
    ![image-20211129165228643](SpringSecurity 学习.assets/image-20211129165228643.png)
 
 4. 用户名默认是 **user**，密码在项目启动的时候在控制台会打印，**注意每次启动的时候密码都回发生变化**！
-
+   
    ![image-20211129165246990](SpringSecurity 学习.assets/image-20211129165246990.png)
-
-
 
 配置类解析
 ----------
@@ -158,9 +146,9 @@ protected void configure(HttpSecurity http) throws Exception {
         .loginProcessingUrl("/login") // 设置哪个是登录的 url。
         .successForwardUrl("/success") // 登录成功之后跳转到哪个 url
         .failureForwardUrl("/fail");// 登录失败之后跳转到哪个 url
-    	// .usernameParameter("myuser") // 指定登录的账号参数名
+        // .usernameParameter("myuser") // 指定登录的账号参数名
            // .passwordParameter("pwd") // 指定登录的密码参数名
-    
+
     http.authorizeRequests()
         .antMatchers("/layui/**","/index") //表示配置请求路径
         .permitAll() // 指定 URL 无需保护。
@@ -170,8 +158,6 @@ protected void configure(HttpSecurity http) throws Exception {
     http.csrf().disable();
 }
 ```
-
-
 
 自定义登录逻辑
 --------------
@@ -183,7 +169,7 @@ protected void configure(HttpSecurity http) throws Exception {
 步骤：
 
 1. 创建配置类，设置使用哪个UserDetailsService实体类
-
+   
    ```java
    @Configuration
    public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -196,23 +182,22 @@ protected void configure(HttpSecurity http) throws Exception {
            auth.userDetailsService(myUserDetailsService)
                    .passwordEncoder(passwordEncoder());
        }
-       
+   
        @Bean
        PasswordEncoder passwordEncoder(){
            return new BCryptPasswordEncoder();
        }
    }
-   
    ```
 
 2. 编写实现类，返回User对象
-
+   
    ```java
    @Service
    public class MyUserDetailsService implements UserDetailsService {
        @Autowired
        private UsersMapper usersMapper;
-       
+   
        @Override
        public UserDetails loadUserByUsername(String s) throws Exception {
            QueryWrapper<Users> wrapper = new QueryWrapper();
@@ -230,10 +215,7 @@ protected void configure(HttpSecurity http) throws Exception {
    }
    ```
 
-
 > 在添加角色时，需要加上`ROLE_` 前缀，用于区别权限，比如`AuthorityUtils.commaSeparatedStringToAuthorityList("role, ROLE_admin");` 
-
-
 
 基于角色或权限进行访问控制
 --------------------------
@@ -249,24 +231,3 @@ hasRole：当前的主体是该角色就允许访问，否则出现 403页面。
 hasAnyRole：当前的主体若在指定角色(多个)中就允许访问，否则出现 403页面。
 
 ![image-20211129192528157](SpringSecurity 学习.assets/image-20211129192528157.png)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
