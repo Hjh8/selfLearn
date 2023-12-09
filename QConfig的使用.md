@@ -1,8 +1,6 @@
 > QConfig的官方wiki链接：https://wiki.corp.qunar.com/confluence/pages/viewpage.action?pageId=63243290
->
+> 
 > 管理后台地址：[http://qconfig.corp.qunar.com](http://qconfig.corp.qunar.com/)
-
-
 
 # 1.QConfig介绍
 
@@ -16,15 +14,11 @@ QConfig作为配置中心可以解决什么问题？
 
 需要注意的是：**每个配置文件的大小最大只能为512k**。
 
-
-
 # 2.本地测试须知
 
 本地应用默认会调用qconfig_admin上dev文件夹下的文件（注意，是纯dev文件夹，不包含任何build_group!）， **开发人员在本地开发测试的时候可以不依赖配置中心，只需要在源程序的`resources`资源文件夹下创建一个`qconfig_test`目录，将需要在本地覆盖的配置文件放置在`应用名目录`(应用名即在应用中心中申请的名称)里面即可**。比如应用名称叫qtest，那么在qconfig_test目录下再建立一个qtest目录。
 
 qconfig_test会被bds过滤，不会发布到线上。举例：假设你的应用名为qtask，有一个配置文件mysql.properties，你在本地测试的时候想使用这个文件，而不使用配置中心中的配置，则将mysql.properties这个文件放在/resources/qconfig_test/qtask/mysql.properties即可。
-
-
 
 # 3.简单使用
 
@@ -33,20 +27,20 @@ qconfig_test会被bds过滤，不会发布到线上。举例：假设你的应�
 ```java
 //这个类需要配置成Spring的bean
 public class YourClass{
- 
+
   @QConfig("config2.properties")
   private Properties config;
- 
+
   //以下config都是动态变化的，config.properties发生变更后，每次都去config获取值都是最新值
- 
+
   //支持Map<String,String>
   @QConfig("config1.properties")
   private Map<String, String> config;
- 
+
   //跨应用获取公开文件，这里指定应用名为otherapp
   @QConfig("otherapp#config1.properties")
   private Map<String, String> publicConfig;
- 
+
   //还支持String，config里的内容是config.properties里完整内容，业务可以自行解析
   @QConfig("config3.properties")
   private String config;
@@ -67,17 +61,13 @@ public class YourClass{
       //支持参数为Map<String,String>
       //每次配置变更，onChaged1就会被调用
   }
- 
+
   @QConfig("config2.properties")
   public void onChanged2(String conf){
      //支持参数为String
   }
 }
 ```
-
-
-
-
 
 ## 使用原生API
 
@@ -120,8 +110,6 @@ config.addPropertiesListener(new MapConfig.PropertiesChangeListener() {
 });
 ```
 
-
-
 # 4.解析json文件
 
 > qconfig client大于等于1.3.6的版本原生支持json文件。
@@ -131,11 +119,11 @@ config.addPropertiesListener(new MapConfig.PropertiesChangeListener() {
 ```json
 //这个类需要配置成Spring的bean
 public class YourClass{
- 
+
   // 每次配置变更，person也会重新加载
   @QConfig("person.json")
   private volatile Person person;
- 
+
   @QConfig("person.json")
   public void onChanged(Person p){
       //每次配置变更，onChanged就会被调用
@@ -143,17 +131,15 @@ public class YourClass{
 }
 ```
 
-
-
 ## api方式
 
 直接指定自定义类类型。
 
 ```java
 JsonConfig<Person> config = JsonConfig.get("person.json", Person.class);
- 
+
 Person person = config.current();
- 
+
 config.addListener(new Configuration.ConfigListener<Person>() {
   @Override
   public void onLoad(Person newPerson) {
@@ -172,7 +158,7 @@ JsonConfig<List<Integer>> config = JsonConfig.get("list.json", parameter);
 或者
 
 JsonConfig.ParameterizedClass parameter = JsonConfig.ParameterizedClass.of(List.class).addParameter(Integer.class);
- 
+
 JsonConfig<List<Integer>> config = JsonConfig.get("list.json", parameter);
 ```
 
@@ -180,7 +166,7 @@ JsonConfig<List<Integer>> config = JsonConfig.get("list.json", parameter);
 
 ```java
 JsonConfig.ParameterizedClass parameter = JsonConfig.ParameterizedClass.of(Map.class, String.class, Person.class);
- 
+
 JsonConfig<Map<String, Person>> config = JsonConfig.get("map.json", parameter);
 ```
 
@@ -190,11 +176,9 @@ JsonConfig<Map<String, Person>> config = JsonConfig.get("map.json", parameter);
 JsonConfig.ParameterizedClass stringDesc = JsonConfig.ParameterizedClass.of(String.class);
 JsonConfig.ParameterizedClass fooDesc = JsonConfig.ParameterizedClass.of(Foo.class, Integer.class);
 JsonConfig.ParameterizedClass parameter = JsonConfig.ParameterizedClass.of(Map.class, stringDesc, fooDesc);
- 
+
 JsonConfig<Map<String, Foo<Integer>>> config = JsonConfig.get("complex.json", parameter);
 ```
-
-
 
 ## 常见疑问
 
@@ -213,8 +197,6 @@ public class DiffConfig {
 
 **注意：@JsonProperty需要跟@Data结合使用，否则无法正常获取。** 因为@Data比较智能，会自动在set方法上加上@JsonProperty。如果不想使用@Data则需要手动在set方法上加上@JsonProperty。
 
-
-
 # 5.@QMapConfig
 
 @QMapConfig在@QConfig的基础上进行了升级，除了具有之前QConfig注解获取Map和Properties的功能，还增加了获取自定义对象的功能。
@@ -224,41 +206,41 @@ public class DiffConfig {
 public class Test {
     @QMapConfig("test.properties")
     private Map<String, String> map;
-     
+
     @QMapConfig("test.properties")
     private Properties p;
- 
+
     // 直接转换为对象
     @QMapConfig("test.properties")
     private Person person;
-     
+
     // 通过translator转化为对象
     @QMapConfig(value = "test.properties", translator = PersonTranslator.class)
     private Person person;
- 
+
     @QMapConfig("test.properties")
     public void onChange(Map<String, String> map) { ... }
- 
- 
+
+
     @QMapConfig("test.properties")
     public void onChange(Properties p) { ... }
- 
- 
+
+
     @QMapConfig("test.properties")
     public void onChange(Person person) { ... }
-    
+
     @QMapConfig(value = "test.properties", translator = PersonTranslator.class)
     public void onTranslatorChange(Person person) { ... }
 }
- 
+
 public class Person {
     // 使用map中key为"person.name"的value
     @QConfigField(key = "person.name")
     private String name;
- 
+
     // 使用map中key为age的value
     private int age;
- 
+
     // 使用AddressTranslator对map中key为"address"的value进行转换
     @QConfigField(AddressTranslator.class)
     private Address address;
@@ -271,7 +253,7 @@ public class AddressTranslator extends QConfigTranslator<Address> {
         return new Address(value.substring(0, i), value.substring(i + 1));
     }
 }
- 
+
 public class PersonTranslator extends QConfigMapTranslator<Person> {
     @Override
     public Person translate(Map<String, String> map) {
@@ -279,8 +261,3 @@ public class PersonTranslator extends QConfigMapTranslator<Person> {
     }
 }
 ```
-
-
-
-
-
