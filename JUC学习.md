@@ -658,8 +658,6 @@ ExecutorService threadPool = new ThreadPoolExecutor(
 );
 ```
 
-
-
 ## 线程池的线程数设置多少合适？
 
 以下出现的N为CPU数量
@@ -678,8 +676,6 @@ ExecutorService threadPool = new ThreadPoolExecutor(
 对于IO密集型任务来说，理想状态是U为100%，W跟C的比值最好为1，因为第一个任务刚好执行完的时候，第二个任务就等待结束了，就可以无缝衔接执行第二个任务。因此，代入公式得线程数=2*N。
 
 但是在实际情况，CPU使用率不能达到100%，达到70%左右就差不多了，因为其他程序也需要占用CPU，以及应对突增流量的情况，所以CPU使用率一般处于70%左右是最佳的。
-
-
 
 多线程面试
 ===
