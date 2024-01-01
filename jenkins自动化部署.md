@@ -1,14 +1,10 @@
 jenkins自动化部署
 =================
 
-
-
 centos7安装jenkins
 ------------------
 
 > 由于本人使用Docker安装jenkins时遇到很多坑，所以直接用服务器安装了，坑真的少很多！
-
-
 
 #### 第一步：安装jenkins
 
@@ -33,8 +29,6 @@ sudo yum install jenkins
 sudo systemctl daemon-reload
 ```
 
-
-
 #### 第二步：根据配置开启对应的端口以及设置权限
 
 ```bash
@@ -51,8 +45,6 @@ chown -R root:root /var/lib/jenkins
 chown -R root:root /var/cache/jenkins
 chown -R root:root /var/log/jenkins
 ```
-
-
 
 #### 第三步：启动Jenkins服务
 
@@ -73,8 +65,6 @@ sudo systemctl start jenkins
 
 > 如果端口号访问不了，可能是防火墙没有开放端口，可以关闭防火墙或者开放对应端口
 
-
-
 #### 第四步：安装插件
 
 1、点击“安装推荐的插件”
@@ -88,8 +78,6 @@ sudo systemctl start jenkins
 3、登录成功后，可以看到画面如下所示，即表示安装成功
 
 ![image-20211209112343619](jenkins自动化部署.assets/image-20211209112343619.png)
-
-
 
 #### 第五步：配置全局路径
 
@@ -107,8 +95,6 @@ sudo systemctl start jenkins
 
 ![image-20211209113319421](jenkins自动化部署.assets/image-20211209113319421.png)
 
-
-
 #### 第六步：安装Publish Over SSH 插件
 
 ![image-20211209113441359](jenkins自动化部署.assets/image-20211209113441359.png)
@@ -119,10 +105,6 @@ sudo systemctl start jenkins
 
 ![image-20211209121116388](jenkins自动化部署.assets/image-20211209121116388.png)
 
-
-
-
-
 jenkins+gitee远程部署springboot项目
 -----------------------------------
 
@@ -131,8 +113,6 @@ jenkins+gitee远程部署springboot项目
 #### 安装Gitee插件
 
 系统管理->插件管理->可选插件->筛选`Gitee`->选中直接安装，安装成功之后重启jenkins服务
-
-
 
 #### 添加Gitee链接配置(系统管理->系统配置->Gitee配置)
 
@@ -147,8 +127,6 @@ jenkins+gitee远程部署springboot项目
 
 ![image-20211209122042095](jenkins自动化部署.assets/image-20211209122042095.png)
 
-
-
 #### 创建一个自由风格的任务
 
 ![image-20211209122323829](jenkins自动化部署.assets/image-20211209122323829.png)
@@ -161,8 +139,6 @@ jenkins+gitee远程部署springboot项目
 
 ![image-20211209122545392](jenkins自动化部署.assets/image-20211209122545392.png)
 
-
-
 #### 配置仓库
 
 ![image-20211209122628720](jenkins自动化部署.assets/image-20211209122628720.png)
@@ -171,15 +147,11 @@ jenkins+gitee远程部署springboot项目
 
 ![image-20211209122704464](jenkins自动化部署.assets/image-20211209122704464.png)
 
-
-
 #### 配置触发器
 
 ![image-20211209123450128](jenkins自动化部署.assets/image-20211209123450128.png)
 
 ![image-20211209123526009](jenkins自动化部署.assets/image-20211209123526009.png)
-
-
 
 #### 配置webhook
 
@@ -189,15 +161,11 @@ jenkins+gitee远程部署springboot项目
 
 ![image-20211209123606364](jenkins自动化部署.assets/image-20211209123606364.png)
 
-
-
 #### 构建maven
 
 ![image-20211209123702794](jenkins自动化部署.assets/image-20211209123702794.png)
 
 maven命令打包 `clean package -Dmaven.test.skip=true` 
-
-
 
 #### 构建后操作
 
@@ -213,13 +181,9 @@ BUILD_ID=nohup java -jar applybackend-1.0-SNAPSHOT.jar
 
 点击保存。
 
-
-
 #### 开始构建
 
 ![image-20211209124812210](jenkins自动化部署.assets/image-20211209124812210.png)
-
-
 
 jenkins+gitee远程部署vue
 ------------------------
@@ -230,19 +194,13 @@ jenkins+gitee远程部署vue
 
 ![image-20220115165714734](jenkins自动化部署.assets/image-20220115165714734.png)
 
-
-
 接着进入 "全局工具配置" > "添加node"
 
 ![image-20220115165750998](jenkins自动化部署.assets/image-20220115165750998.png)
 
-
-
 #### 创建一个自由风格的任务
 
 ![image-20220115164319604](jenkins自动化部署.assets/image-20220115164319604.png)
-
-
 
 #### 配置仓库
 
@@ -252,15 +210,11 @@ jenkins+gitee远程部署vue
 
 ![image-20211209122704464](jenkins自动化部署.assets/image-20211209122704464.png)
 
-
-
 #### 配置触发器
 
 ![image-20220115164712544](jenkins自动化部署.assets/image-20220115164712544.png)
 
 ![image-20220115164731520](jenkins自动化部署.assets/image-20220115164731520.png)
-
-
 
 #### 配置webhook
 
@@ -270,15 +224,11 @@ jenkins+gitee远程部署vue
 
 ![image-20220115164924362](jenkins自动化部署.assets/image-20220115164924362.png)
 
-
-
 #### 构建环境
 
 勾选上nodejs
 
 ![image-20220115165059477](jenkins自动化部署.assets/image-20220115165059477.png)
-
-
 
 #### 构建>执行shell
 
@@ -292,8 +242,6 @@ npm install
 npm run build
 ```
 
-
-
 #### 构建后操作
 
 ![image-20211209123825952](jenkins自动化部署.assets/image-20211209123825952.png)
@@ -301,8 +249,6 @@ npm run build
 ![image-20220115165440963](jenkins自动化部署.assets/image-20220115165440963.png)
 
 到此配置就结束了，点击保存。
-
-
 
 #### 开始构建
 

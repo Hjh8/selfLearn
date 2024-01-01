@@ -1,59 +1,12 @@
 # 异步知识学习
 
-## 同步、异步与阻塞、非阻塞
-
-根据**进程等待函数调用时的状态**，函数可以分为阻塞和非阻塞：
-
-- 阻塞：在得到函数返回值之前，该进程处于==挂起==状态，不会占用CPU资源。
-- 非阻塞：进程调用函数之后，无论是否返回结果，进程都会继续运行，进程仍处于可运行状态。
-
-根据**进程和函数之间的通信机制**，函数可以分为异步和同步。
-
-- 同步：进程调用函数后，需要等待函数执行完成之后，才可以往下继续进行。
-- 异步：进程调用函数后，函数会直接返回收到，等到处理完成，函数会通过回调或通知的方式，将结果发送给进程。
-
----
-
-阻塞、非阻塞与同步、异步两两组合之后，函数的调用机制如下：
-
-- **同步阻塞**：进程调用函数后，进程需要等待函数的返回值，在等待的时候，该进程处于挂起状态，当函数返回之后，系统切换为内核态，将该进程改变为就绪态，等待CPU调度。
-  
-  ```java
-  int a = aObject.getA();
-  // do something
-  ```
-
-- **异步阻塞**：和同步类似，但进程只需等待函数返回，即进程能够转换为可运行状态，进程和函数约好使用回调或通知方式进行通信，等到处理完成，函数通过约好的方式将结果发送给进程。
-  
-  ```java
-  FutureTask<String> future = task();
-  executorService.execute(future); // 不用等待execute执行完
-  // do something
-  String s = future.get(); // 如果执行完则不用阻塞，否则阻塞等待结果
-  System.out.println(s);
-  ```
-
-- **同步非阻塞**：进程调用函数后，进程会继续运行，但由于函数在没有执行完成之前没有返回值，进程只能通过轮询进程或函数共享资源的方式来知道函数是否完成。
-  
-  ```java
-  while(true){
-      // 等待某个条件成立才往下执行，否则继续while
-      if(XXX == null){
-          continue;
-      }
-      // do something
-  }
-  ```
-
-- **异步非阻塞**：进程调用函数后，进程会继续运行，进程和函数约好使用回调或通知方式进行通信，等到处理完成，函数通过约好的方式将结果发送给进程。
-
 疑问1：异步任务是并发执行还是并行执行？
 
 - 如果是单核CPU，那么异步任务之间是并发执行的；如果是多核CPU，则异步任务就可能是并行执行的。
 
 疑问2：执行异步任务，如果get超时了异步任务就结束了吗？
 
-- 异步任务会一直执行直到结束，即使你使用get(1, TimeUint.Seconds)；如果任务需要执行两秒，那么1秒的时候就会主线程就不会继续等待了，但此时异步任务仍然会继续执行。所以异步任务是不受控制的，会浪费不必要的资源，并不是越多越好。
+- 异步任务会一直执行直到结束，即使你使用get(1, TimeUint.Seconds)；如果任务需要执行两秒，那么1秒的时候主线程就不会继续等待了，但此时异步任务仍然会继续执行。所以异步任务是不受控制的，会浪费不必要的资源，并不是越多越好。
 
 ## Future模式
 
@@ -345,3 +298,187 @@ public class ThenCombineTest {
    ```
    
    在这个例子中，我们使用 `orTimeout()` 方法设置了异步操作的超时时间为 1 秒，在超时后会取消异步操作，并返回新的 `CompletableFuture` 对象
+
+# 原理解析
+
+## CompletableFuture结构
+
+```java
+public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {
+    volatile Object result; // 执行的结果或者异常
+    volatile Completion stack; // 链表模拟栈操作，保存了所有依赖这个future的后续动作
+
+    // 使用cas+自旋 将后续需要执行的CompletableFuture放在链表的头部，即模拟入栈
+    final void pushStack(Completion c) {
+        do {} while (!tryPushStack(c));
+    }    
+
+    final boolean tryPushStack(Completion c) {
+        Completion h = stack;
+        NEXT.set(c, h);
+        return STACK.compareAndSet(this, h, c);
+    }
+
+    // 当前CompletableFuture执行完之后需要处理stack中CompletableFuture
+    final void postComplete() {
+        CompletableFuture<?> f = this; Completion h;
+        while ((h = f.stack) != null ||
+               (f != this && (h = (f = this).stack) != null)) {
+            CompletableFuture<?> d; Completion t;
+            if (STACK.compareAndSet(f, h, t = h.next)) {
+                if (t != null) {
+                    if (f != this) {
+                        pushStack(h);
+                        continue;
+                    }
+                    NEXT.compareAndSet(h, t, null); // try to detach
+                }
+                f = (d = h.tryFire(NESTED)) == null ? this : d;
+            }
+        }
+    }
+
+    // 内部类，当CompletableFuture执行出错时会将错误信息封装成AltResult对象，并赋值给result
+    static final class AltResult {
+        final Throwable ex;
+        AltResult(Throwable x) { this.ex = x; }
+    }
+}
+```
+
+## supplyAsync源码阅读
+
+这里主要介绍supplyAsync的源码阅读，其他runAsync的源码跟supplyAsync差不多，可以说CompletableFuture每个阶段的整体执行步骤是差不多的，类似于模版方法+策略，具体的执行步骤由子类决定。
+
+首先看CompletableFuture的创建
+
+```java
+CompletableFuture.supplyAsync(() -> {
+     try {
+        Thread.sleep(1000000);
+     } catch (InterruptedException e) {
+         throw new RuntimeException(e);
+     }
+     return "a";
+});
+```
+
+![](Future.assets/2023-12-24-16-21-14-image.png)
+
+由上可知，supplyAsync使用了Supplier函数式接口提供参数给CompletableFuture，后续会看到CompletableFuture使用了所有类型的函数式接口，这些类型的函数式接口都可以通过CompletableFuture对应的api的名字推断。
+
+```java
+static <U> CompletableFuture<U> asyncSupplyStage(Executor e,
+                                                 Supplier<U> f) {
+    if (f == null) throw new NullPointerException();
+    // 创建一个新的CompletableFuture作为返回结果
+    CompletableFuture<U> d = new CompletableFuture<U>();
+    // 封装成AsyncSupply对象并丢到指定的线程池中执行
+    // AsyncSupply本质是一个Runnable，所以得看下AsyncSupply的run方法做了什么
+    e.execute(new AsyncSupply<U>(d, f));
+    return d;
+}
+```
+
+> supplyAsync方法会将参数封装成AsyncSupply对象，runAsync会将参数封装成AsyncRun对象，CompletableFuture里面有许多方法都是类似这样命名的。
+
+```java
+static final class AsyncSupply<T> extends ForkJoinTask<Void> implements Runnable, AsynchronousCompletionTask {
+        CompletableFuture<T> dep; Supplier<? extends T> fn;
+
+        AsyncSupply(CompletableFuture<T> dep, Supplier<? extends T> fn) {
+            this.dep = dep; this.fn = fn;
+        }
+
+        public final Void getRawResult() { return null; }
+        public final void setRawResult(Void v) {}
+        public final boolean exec() { run(); return false; }
+
+        public void run() {
+            CompletableFuture<T> d; Supplier<? extends T> f;
+            if ((d = dep) != null && (f = fn) != null) {
+                dep = null; fn = null;
+                // 如果还没有结果则执行
+                if (d.result == null) {
+                    try {
+                        // 使用Supplier的返回值作为CompletableFuture的结果
+                        d.completeValue(f.get());
+                    } catch (Throwable ex) {
+                        // 如果出错则将错误作为结果
+                        d.completeThrowable(ex);
+                    }
+                }
+                // 完成当前CompletableFuture的后置操作，例如后续还有CompletableFuture会在此执行
+                d.postComplete();
+            }
+        }
+    }
+```
+
+CompletableFuture.supplyAsync里会先创建一个空的CompletableFuture对象作为返回结果，然后把任务跟这个CompletableFuture对象跟绑定后放在线程池中异步执行，然后直接返回空的CompletableFuture对象，此时任务继续运行，当任务运行完成之后会将结果写入到原先的CompletableFuture对象的result字段中。
+
+
+
+## thenAccept源码阅读
+
+知道了supplyAsync的原理之后再看看CompletableFuture的链式调用是什么样的。
+
+```java
+CompletableFuture.supplyAsync(() -> {
+     try {
+        Thread.sleep(1000000);
+     } catch (InterruptedException e) {
+         throw new RuntimeException(e);
+     }
+     return "a";
+})
+.thenAccept((res) -> {
+    log.info("supplyAsync result is " + res);
+})
+.thenRun(() -> {
+    log.info("this is thenRun");
+});
+```
+
+直接进入：
+
+```java
+public CompletableFuture<Void> thenAccept(Consumer<? super T> action) {
+    return uniAcceptStage(null, action);
+}
+```
+
+
+
+
+
+
+
+## 执行链路
+
+代码1：futureChain相当于一个整体，这一个整体会先执行supplyAsync，再执行thenAccept，最后thenRun。
+
+```java
+CompletableFuture<Void> futureChain = CompletableFuture.supplyAsync(() -> "test CompletableFuture.")
+  .thenAccept(System.out::println)
+  .thenRun(() -> {});
+```
+
+代码2：futureChain相当于三个整体，先执行supplyAsync的整条链，再执行thenAccept整条链，最后thenRun。
+
+```java
+CompletableFuture<String> futureChains = CompletableFuture.supplyAsync(() -> "test CompletableFuture.");
+futureChains.thenAccept(System.out::println);
+futureChains.thenRun(() -> {});
+```
+
+代码3：futureChains相当于两个整体，第一个整体先执行supplyAsync跟thenAccept，第二个整体执行thenRun。
+
+```java
+CompletableFuture<Void> futureChains = CompletableFuture.supplyAsync(() -> "test CompletableFuture.")
+  .thenAccept(System.out::println);
+
+futureChains.thenRun(() -> { });
+```
+
+## 源码解析

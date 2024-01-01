@@ -958,7 +958,7 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
    
    ```
 
-# 如何保证mq的高可用
+## 如何保证mq的高可用
 
 普通集群模式：多台MQ上启动多个RabbitMQ的实例，你使用的queue只会在某一个RabbitMQ的实例上，但是每个实例都会去同步queue的元数据（RabbitMQ 的配置数据，通过元数据就可以找到queue所对应的rabbitmq实例）。如果你消费的时候，如果连接了其他实例（没有queue数据的实例），那么当前实例就通过元数据，找到对应的实例中的queue然后进行拉取数据到本台实例。
 
@@ -970,7 +970,7 @@ public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
 
 - 在同步数据的时候，会依次同步给每个实例，最后同步回主机，此时说明同步完成。
 
-优点：**实现了高可用**  
+优点：**实现了高可用** 
 缺点：因为会将所有数据进行同步，如果一个queue过大，同步的性能消耗也会过高。
 
 ## 如何保证消息的顺序性
